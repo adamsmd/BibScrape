@@ -15,7 +15,6 @@ WARNING: Suspect name: Teskey, F. N.
   address = {New York, NY, USA},
   isbn = {0-89791-232-2},
   doi = {10.1145/42005.42011},
-  acmid = {42011},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?id=42011},
 }
 

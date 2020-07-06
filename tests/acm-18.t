@@ -13,7 +13,6 @@ Authors should be "Aho, Alfred V." instead of "Aho, A. V.", etc.
   publisher = {ACM},
   address = {New York, NY, USA},
   doi = {10.1145/800125.804056},
-  acmid = {804056},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?doid=800125.804056},
   abstract = {Trees in an n node forest are to be merged according to instructions in a given sequence, while other instructions in the sequence ask for the lowest common ancestor of pairs of nodes. We show that any sequence of O(n) instructions can be processed {\textquotedblleft}on line{\textquotedblright} in O(n log n) steps on a random access computer.
 {\par}

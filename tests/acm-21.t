@@ -14,7 +14,6 @@ Acronym and math in title, paragraph and math in abstract
   address = {New York, NY, USA},
   isbn = {978-1-4503-0019-3},
   doi = {10.1145/1806596.1806631},
-  acmid = {1806631},
   bib-scrape-url = {https://doi.org/10.1145/1809028.1806631},
   keywords = {control-flow analysis; functional; k-cfa; m-cfa; object-oriented; pointer analysis; static analysis},
   abstract = {Low-level program analysis is a fundamental problem, taking the shape of {\textquotedbl}flow analysis{\textquotedbl} in functional languages and {\textquotedbl}points-to{\textquotedbl} analysis in imperative and object-oriented languages. Despite the similarities, the vocabulary and results in the two communities remain largely distinct, with limited cross-understanding. One of the few links is Shivers's \textit{k}-CFA work, which has advanced the concept of {\textquotedbl}context-sensitive analysis{\textquotedbl} and is widely known in both communities.

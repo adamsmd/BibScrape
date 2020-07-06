@@ -14,7 +14,6 @@ Issue is "4es"
   address = {New York, NY, USA},
   issn = {0360-0300},
   doi = {10.1145/242224.242324},
-  acmid = {242324},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?id=242324},
 }
 
