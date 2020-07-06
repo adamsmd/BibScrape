@@ -1,5 +1,9 @@
 #!/usr/bin/env raku
 
+#use warnings;
+#use strict;
+#$|++;
+
 use lib '.';
 use Scrape;
 
@@ -60,15 +64,15 @@ sub MAIN(
 #
 # Print debug data
 #
-  Bool :$fix = True,
-# =item --fix, --no-fix [default=yes]
-#
-# Fix common mistakes in the BibTeX
-#
   Bool :$scrape = True,
 # =item --scrape, --no-scrape [default=yes]
 #
 # Scrape BibTeX entry from the publisher's page
+#
+  Bool :$fix = True,
+# =item --fix, --no-fix [default=yes]
+#
+# Fix common mistakes in the BibTeX
 #
 
 
@@ -101,7 +105,7 @@ sub MAIN(
 # ISSN if <kind> is 'print', only the online ISSN if <kind> is 'online',
 # or both if <kind> is 'both'.
 #
-  Bool :$comma = True,
+  Bool :$final-comma = True,
 # =item --comma, --no-comma [default=yes]
 #
 # Place a comma after the final field of a BibTeX entry.
@@ -116,12 +120,12 @@ sub MAIN(
 
 # =head2 Per FIELD OPTIONS
 #
-#  Str :@field = (),
+#  Str :%field = (),
 # =item --field=<field>
 #
 # Add a field to the list of known BibTeX fields.
 #
-#  Str :@no-encode = <doi url eprint bib_scrape_url>,
+#  Str :%no-encode = <doi url eprint bib_scrape_url>,
 # =item --no-encode=<field>
 #
 # Add a field to the list of fields that should not be LaTeX encoded.
@@ -129,18 +133,18 @@ sub MAIN(
 # this flag is specified on the command line, then only those explicitly
 # listed on the command line are included.
 #
-#  Str :@no-collapse = (),
+#  Str :%no-collapse = (),
 # =item --no-collapse=<field>
 #
 # Add a filed to the list of fields that should not have their
 # white space collapsed.
 #
-#  Str :@omit = (),
+#  Str :%omit = (),
 # =item --omit=<field>
 #
 # Omit a particular field from the output.
 #
-#  Str :@omit-empty = (),
+#  Str :%omit-empty = (),
 # =item --omit-empty=<field>
 #
 # Omit a particular field from the output if it is empty.
@@ -192,3 +196,128 @@ sub MAIN(
   say $bibtex.Str;
   #}
 }
+
+
+############
+# Options
+############
+#
+# Key: Keep vs generate
+#
+# Author, Editor: title case, initialize, last-first
+# Author, Editor, Affiliation(?): List of renames
+# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
+#  List of renames (regex?)
+#
+# Title
+#  Captialization: Initialisms, After colon, list of proper names
+#
+# ISSN: Print vs Electronic
+# Keywords: ';' vs ','
+
+# TODO:
+#  author as editors?
+#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+#  follow jstor links to original publisher
+#  add abstract to jstor
+#  get PDF
+#END TODO
+
+# TODO: omit type-regex field-regex (existing entry is in scope)
+
+# Omit:class/type
+# Include:class/type
+# no issn, no isbn
+# title-case after ":"
+# Warn if first alpha after ":" is not capitalized
+# Flag about whether to Unicode, HTML, or LaTeX encode
+# Warning on duplicate names
+
+# TODO:
+# ALWAYS_GEN_KEY
+#$PREFER_NEW 1 = use new when both new and old have a key
+#$ADD_NEW 1 = use new when only new has key
+#$REMOVE_OLD 1 = not use old when only new has key
+
+#my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
+#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
+#my @RENAME
+
+# TODO:
+# preserve key if from bib-tex?
+# warn about duplicate author names
+
+# my (@NAME_FILE) = ("$FindBin::RealBin/config/names.cfg");
+# my (@FIELD_ACTION_FILE) = ("$FindBin::RealBin/config/actions.cfg");
+
+# # TODO: make debug be verbose and go to STDERR
+
+# # TODO: whether to re-scrape bibtex
+# for my $filename (@INPUT) {
+#     my $bib = new Text::BibTeX::File $filename;
+#     # TODO: print "junk" between entities
+
+#     until ($bib->eof()) {
+#         my $entry = new Text::BibTeX::Entry $bib;
+#         next unless defined $entry and $entry->parse_ok;
+
+#         if (not $entry->metatype == BTE_REGULAR) {
+#             print $entry->print_s;
+#         } else {
+#             if (not $entry->exists('bib_scrape_url')) {
+#                 # Try to find a URL to scrape
+#                 if ($entry->exists('doi') and $entry->get('doi') =~ m[http(?:s)?://[^/]+/(.*)]i) {
+#                     (my $url = $1) =~ s[DOI:\s*][]ig;
+#                     $entry->set('bib_scrape_url', "https://doi.org/$url");
+#                 } elsif ($entry->exists('url') and $entry->get('url') =~ m[^http(?:s)?://(?:dx.)?doi.org/.*$]) {
+#                     $entry->set('bib_scrape_url', $entry->get('url'));
+#                 }
+#             }
+# ###TODO(?): decode utf8
+#             scrape_and_fix_entry($entry);
+#         }
+#     }
+# }
+
+# for (@ARGV) {
+#     my $entry = new Text::BibTeX::Entry;
+#     $entry->set_key($1) if $_ =~ s[^\{([^}]*)\}][];
+#     $_ =~ s[^doi:][http(?:s)?://(?:dx)?.doi.org/]i;
+#     $entry->set('bib_scrape_url', $_);
+#     scrape_and_fix_entry($entry);
+# }
+
+# sub scrape_and_fix_entry {
+#     my ($old_entry) = @_;
+
+#     # TODO: warn if not exists bib_scrape_url
+#     my $entry = (($old_entry->exists('bib_scrape_url') && $SCRAPE) ?
+#         Text::BibTeX::Scrape::scrape($old_entry->get('bib_scrape_url')) :
+#         $old_entry);
+#     $entry->set_key($old_entry->key());
+#     print $FIX ? $fixer->fix($entry) : $entry->print_s;
+# }
+
+# sub read_valid_names {
+#     my ($name_file) = @_;
+#     open(NAME_FILE, "<", $name_file) || die "Could not open name file '$name_file': $!";
+#     my @names = ([]);
+#     for (<NAME_FILE>) {
+#         chomp;
+#         s/#.*//; # Remove comments (which start with `#`)
+#         if (m/^\s*$/) { push @names, [] }
+#         else { push @{$names[$#names]}, new Text::BibTeX::Name($_) }
+#     }
+#     close NAME_FILE;
+#     return map { @{$_} ? ($_) : () } @names;
+# }
+
+# sub slurp_file {
+#     my @files = ();
+#     for (@_) {
+#         open(FILE, "<", $_) || die "Could not open file '$_': $!";
+#         push @files, join('', <FILE>);
+#         close FILE;
+#     }
+#     return @files;
+# }
