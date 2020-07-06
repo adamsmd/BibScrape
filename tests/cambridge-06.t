@@ -12,7 +12,7 @@ Call for papers.  Italics in abstract.  Subtitle.
   publisher = {Cambridge University Press},
   issn = {1469-7653 (Print) 0956-7968 (Online)},
   doi = {10.1017/S0956796801004105},
-  bib_scrape_url = {https://journals.cambridge.org/action/displayAbstract?aid=83911},
+  bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?aid=83911},
   abstract = {Modern programming languages rely on advanced type systems that detect errors at compile-time. While the benefits of type systems have long been recognized, there are some areas where the standard systems in programming languages are not expressive enough. Language designers usually trade expressiveness for decidability of the type system. Some interesting programs will always be rejected (despite their semantical soundness) or be assigned uninformative types.
 {\par}
 There are several remedies to this situation. Dependent type systems, which allow the formation of types that explicitly depend on other types or values, are one of the most promising approaches. These systems are well-investigated from a theoretical point of view by logicians and type theorists. For example, dependent types are used in proof assistants to implement various logics and there are sophisticated proof editors for developing programs in a dependently typed language.

@@ -13,7 +13,7 @@ https://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html
   language = {English},
   isbn = {978-0-7695-3493-0},
   doi = {10.1109/SITIS.2008.31},
-  bib_scrape_url = {https://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html},
+  bib-scrape-url = {https://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html},
   keywords = {Reachability queries; transitive closure; DAG; graph encoding; core labeling},
   abstract = {A graph reachability query, as one of the primary tasks in numerous applications, is to find whether two given data objects, u and v, are related in any way in a large and complex dataset. Formally, the query is about to find if v is reachable from u in a directed graph which is large in size. In this paper, we focus ourselves on building a reachability labeling for large directed graphs, in order to process reachability queries efficiently. A new approach is proposed to compress transitive closure to support reachability checkings. The approach consists of two schemes, called Core-I labeling and Core-II labeling, respectively. For a graph G with n nodes and e edges, the labeling time of Core-I is bounded by O(n + e + t},
 }

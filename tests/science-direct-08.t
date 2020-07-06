@@ -12,7 +12,7 @@ More complex math in abstract
   publisher = {Elsevier},
   issn = {0020-0190},
   doi = {10.1016/j.ipl.2011.04.014},
-  bib_scrape_url = {https://www.sciencedirect.com/science/article/pii/S0020019011001207},
+  bib-scrape-url = {https://www.sciencedirect.com/science/article/pii/S0020019011001207},
   keywords = {Databases; Query containment; Tree patterns; XPath queries; Arithmetic comparisons},
   abstract = {In this paper we investigate the complexity of query containment problem for tree patterns (which express a fragment of XPath) with arbitrary arithmetic comparisons. We assume that attributes take values from a totally ordered domain and allow constraints that involve arithmetic comparisons. We show that the containment problem is \ensuremath{{\Pi}_{2}^{P}}-complete in the general case, but remains co-NP complete for tree patterns with left semi-interval ({\textless}, {\ensuremath{\leqslant}}, =) or right semi-interval ({\textgreater}, {\ensuremath{\geqslant}}, =) attribute constraints.},
 }

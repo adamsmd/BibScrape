@@ -12,7 +12,7 @@ broken by quotes in abstract
   publisher = {Elsevier},
   issn = {0020-0190},
   doi = {10.1016/j.ipl.2010.02.014},
-  bib_scrape_url = {https://doi.org/10.1016/j.ipl.2010.02.014},
+  bib-scrape-url = {https://doi.org/10.1016/j.ipl.2010.02.014},
   keywords = {Algorithms; Data structures; Computational biology},
   abstract = {We derive a new generalization of lowest common ancestors (LCAs) in dags, called the \emph{lowest single common ancestor} (LSCA). We show how to preprocess a static dag in linear time such that subsequent LSCA-queries can be answered in constant time. The size is linear in the number of nodes.
 {\par}

@@ -15,7 +15,7 @@ Ampersand in booktitle
   isbn = {978-1-4503-2491-5},
   doi = {10.1145/2516760.2516769},
   acmid = {2516769},
-  bib_scrape_url = {https://dl.acm.org/citation.cfm?id=2516760.2516769},
+  bib-scrape-url = {https://dl.acm.org/citation.cfm?id=2516760.2516769},
   keywords = {abstract interpretation; malware detection; pushdown systems; static analysis; taint analysis},
   abstract = {Sound malware analysis of Android applications is challenging. First, object-oriented programs exhibit highly interprocedural, dynamically dispatched control structure. Second, the Android programming paradigm relies heavily on the asynchronous execution of multiple entry points. Existing analysis techniques focus more on the second challenge, while relying on traditional analytic techniques that suffer from inherent imprecision or unsoundness to solve the first.
 {\par}

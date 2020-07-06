@@ -12,6 +12,6 @@ Unicode in author, "Mc" name
   publisher = {Cambridge University Press},
   issn = {1474-0079 (Print) 0959-2695 (Online)},
   doi = {10.1017/S0959269500002970},
-  bib_scrape_url = {https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692},
+  bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692},
 }
 

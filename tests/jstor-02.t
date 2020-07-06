@@ -12,6 +12,6 @@ https://www.jstor.org/stable/2034627
   publisher = {American Mathematical Society},
   issn = {0002-9939 (Print) 1088-6826 (Online)},
   doi = {10.2307/2034627},
-  bib_scrape_url = {https://www.jstor.org/stable/2034627},
+  bib-scrape-url = {https://www.jstor.org/stable/2034627},
 }
 

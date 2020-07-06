@@ -16,6 +16,6 @@ Acronym in title
   issn = {0163-5808},
   doi = {10.1145/984505.984506},
   acmid = {984506},
-  bib_scrape_url = {https://portal.acm.org/citation.cfm?id=984506},
+  bib-scrape-url = {https://portal.acm.org/citation.cfm?id=984506},
 }
 

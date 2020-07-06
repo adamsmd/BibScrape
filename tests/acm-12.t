@@ -16,6 +16,6 @@ WARNING: Suspect name: Teskey, F. N.
   isbn = {0-89791-232-2},
   doi = {10.1145/42005.42011},
   acmid = {42011},
-  bib_scrape_url = {https://portal.acm.org/citation.cfm?id=42011},
+  bib-scrape-url = {https://portal.acm.org/citation.cfm?id=42011},
 }
 

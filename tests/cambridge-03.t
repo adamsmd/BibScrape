@@ -12,6 +12,6 @@ Book review and italic in title
   publisher = {Cambridge University Press},
   issn = {1469-7653 (Print) 0956-7968 (Online)},
   doi = {10.1017/S0956796809007357},
-  bib_scrape_url = {https://journals.cambridge.org/action/displayAbstract?aid=6488628},
+  bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?aid=6488628},
 }
 

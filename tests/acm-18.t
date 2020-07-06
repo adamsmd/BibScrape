@@ -14,7 +14,7 @@ Authors should be "Aho, Alfred V." instead of "Aho, A. V.", etc.
   address = {New York, NY, USA},
   doi = {10.1145/800125.804056},
   acmid = {804056},
-  bib_scrape_url = {https://portal.acm.org/citation.cfm?doid=800125.804056},
+  bib-scrape-url = {https://portal.acm.org/citation.cfm?doid=800125.804056},
   abstract = {Trees in an n node forest are to be merged according to instructions in a given sequence, while other instructions in the sequence ask for the lowest common ancestor of pairs of nodes. We show that any sequence of O(n) instructions can be processed {\textquotedblleft}on line{\textquotedblright} in O(n log n) steps on a random access computer.
 {\par}
 If we can accept our answer {\textquotedblleft}off-line{\textquotedblright}, that is, no answers need to be produced until the entire sequence of instructions has been seen seen, then we may perform the task in O(n G(n)) steps, where G(n) is the number of times we must apply log2 to n to obtain a number less than or equal to zero.

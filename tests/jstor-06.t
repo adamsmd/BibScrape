@@ -12,6 +12,6 @@ Superscript and Unicode in title
   publisher = {International Biometric Society},
   issn = {0006-341X (Print) 1541-0420 (Online)},
   doi = {10.2307/3001616},
-  bib_scrape_url = {https://www.jstor.org/stable/10.2307/3001616},
+  bib-scrape-url = {https://www.jstor.org/stable/10.2307/3001616},
 }
 

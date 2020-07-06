@@ -15,7 +15,7 @@ Non-export tab
   issn = {1098-2418},
   doi = {10.1002/rsa.20329},
   eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/rsa.20329},
-  bib_scrape_url = {https://onlinelibrary.wiley.com/doi/10.1002/rsa.20329/references},
+  bib-scrape-url = {https://onlinelibrary.wiley.com/doi/10.1002/rsa.20329/references},
   keywords = {k{-}wise independence; inclusion{-}exclusion; error correcting codes; classical moment problem; discrete moment problem},
   abstract = {A \textit{k}{-}wise independent distribution on \textit{n} bits is a joint distribution of the bits such that each \textit{k} of them are independent. In this paper we consider \textit{k}{-}wise independent distributions with identical marginals, each bit has probability \textit{p} to be 1. We address the following question: how high can the probability that all the bits are 1 be, for such a distribution? For a wide range of the parameters \textit{n},\textit{k}, and \textit{p} we find an explicit lower bound for this probability which matches an upper bound given by Benjamini et al., up to multiplicative factors of lower order. In particular, for fixed \textit{k}, we obtain the sharp asymptotic behavior. The question we investigate can be viewed as a relaxation of a major open problem in error{-}correcting codes theory, namely, how large can a linear error{-}correcting code with given parameters be?
 {\par}

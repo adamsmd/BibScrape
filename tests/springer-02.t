@@ -15,7 +15,7 @@ Test starting from the export tab
   language = {German},
   issn = {0021-8375 (Print) 1439-0361 (Online)},
   doi = {10.1007/BF01975012},
-  bib_scrape_url = {https://www.springerlink.com/content/p60322171q577652/export-citation/},
+  bib-scrape-url = {https://www.springerlink.com/content/p60322171q577652/export-citation/},
   abstract = {The sun occlusion experiment as proposed by\textsc{Matthews} was again repeated with a negative result. (First repeat in Wilhelmshaven, also with a negative result: K. and\textsc{A. Rawson}, this volume p. 168.)
 {\par}
 This does not conform to the sun navigation hypothesis. Some possibilities how to interpret the conflict of results obtained by the two research groups (Cambridge and Wilhelmshaven) are suggested (see p. 176).
