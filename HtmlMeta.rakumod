@@ -3,7 +3,7 @@ use WebDriver::Tiny:from<Perl5>;
 
 use BibTeX;
 
-sub parse-html-meta($web-driver --> Hash:D[Str]) is export {
+sub html-meta-parse($web-driver --> Hash:D[Str]) is export {
   my @meta = $web-driver.find("meta");
   my Str %entries;
   for @meta -> $meta {

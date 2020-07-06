@@ -41,42 +41,45 @@ END {
 
 ########
 
-sub scrape(Str $url) is export {
+sub scrape(Str $url --> BibTeX::Entry) is export {
   open();
   $web-driver.get($url);
 
   # Get the domain after following any redirects
   my $domain = $web-driver.url() ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
-  given $domain {
-    when m[ << "acm.org" $] { parse-acm(); }
+  my $bibtex = do given $domain {
+    when m[ << "acm.org" $] { scrape-acm(); }
     default { say "error: unknown domain: $domain"; }
   }
   # TODO: exit?
   close();
+  $bibtex;
 }
 
 ########
 
-sub parse-acm {
+sub scrape-acm(--> BibTeX::Entry) {
   $web-driver.find('a[data-title="Export Citation"]').click;
-  my @text = map { .text() }, $web-driver.find("#exportCitation .csl-right-inline");
-
-  say @text;
+  my @citation-text = map { .text() }, $web-driver.find("#exportCitation .csl-right-inline");
 
   # Avoid SIGPLAN Notices, SIGSOFT Software Eng Note, etc. by prefering
   # non-journal over journal
-  my %bibtex = @text
-    .flatmap({ parse_bibtex($_).items })
+  my %bibtex = @citation-text
+    .flatmap({ bibtex-parse($_).items })
     .grep({ $_ ~~ BibTeX::Entry })
     .classify({ .fields<journal>:exists });
-  my $bibtex = (flat %bibtex<False>, %bibtex<True>)[0];
+  my $bibtex = (flat (@(%bibtex<False>), @(%bibtex<True>)))[0];
 
-  say $bibtex.Str;
+  my @elements =
+    (try $web-driver.find(".abstractSection.abstractInFull .abstractSection.abstractInFull"))
+    // $web-driver.find(".abstractSection.abstractInFull");
+  my @abstract = map { .prop("innerHTML"); }, @elements;
+  $bibtex.fields<abstract> = BibTeX::Value.new(@abstract.join);
 
-  my @abstract = map { .prop("innerHTML"); }, $web-driver.find(".abstractSection.abstractInFull");
-  say @abstract;
+  html-meta-parse($web-driver);
+  # TODO: month
 
-  parse-html-meta($web-driver);
+  $bibtex;
 }
 
 #sub parse_acm {

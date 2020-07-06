@@ -5,6 +5,8 @@ unit module BibTeX;
 #  raku -I . -M BibTeX
 # > g.parse('a@ foo { bar,}')
 
+use ArrayHash;
+
 enum Quotation <Bare Braces Quotes>;
 class Piece {
     has Str $.piece;
@@ -61,12 +63,10 @@ class String is Item {
 class Entry is Item {
     has Str $.type;
     has Str $.key;
-    has Value %.fields;
-    has Str @.field-order;
+    has ArrayHash $.fields; # Maps Str to Value
     method Str {
-        # TODO: check that all keys are in field order
         "\@$.type\{$.key,\n" ~
-        (map { "  $_ = %.fields{$_},\n"}, @.field-order).join ~
+        (map { "  {$_.key} = {$_.value},\n" }, $.fields.values(:array)).join ~
         "}"
     }
 }
@@ -77,8 +77,8 @@ class Database {
 
 # TODO: case insensitive
 grammar Grammar {
-    token TOP { <bib_db> }
-    regex bib_db { <clause>* }
+    token TOP { <bib-db> }
+    regex bib-db { <clause>* }
     regex clause {
         <ignored> ||
         [ '@' <ws> [ <comment> || <preamble> || <string> || <entry> ]] }
@@ -92,21 +92,21 @@ grammar Grammar {
     regex preamble { 'preamble' <ws> [ '{' <ws> <value> <ws> '}'
                             || '(' <ws> <value> <ws> ')' ] }
 
-    regex string { 'string' <ws> [ '{' <ws> <string_body> <ws> '}'
-                        || '(' <ws> <string_body> <ws> ')' ] }
+    regex string { 'string' <ws> [ '{' <ws> <string-body> <ws> '}'
+                        || '(' <ws> <string-body> <ws> ')' ] }
 
-    regex string_body { <ident> <ws> '=' <ws> <value> }
+    regex string-body { <ident> <ws> '=' <ws> <value> }
 
-    regex entry { <ident> <ws> [ '{' <ws> <key> <ws> <entry_body> <ws> '}'
-                    || '(' <ws> $<key>=<key_paren> <ws> <entry_body> <ws> ')' ]}
+    regex entry { <ident> <ws> [ '{' <ws> <key> <ws> <entry-body> <ws> '}'
+                    || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ]}
 
     token key { <-[,\ \t}\n]>* }
 
-    token key_paren { <-[,\ \t\n]>* }
+    token key-paren { <-[,\ \t\n]>* }
 
-    regex entry_body { [',' <key_value>]* ','? }
+    regex entry-body { [',' <key-value>]* ','? }
 
-    regex key_value { <ws> <ident> <ws> '=' <ws> <value> <ws> }
+    regex key-value { <ws> <ident> <ws> '=' <ws> <value> <ws> }
 
     ########
 
@@ -135,17 +135,15 @@ grammar Grammar {
 }
 
 class Actions {
-    method TOP($/) { make Database.new(items => $<bib_db><clause>».made); }
+    method TOP($/) { make Database.new(items => $<bib-db><clause>».made); }
     method clause($/) { make ($<ignored> // $<comment> // $<preamble> // $<string> // $<entry>).made }
     method ignored($/) { make Ignored.new(value => $/); }
     method comment($/) { make Comment.new(); }
     method preamble($/) { make Preamble.new(value => $<value>.made); }
-    method string($/) { make String.new(key => $/<string_body><ident>.Str, value => $/<string_body><value>.made); }
-    method entry($/) {
-        my @fields = $/<entry_body>.made;
-        make Entry.new(type => $/<ident>.Str, key => $/<key>.Str, fields => %@fields, field-order => @fields».key); }
-    method entry_body($/) { make $/<key_value>».made; }
-    method key_value($/) { make ($/<ident>.Str => $/<value>.made); }
+    method string($/) { make String.new(key => $/<string-body><ident>.Str, value => $/<string-body><value>.made); }
+    method entry($/) { make Entry.new(type => $/<ident>.Str, key => $/<key>.Str, fields => multi-hash($/<entry-body>.made)); }
+    method entry-body($/) { make $/<key-value>».made; }
+    method key-value($/) { make ($/<ident>.Str => $/<value>.made); }
 
     method value($/) { make Value.new(@($<piece>».made)); }
     method piece($/) { make ($<bare> // $<braces> // $<quotes>).made; }
@@ -154,7 +152,7 @@ class Actions {
     method quotes($/) { make Piece.new(piece => $/[0].Str, quotation => Quotes); }
 }
 
-sub parse_bibtex(Str $str) is export {
+sub bibtex-parse(Str $str) is export {
     Grammar.parse($str, actions => Actions).made;
 }
 
