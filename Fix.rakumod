@@ -1,11 +1,15 @@
 use ArrayHash;
 
 use BibTeX;
+use BibTeX::Months;
+use Isbn;
 
 enum MediaType <Print Online Both>;
-enum IsbnType <Isbn-13, Isbn-10, Preserve>;
 
 class Fix {
+  #valid_names => [map {read_valid_names($_)} @NAME_FILE],
+  #field_actions => join('\n', slurp_file(@FIELD_ACTION_FILE)),
+
   ## INPUTS
   has List @.names; # List of List of BibTeX Names
   has IO::Path @.actions; # TODO: Executable
@@ -50,16 +54,17 @@ class Fix {
     # [][pages][pp?\.\s*][]ig;
     update($entry, 'pages', { s:i:g/"p" "p"? "." \s*//; });
 
-#     # [][number]rename[issue][.+][$1]delete;
-#     # rename fields
-#     for (['issue', 'number'], ['keyword', 'keywords']) {
-#         # Fix broken field names (SpringerLink and ACM violate this)
-#         if ($entry->exists($_->[0]) and
-#             (not $entry->exists($_->[1]) or $entry->get($_->[0]) eq $entry->get($_->[1]))) {
-#             $entry->set($_->[1], $entry->get($_->[0]));
-#             $entry->delete($_->[0]);
-#         }
-#     }
+    # [][number]rename[issue][.+][$1]delete;
+    # rename fields
+    for ('issue' => 'number', 'keyword' => 'keywords') -> $i {
+      # Fix broken field names (SpringerLink and ACM violate this)
+      if ($entry.fields{$i.key}:exists and
+          (not $entry.fields{$i.value}:exists or
+            $entry.fields{$i.key} eq $entry.fields{$i.value})) {
+        $entry.fields{$i.value} = $entry.fields{$i.key};
+        $entry.fields{$i.key}:delete;
+      }
+    }
 
     # Ranges: convert "-" to "--"
     # TODO: option for numeric range
@@ -108,9 +113,9 @@ class Fix {
 
 #     # TODO: Keywords: ';' vs ','
 
-#     isbn($self, $entry, 'isbn', $self->isbn, *Text::ISBN::canonical_isbn);
+    self.isbn($entry, 'isbn', $.isbn-media, &canonical-isbn);
 
-#     isbn($self, $entry, 'issn', $self->issn, *Text::ISBN::canonical_issn);
+    self.isbn($entry, 'issn', $.issn-media, &canonical-issn);
 
 #     # TODO: Author, Editor, Affiliation: List of renames
 # # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
@@ -169,15 +174,15 @@ class Fix {
     # Canonicalize series: PEPM'97 -> PEPM~'97 (must be after Unicode escaping)
     update($entry, 'series', { s:g/(<upper>+) " "* "'" (\d+)/$1~'$2/; });
 
-#     # Collapse spaces and newlines
-#     $self->no_collapse->{$_} or update($entry, $_, sub {
-#         s[\s*$][]; # remove trailing whitespace
-#         s[^\s*][]; # remove leading whitespace
-#         s[(\n *){2,}][{\\par}]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
-#         s[\s*\n\s*][ ]sg; # Remove extra line breaks
-#         s[{\\par}][\n{\\par}\n]sg; # Nicely format paragraph breaks
-#         #s[\s{2,}][ ]sg; # Remove duplicate whitespace
-#                                        }) for $entry->fieldlist();
+    # Collapse spaces and newlines
+    $_ ∈ $.no-collapse or update($entry, $_.key, {
+      s/\s* $//; # remove trailing whitespace
+      s/^ \s *//; # remove leading whitespace
+      s:s:g/(\n " "*) ** 2..*/"\{\\par}"/; # BibTeX eats whitespace so convert "\n\n" to paragraph break
+      s:s:g/\s* \n \s*/ /; # Remove extra line breaks
+      s:s:g/"\{\\par\}"/\n\{\\par\}\n/; # Nicely format paragraph breaks
+      s:s:g/\s ** 2..* / /; # Remove duplicate whitespace
+    }) for $entry.fields.pairs;
 
     # TODO: Title Capticalization: Initialisms, After colon, list of proper names
     update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) / "\{" $1 "\}" /; }) if $.escape-acronyms;
@@ -190,16 +195,18 @@ class Fix {
 #         update($entry, $FIELD, sub { $compartment->reval($self->field_actions); });
 #     }
 
-#     # Use bibtex month macros
-#     update($entry, 'month', # Must be after field encoding because we use macros
-#            sub { s[\.($|-)][$1]g; # Remove dots due to abbriviations
-#                  my @x = map {
-#                      ($_ eq '/' || $_ eq '-' || $_ eq '--') and [Text::BibTeX::BTAST_STRING, $_] or
-#                      str2month(lc $_) or
-#                      m[^\d+$] and num2month($_) or
-#                      print "WARNING: Suspect month: $_\n" and [Text::BibTeX::BTAST_STRING, $_]}
-#                    split /\b/;
-#                  $_ = new Text::BibTeX::Value(@x)});
+    # Use bibtex month macros
+    # Must be after field encoding because we use macros
+    update($entry, 'month', {
+      s/ "." ($|"-")/$1/; # Remove dots due to abbriviations
+      my @x =
+        .split(rx/<wb>/)
+        .map({
+          ($_ eq '/' || $_ eq '-' || $_ eq '--') and BibTeX::Value($_) or
+          str2month($_) or
+          /^ \d+ $/ and num2month($_) or
+          print "WARNING: Suspect month: $_\n" and BibTeX::Value($_)});
+      $_ = BibTeX::Value.new(@x)});
 
     # Omit fields we don't want
     # TODO: controled per type or with other fields or regex matching
@@ -243,11 +250,34 @@ class Fix {
 #     return $str;
     $entry;
   }
+
+  method isbn(BibTeX::Entry $entry, Str $field, MediaType $print_or_online, &canonical) {
+    update($entry, $field, {
+      if m:i/^ (<[0..9x-]>+) "(Print)" (<[0..9x-]>+) "(Online)" $/ {
+        given $print_or_online {
+          when Print {
+            $_ = &canonical($0, $.isbn-type, $.isbn-sep);
+          }
+          when Online {
+            $_ = &canonical($1, $.isbn-type, $.isbn-sep);
+          }
+          when Both {
+            $_ = &canonical($0, $.isbn-type, $.isbn-sep)
+              ~ ' (Print) '
+              ~ &canonical($1, $.isbn-type, $.isbn-sep)
+              ~ ' (Online)';
+          }
+        }
+      } elsif m:i/^ <[0..9x-]>+ $/ {
+        $_ = &canonical($_, $.isbn-type, $.isbn-sep);
+      } elsif m/^$/ {
+        $_ = Nil
+      } else {
+        print "WARNING: Suspect $field: $_\n"
+      }
+    });
+  }
 }
-
-  #valid_names => [map {read_valid_names($_)} @NAME_FILE],
-  #field_actions => join('\n', slurp_file(@FIELD_ACTION_FILE)),
-
 
 sub update(BibTeX::Entry $entry, Str $field, &fun) {
   if $entry.fields{$field}:exists {

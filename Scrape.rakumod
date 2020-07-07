@@ -2,7 +2,7 @@ use lib:from<Perl5> 'dep/WebDriver-Tiny-0.102/lib/';
 use WebDriver::Tiny:from<Perl5>;
 
 use BibTeX;
-use HtmlMeta;
+use BibTeX::Html;
 
 # TODO: ignore non-domain files (timeout on file load?)
 
@@ -62,7 +62,7 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
 
 sub scrape-acm(--> BibTeX::Entry) {
   $web-driver.find('a[data-title="Export Citation"]').click;
-  my @citation-text = map { .text() }, $web-driver.find("#exportCitation .csl-right-inline");
+  my @citation-text = $web-driver.find("#exportCitation .csl-right-inline")».text;
 
   # Avoid SIGPLAN Notices, SIGSOFT Software Eng Note, etc. by prefering
   # non-journal over journal
