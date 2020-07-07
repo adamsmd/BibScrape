@@ -10,7 +10,7 @@ Fix Blu -> Blume.  (Bug in ACM BibTeX.)
   numpages = {13},
   month = aug,
   year = {1997},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {0-89791-918-1},
   doi = {10.1145/258948.258960},

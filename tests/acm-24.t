@@ -12,7 +12,7 @@ Avoid SIGSOFT Software Engineering Notes
   numpages = {10},
   month = sep,
   year = {2003},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {1-58113-743-5},
   issn = {0163-5948},

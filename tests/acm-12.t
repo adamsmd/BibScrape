@@ -11,7 +11,7 @@ WARNING: Suspect name: Teskey, F. N.
   numpages = {2},
   month = nov,
   year = {1987},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {0-89791-232-2},
   doi = {10.1145/42005.42011},

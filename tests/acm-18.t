@@ -10,7 +10,7 @@ Authors should be "Aho, Alfred V." instead of "Aho, A. V.", etc.
   numpages = {13},
   month = apr,
   year = {1973},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   doi = {10.1145/800125.804056},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?doid=800125.804056},

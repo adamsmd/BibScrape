@@ -11,7 +11,7 @@ Acronym in title
   month = apr,
   year = {1982},
   issue_date = {April 1982},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   issn = {0163-5808},
   doi = {10.1145/984505.984506},

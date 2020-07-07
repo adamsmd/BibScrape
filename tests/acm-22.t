@@ -10,7 +10,7 @@
   numpages = {12},
   month = sep,
   year = {2010},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {978-1-60558-794-3},
   doi = {10.1145/1863543.1863551},

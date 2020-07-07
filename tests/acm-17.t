@@ -10,7 +10,7 @@ Issue is "4es"
   month = dec,
   year = {1996},
   issue_date = {Dec. 1996},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   issn = {0360-0300},
   doi = {10.1145/242224.242324},

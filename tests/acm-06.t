@@ -10,7 +10,7 @@ Italics and quotes in abstract
   numpages = {13},
   month = oct,
   year = {1998},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {1-58113-005-8},
   doi = {10.1145/286936.286955},

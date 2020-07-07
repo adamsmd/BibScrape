@@ -10,7 +10,7 @@ Decodes HTML in abstract
   numpages = {14},
   month = jan,
   year = {2007},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {1-59593-575-4},
   doi = {10.1145/1190216.1190247},

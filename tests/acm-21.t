@@ -10,7 +10,7 @@ Acronym and math in title, paragraph and math in abstract
   numpages = {11},
   month = jun,
   year = {2010},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {978-1-4503-0019-3},
   doi = {10.1145/1806596.1806631},

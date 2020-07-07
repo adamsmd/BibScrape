@@ -12,7 +12,7 @@ Subscript in title
   month = oct,
   year = {2009},
   issue_date = {October 2009},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   issn = {1529-3785},
   doi = {10.1145/1614431.1614435},

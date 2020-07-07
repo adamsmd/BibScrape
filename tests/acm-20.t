@@ -10,7 +10,7 @@ Bullets in abstract
   numpages = {10},
   month = oct,
   year = {2006},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {1-59593-578-9},
   doi = {10.1145/1178597.1178604},

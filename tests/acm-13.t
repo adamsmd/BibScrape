@@ -10,7 +10,7 @@ Page numbers with letters and dashes
   numpages = {2},
   month = may,
   year = {1996},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {0-89791-804-5},
   doi = {10.1145/237218.237407},

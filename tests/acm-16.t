@@ -10,7 +10,7 @@ Subtitle
   numpages = {13},
   month = sep,
   year = {2006},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {1-59593-309-3},
   doi = {10.1145/1159803.1159807},

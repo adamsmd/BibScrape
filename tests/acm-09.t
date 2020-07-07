@@ -10,7 +10,7 @@ No abstract
   numpages = {13},
   month = jan,
   year = {1979},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   doi = {10.1145/567752.567756},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?id=567756},

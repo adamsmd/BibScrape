@@ -11,7 +11,7 @@ Single page abstract
   month = dec,
   year = {1975},
   issue_date = {Winter 1975},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   issn = {0163-5840},
   doi = {10.1145/1095277.1095281},

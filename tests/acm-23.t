@@ -10,7 +10,7 @@ Ampersand in booktitle
   numpages = {12},
   month = nov,
   year = {2013},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {978-1-4503-2491-5},
   doi = {10.1145/2516760.2516769},

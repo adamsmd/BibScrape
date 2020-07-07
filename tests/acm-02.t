@@ -10,7 +10,7 @@ Converts HTML italics to Tex, "Van" in author
   numpages = {8},
   month = sep,
   year = {2008},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {978-1-59593-919-7},
   doi = {10.1145/1411204.1411243},

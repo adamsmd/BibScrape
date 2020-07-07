@@ -10,7 +10,7 @@ Subtitle and capitalization problems
   numpages = {12},
   month = jun,
   year = {2002},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {1-58113-463-0},
   doi = {10.1145/512529.512538},

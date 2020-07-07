@@ -10,7 +10,7 @@ Fix author's latex escapes; Key with spaces
   numpages = {12},
   month = jun,
   year = {1996},
-  publisher = {ACM},
+  publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
   isbn = {0-89791-770-7},
   doi = {10.1145/232627.232630},
