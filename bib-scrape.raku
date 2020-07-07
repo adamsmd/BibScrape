@@ -6,12 +6,10 @@
 
 use lib '.';
 use Scrape;
+use Fix;
 
 # TODO: version 20.07.05
 # TODO: @ flags
-
-enum MediaType <Print Online Both>;
-enum IsbnType <Isbn-13, Isbn-10, Preserve>;
 
 sub MAIN(
 # =head1 SYNOPSIS
@@ -78,6 +76,17 @@ sub MAIN(
 
 # =head2 GENERAL OPTIONS
 #
+  Bool :$final-comma = True,
+# =item --comma, --no-comma [default=yes]
+#
+# Place a comma after the final field of a BibTeX entry.
+#
+  Bool :$escape-acronyms = True,
+# =item --escape-acronyms, --no-escape-acronyms [default=yes]
+#
+# In titles, enclose sequences of two or more uppercase letters (i.e.,
+# an acronym) in braces to that BibTeX preserves their case.
+#
   MediaType :$isbn-media = Both,
 # =item --isbn=<kind> [default=both]
 #
@@ -96,25 +105,15 @@ sub MAIN(
 # =item --isbn-sep=<sep> [default=-]
 #
 # Use <sep> to separate parts of an ISBN.
+# For example, a space is common.
 # Use an empty string to specify no separator.
 #
-  MediaType :$issn = Both,
+  MediaType :$issn-media = Both,
 # =item --issn=<kind> [default=both]
 #
 # When both a print and an online ISSN are available, use only the print
 # ISSN if <kind> is 'print', only the online ISSN if <kind> is 'online',
 # or both if <kind> is 'both'.
-#
-  Bool :$final-comma = True,
-# =item --comma, --no-comma [default=yes]
-#
-# Place a comma after the final field of a BibTeX entry.
-#
-  Bool :$escape-acronyms = True,
-# =item --escape-acronyms, --no-escape-acronyms [default=yes]
-#
-# In titles, enclose sequences of two or more uppercase letters (i.e.,
-# an acronym) in braces to that BibTeX preserves their case.
 #
 
 
@@ -191,8 +190,47 @@ sub MAIN(
 #
 # =cut
 ) {
+
+  ## INPUTS
+  my List @names; # List of List of BibTeX Names
+  my IO::Path @actions; # TODO: Executable
+
+  ## FIELD OPTIONS
+  my @fields = <
+    author editor affiliation title
+    howpublished booktitle journal volume number series jstor_issuetitle
+    type jstor_articletype school institution location conference_date
+    chapter pages articleno numpages
+    edition day month year issue_date jstor_formatteddate
+    organization publisher address
+    language isbn issn doi eid acmid url eprint bib-scrape-url
+    note annote keywords abstract copyright>;
+  my Str @no-encode = <doi url eprint bib-scrape-url>;
+  my Str @no-collapse = < >;
+  my Str @omit = < >;
+  my Str @omit-empty = <abstract issn doi keywords>;
+
   #for @url -> $url {
+  my $fixer = Fix.new(
+    names => @names,
+    actions => @actions,
+    debug => $debug,
+    scrape => $scrape,
+    fix => $fix,
+    final-comma => $final-comma,
+    escape-acronyms => $escape-acronyms,
+    isbn-media => $isbn-media,
+    isbn-type => $isbn-type,
+    isbn-sep => $isbn-sep,
+    issn-media => $issn-media,
+    fields => @fields,
+    no-encode => @no-encode,
+    no-collapse => @no-collapse,
+    omit => @omit,
+    omit-empty => @omit-empty,
+  );
   my $bibtex = scrape($url);
+  $bibtex = $fixer.fix($bibtex);
   say $bibtex.Str;
   #}
 }

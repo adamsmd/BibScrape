@@ -15,5 +15,5 @@ fi
 for i in "$@"; do
     echo "$i"
     URL=$(head -n 1 "$i")
-    (head -n 2 "$i"; ./bib-scrape.pl "$URL") | diff -u "$i" - | wdiff -dt
+    (head -n 2 "$i"; ./bib-scrape.raku "$URL") | diff -u "$i" - | wdiff -dt
 done

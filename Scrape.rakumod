@@ -14,8 +14,10 @@ my $proc;
 sub init() {
   unless $web-driver.defined {
     $proc = Proc::Async.new('geckodriver', '--log=warn');
+    $proc.bind-stdout($*ERR);
     $proc.start;
     await $proc.ready;
+    # TODO: check if already running (use explicit port?)
   }
 }
 
@@ -48,10 +50,10 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
   # Get the domain after following any redirects
   my $domain = $web-driver.url() ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
   my $bibtex = do given $domain {
-    when m[ << "acm.org" $] { scrape-acm(); }
+    when m[ « "acm.org" $] { scrape-acm(); }
     default { say "error: unknown domain: $domain"; }
   }
-  # TODO: exit?
+  $bibtex.fields.push((bib-scrape-url => BibTeX::Value.new($url)));
   close();
   $bibtex;
 }
