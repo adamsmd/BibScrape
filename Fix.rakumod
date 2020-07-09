@@ -35,7 +35,7 @@ class Fix {
   has Str @.omit;
   has Str @.omit-empty;
 
-  method fix(BibTeX::Entry $bibtex) {
+  method fix(BibTeX::Entry $bibtex --> BibTeX::Entry) {
     my $entry = $bibtex.clone;
 
 #     # TODO: $bib_text ~~ s/^\x{FEFF}//; # Remove Byte Order Mark
@@ -108,7 +108,7 @@ class Fix {
     check($entry, 'volume', 'suspect volume', {
       /^ \d+ $/ || /^ \d+ "-" \d+ $/ || /^ <[A..Z]> "-" \d+ $/ || /^ \d+ "-" <[A..Z]> $/ });
 
-    check($entry, 'number', 'suspect number', sub {
+    check($entry, 'number', 'suspect number', {
       /^ \d+ $/ || /^ \d+ "--" \d+ $/ || /^ [\d+]+ % "/" $/ || /^ \d+ "es" $/ ||
       /^ "Special Issue " \d+ ["--" \d+]? $/ || /^ "S" \d+ $/});
 
@@ -230,7 +230,7 @@ class Fix {
 #         $entry->set_key($name . $year . $doi);
 #     }
 
-    # Put fields in a standard order
+    # Put fields in a standard order (also cleans out any fields we deleted)
     my %fields = @.fields.map(* => 0);
     for $entry.fields.keys -> $field {
       unless %fields{$field}:exists { die "Unknown field '$field'" }

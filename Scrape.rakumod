@@ -1,8 +1,9 @@
-use lib:from<Perl5> 'dep/WebDriver-Tiny-0.102/lib/';
-use WebDriver::Tiny:from<Perl5>;
+unit module Scrape;
 
 use BibTeX;
 use BibTeX::Html;
+
+use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
 
 # TODO: ignore non-domain files (timeout on file load?)
 
@@ -11,25 +12,162 @@ use BibTeX::Html;
 my $web-driver;
 my $proc;
 
+# ['CONTEXT_CHROME',
+#  'CONTEXT_CONTENT',
+#  'NATIVE_EVENTS_ALLOWED',
+#  '__class__',
+#  '__delattr__',
+#  '__dict__',
+#  '__doc__',
+#  '__enter__',
+#  '__exit__',
+#  '__format__',
+#  '__getattribute__',
+#  '__hash__',
+#  '__init__',
+#  '__module__',
+#  '__new__',
+#  '__reduce__',
+#  '__reduce_ex__',
+#  '__repr__',
+#  '__setattr__',
+#  '__sizeof__',
+#  '__str__',
+#  '__subclasshook__',
+#  '__weakref__',
+#  '_file_detector',
+#  '_is_remote',
+#  '_mobile',
+#  '_switch_to',
+#  '_unwrap_value',
+#  '_web_element_cls',
+#  '_wrap_value',
+#  'add_cookie',
+#  'application_cache',
+#  'back',
+#  'binary',
+#  'capabilities',
+#  'close',
+#  'command_executor',
+#  'context',
+#  'create_web_element',
+#  'current_url',
+#  'current_window_handle',
+#  'delete_all_cookies',
+#  'delete_cookie',
+#  'desired_capabilities',
+#  'error_handler',
+#  'execute',
+#  'execute_async_script',
+#  'execute_script',
+#  'file_detector',
+#  'file_detector_context',
+#  'find_element',
+#  'find_element_by_class_name',
+#  'find_element_by_css_selector',
+#  'find_element_by_id',
+#  'find_element_by_link_text',
+#  'find_element_by_name',
+#  'find_element_by_partial_link_text',
+#  'find_element_by_tag_name',
+#  'find_element_by_xpath',
+#  'find_elements',
+#  'find_elements_by_class_name',
+#  'find_elements_by_css_selector',
+#  'find_elements_by_id',
+#  'find_elements_by_link_text',
+#  'find_elements_by_name',
+#  'find_elements_by_partial_link_text',
+#  'find_elements_by_tag_name',
+#  'find_elements_by_xpath',
+#  'firefox_profile',
+#  'forward',
+#  'fullscreen_window',
+#  'get',
+#  'get_cookie',
+#  'get_cookies',
+#  'get_log',
+#  'get_screenshot_as_base64',
+#  'get_screenshot_as_file',
+#  'get_screenshot_as_png',
+#  'get_window_position',
+#  'get_window_rect',
+#  'get_window_size',
+#  'implicitly_wait',
+#  'install_addon',
+#  'log_types',
+#  'maximize_window',
+#  'minimize_window',
+#  'mobile',
+#  'name',
+#  'orientation',
+#  'page_source',
+#  'profile',
+#  'quit',
+#  'refresh',
+#  'save_screenshot',
+#  'service',
+#  'session_id',
+#  'set_context',
+#  'set_page_load_timeout',
+#  'set_script_timeout',
+#  'set_window_position',
+#  'set_window_rect',
+#  'set_window_size',
+#  'start_client',
+#  'start_session',
+#  'stop_client',
+#  'switch_to',
+#  'switch_to_active_element',
+#  'switch_to_alert',
+#  'switch_to_default_content',
+#  'switch_to_frame',
+#  'switch_to_window',
+#  'title',
+#  'uninstall_addon',
+#  'w3c',
+#  'window_handles']
+
+
 sub init() {
   unless $web-driver.defined {
-    $proc = Proc::Async.new('geckodriver', '--log=warn');
-    $proc.bind-stdout($*ERR);
-    $proc.start;
-    await $proc.ready;
+    #$proc = Proc::Async.new('geckodriver', '--log=warn');
+    #$proc.bind-stdout($*ERR);
+    #$proc.start;
+    #await $proc.ready;
     # TODO: check if already running (use explicit port?)
+    $proc = Inline::Python.new;
+    $proc.run("
+import sys
+sys.path += ['dep/py']
+from selenium import webdriver
+from selenium.webdriver.firefox import firefox_profile
+import os
+
+def web_driver():
+  profile = firefox_profile.FirefoxProfile()
+  #profile.set_preference('browser.download.panel.shown', False)
+  #profile.set_preference('browser.helperApps.neverAsk.openFile','text/x-bibtex')
+  profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'text/x-bibtex')
+  profile.set_preference('browser.download.folderList', 2)
+  profile.set_preference('browser.download.dir', os.getcwd() + '/downloads')
+  return webdriver.Firefox(firefox_profile=profile)
+");
   }
 }
 
 sub open() {
   init();
   close();
-  $web-driver = WebDriver::Tiny.new(port => 4444);
+  #$web-driver = WebDriver::Tiny.new(port => 4444);
+  $web-driver = $proc.call('__main__', 'web_driver');
+  #$web-driver.set_page_load_timeout(5);
 }
 
 sub close() {
   if $web-driver.defined {
-    $web-driver._req( DELETE => '' );
+    $web-driver.quit();
+    #$web-driver._req( DELETE => '' );
     $web-driver = Any;
   }
 }
@@ -37,9 +175,12 @@ sub close() {
 END {
   close();
   if $proc.defined {
-    $proc.kill;
+    #$proc.kill;
+    # TODO: kill all sub-processes
   }
 }
+
+sub infix:<%>($obj, Str $attr) { $obj.__getattribute__($attr); }
 
 ########
 
@@ -48,7 +189,8 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
   $web-driver.get($url);
 
   # Get the domain after following any redirects
-  my $domain = $web-driver.url() ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
+  sleep 5;
+  my $domain = $web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
   my $bibtex = do given $domain {
     when m[ « "acm.org" $] { scrape-acm(); }
     when m[ « "sciencedirect.com" $] { scrape-science-direct(); }
@@ -62,8 +204,9 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
 ########
 
 sub scrape-acm(--> BibTeX::Entry) {
-  $web-driver.find('a[data-title="Export Citation"]').click;
-  my @citation-text = $web-driver.find("#exportCitation .csl-right-inline")».text;
+  $web-driver.find_element_by_css_selector('a[data-title="Export Citation"]').click;
+  sleep 1;
+  my @citation-text = $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline").map({ $_ % <text> });
 
   # Avoid SIGPLAN Notices, SIGSOFT Software Eng Note, etc. by prefering
   # non-journal over journal
@@ -73,13 +216,13 @@ sub scrape-acm(--> BibTeX::Entry) {
     .classify({ .fields<journal>:exists });
   my $bibtex = (flat (@(%bibtex<False>), @(%bibtex<True>)))[0];
 
-  my @elements =
-    (try $web-driver.find(".abstractSection.abstractInFull .abstractSection.abstractInFull"))
-    // $web-driver.find(".abstractSection.abstractInFull");
-  my @abstract = map { .prop("innerHTML"); }, @elements;
-  $bibtex.fields<abstract> = BibTeX::Value.new(@abstract.join);
+  my $abstract = $web-driver
+    .find_elements_by_css_selector(".abstractSection.abstractInFull")
+    .reverse.head
+    .get_property('innerHTML');
+  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
 
-  html-meta-parse($web-driver);
+  #html-meta-parse($web-driver);
   # TODO: month
 
   $bibtex;
@@ -110,9 +253,17 @@ sub scrape-acm(--> BibTeX::Entry) {
 #}
 
 sub scrape-science-direct(--> BibTeX::Entry) {
-  $web-driver.find('.export-citation-product').click;
-  $web-driver.find('a[data-export-type="bibtex"]').click;
-  sleep 15;
+  my $downloads = 'downloads'.IO;
+  $downloads.dir».unlink;
+  $web-driver.find_element_by_id('export-citation').click;
+  # say "++1";
+  $web-driver.find_element_by_css_selector('button[aria-label="bibtex"]').click;
+  # say "++2";
+  my @files = 'downloads'.IO.dir;
+  my $bibtex = bibtex-parse(@files[0].slurp).items[0];
+  # say $bibtex.Str;
+  $bibtex;
+  #bibtex-parse('@foo{bar,}').items[0];
 
   # export-citation-product
   #   $mech->content() =~ m[data-prod-id="([0-9A-F]+)">Export citation</a>];

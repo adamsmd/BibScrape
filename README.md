@@ -6,7 +6,9 @@
     $ zef install XML
     $ zef install HTML::Entity
 
+    $ sudo apt install python2-dev
     $ zef install Inline::Python
+
 
 ## Notes
 

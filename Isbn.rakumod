@@ -83,7 +83,7 @@ sub check-digit10(Str $digits) { check-digit(11, (10,9,8,7,6,5,4,3,2), $digits);
 sub check-digit13(Str $digits) { check-digit(10, (1,3,1,3,1,3,1,3,1,3,1,3), $digits); }
 sub check-digit-issn(Str $digits) { check-digit(11, (8,7,6,5,4,3,2), $digits); }
 
-sub canonical-issn(Str $issn) is export {
+sub canonical-issn(Str $issn, IsbnType $type, Str $sep) is export {
   my $i = $issn;
   $i ~~ s:g/<[- ]>//;
   $i ~~ m/^ (\d\d\d\d) (\d\d\d(\d|"X")) $/ or die "Invalid ISSN due to wrong number of digits: $issn";

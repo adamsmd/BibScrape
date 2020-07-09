@@ -44,10 +44,10 @@ class Value {
     }
   }
 };
-use MONKEY-TYPING;
-augment class Str {
-  method Value { Value.new(Piece.new(self)); }
-}
+# use MONKEY-TYPING;
+# augment class Str {
+#   method Value { Value.new(Piece.new(self)); }
+# }
 
 class Item {}
 class Ignored is Item is Str {}

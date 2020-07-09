@@ -1,18 +1,15 @@
-use lib:from<Perl5> 'dep/WebDriver-Tiny-0.102/lib/';
-use WebDriver::Tiny:from<Perl5>;
-
 use BibTeX;
 
 sub html-meta-parse($web-driver --> Hash:D[Str]) is export {
-  my @meta = $web-driver.find("meta");
+  # my @meta = $web-driver.find("meta");
   my Str %entries;
-  for @meta -> $meta {
-    my $name = $meta.attr("name");
-    my $content = $meta.attr("content");
-    if $name.defined and $content.defined {
-      %entries{$name} = $content;
-    }
-  }
+  # for @meta -> $meta {
+  #   my $name = $meta.attr("name");
+  #   my $content = $meta.attr("content");
+  #   if $name.defined and $content.defined {
+  #     %entries{$name} = $content;
+  #   }
+  # }
   return %entries;
 }
 

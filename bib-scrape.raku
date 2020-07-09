@@ -1,13 +1,12 @@
 #!/usr/bin/env raku
 
-#use warnings;
-#use strict;
 #$|++;
 
 use lib '.';
-use Scrape;
-use Fix;
+use BibTeX;
 use Isbn;
+use Fix;
+use Scrape; # Must be last (See comment in Scrape.rakumod)
 
 # TODO: version 20.07.05
 # TODO: @ flags
@@ -210,7 +209,6 @@ sub MAIN(
   my Str @omit = < >;
   my Str @omit-empty = <abstract issn doi keywords>;
 
-  #for @url -> $url {
   my $fixer = Fix.new(
     names => @names,
     actions => @actions,
@@ -229,6 +227,8 @@ sub MAIN(
     omit => @omit,
     omit-empty => @omit-empty,
   );
+
+  #for @url -> $url {
   my $bibtex = scrape($url);
   $bibtex = $fixer.fix($bibtex);
   say $bibtex.Str;
