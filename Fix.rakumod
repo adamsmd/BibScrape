@@ -3,6 +3,7 @@ use ArrayHash;
 use BibTeX;
 use BibTeX::Months;
 use Isbn;
+use HTML::Entity;
 
 enum MediaType <Print Online Both>;
 
@@ -37,7 +38,7 @@ class Fix {
   method fix(BibTeX::Entry $bibtex) {
     my $entry = $bibtex.clone;
 
-#     # TODO: $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
+#     # TODO: $bib_text ~~ s/^\x{FEFF}//; # Remove Byte Order Mark
 #     # Fix any unicode that is in the field values
 # #    $entry->set_key(decode('utf8', $entry->key));
 # #    $entry->set($_, decode('utf8', $entry->get($_)))
@@ -164,15 +165,14 @@ class Fix {
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', { $_ = Nil if $_ eq ($entry.fields<doi> // "") });
 
-#     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
-#     for my $field ($entry->fieldlist()) {
-#         warn "Undefined $field" unless defined $entry->get($field);
-#         $entry->set($field, latex_encode($entry->get($field)))
-#             unless exists $self->no_encode->{$field};
-#     }
+    # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
+    for $entry.fields.keys -> $field {
+      $entry.fields{$field} = BibTeX::Value.new(latex-encode($entry.fields{$field}.simple-str))
+        unless $field ∈ @.no-encode;
+    }
 
     # Canonicalize series: PEPM'97 -> PEPM~'97 (must be after Unicode escaping)
-    update($entry, 'series', { s:g/(<upper>+) " "* "'" (\d+)/$1~'$2/; });
+    update($entry, 'series', { s:g/(<upper>+) " "* "'" (\d+)/$0~'$1/; });
 
     # Collapse spaces and newlines
     $_ ∈ $.no-collapse or update($entry, $_.key, {
@@ -185,7 +185,7 @@ class Fix {
     }) for $entry.fields.pairs;
 
     # TODO: Title Capticalization: Initialisms, After colon, list of proper names
-    update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) / "\{" $1 "\}" /; }) if $.escape-acronyms;
+    update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) / "\{" $0 "\}" /; }) if $.escape-acronyms;
 
 #     for $FIELD ($entry->fieldlist()) {
 #         my $compartment = new Safe;
@@ -198,7 +198,7 @@ class Fix {
     # Use bibtex month macros
     # Must be after field encoding because we use macros
     update($entry, 'month', {
-      s/ "." ($|"-")/$1/; # Remove dots due to abbriviations
+      s/ "." ($|"-")/$0/; # Remove dots due to abbriviations
       my @x =
         .split(rx/<wb>/)
         .map({
@@ -244,8 +244,8 @@ class Fix {
 
 #     # Force comma or no comma after last field
 #     my $str = $entry->print_s();
-#     $str =~ s[(})(\s*}\s*)$][$1,$2] if $self->final_comma;
-#     $str =~ s[(}\s*),(\s*}\s*)$][$1$2] if !$self->final_comma;
+#     $str ~~ s[(})(\s*}\s*)$][$0,$1] if $self->final_comma;
+#     $str ~~ s[(}\s*),(\s*}\s*)$][$0$1] if !$self->final_comma;
 
 #     return $str;
     $entry;
@@ -297,3 +297,156 @@ sub check(BibTeX::Entry $entry, Str $field, Str $msg, &check) {
     }
   }
 }
+
+# Based on TeX::Encode and modified to use braces appropriate for BibTeX.
+sub latex-encode(Str $s) { # TODO: try "is copy"
+  my $str = $s;
+
+  # HTML -> LaTeX Codes
+  $str = decode-entities($str);
+  $str ~~ s:s:g/"<!--" .*? "-->"//; # Remove HTML comments
+  $str ~~ s:i:s:g/"<a " <-[>]>* "onclick=\"toggleTabs(" .*? ")>" .*? "</a>"//; # Fix for Science Direct
+
+  # HTML formatting
+  $str ~~ s:i:s:g/"<" (<-[>]>*) <wb> "class=\"a-plus-plus\"" (<-[>]>*) ">"/<$0$1>/; # Remove class annotation
+  $str ~~ s:i:s:g/"<" (\w+) \s* ">"/<$0>/; # Removed extra space around simple tags
+  $str ~~ s:i:s:g/"<a" (" ".*?)? ">" (.*?)"</a>"/$1/; # Remove <a> links
+  $str ~~ s:i:s:g/"<p" (""|" " <-[>]>*) ">" (.*?) "</p>"/$1\n\n/; # Replace <p> with "\n\n"
+  $str ~~ s:i:s:g/"<par" (""|" " <-[>]>*) ">" (.*?) "</par>"/$1\n\n/; # Replace <par> with "\n\n"
+  $str ~~ s:i:s:g/"<span style=" <["']> "font-family:monospace" \s* <["']> ">" (.*?) "</span>"/\\texttt{$0}/; # Replace monospace spans with \texttt
+  $str ~~ s:i:s:g/"<span class=" <["']> "monospace" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\texttt{$0}/; # Replace monospace spans with \texttt
+  $str ~~ s:i:s:g/"<span class=" <["']> "small" "-"? "caps" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\textsc{$0}/; # Replace small caps spans with \textsc
+  $str ~~ s:i:s:g/"<span class=" <["']> <-["']>* "type-small-caps" <-["']>* <["']> ">" (.*?) "</span>"/\\textsc{$0}/; # Replace small caps spans with \textsc
+  $str ~~ s:i:s:g/"<span class=" <["']> "italic" <["']> ">" (.*?) "</span>"/\\emph{$0}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "bold" <["']> ">" (.*?) "</span>"/\\textbf{$0}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "sup" <["']> ">" (.*?) "</span>"/\\textsuperscript{$0}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "sub" <["']> ">" (.*?) "</span>"/\\textsubscript{$0}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "sc" <["']> ">" (.*?) "</span>"/\\textsc{$0}/;
+  $str ~~ s:i:s:g/"<span class=" <["']> "EmphasisTypeSmallCaps " <["']> ">" (.*?) "</span>"/\\textsc{$0}/;
+  $str ~~ s:i:s:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
+  $str ~~ s:i:s:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
+  $str ~~ s:i:s:g/"<i" (" " <-[>]>*?)? ">" "</i>"//; # Remove empty <i>
+  $str ~~ s:i:s:g/"<i>" (.*?) "</i>"/\\textit{$0}/; # Replace <i> with \textit
+  $str ~~ s:i:s:g/"<italic>" (.*?) "</italic>"/\\textit{$0}/; # Replace <italic> with \textit
+  $str ~~ s:i:s:g/"<em" <wb> <-[>]>*? ">" (.*?) "</em>"/\\emph{$0}/; # Replace <em> with \emph
+  $str ~~ s:i:s:g/"<strong>" (.*?) "</strong>"/\\textbf{$0}/; # Replace <strong> with \textbf
+  $str ~~ s:i:s:g/"<b>" (.*?) "</b>"/\\textbf{$0}/; # Replace <b> with \textbf
+  $str ~~ s:i:s:g/"<tt>" (.*?) "</tt>"/\\texttt{$0}/; # Replace <tt> with \texttt
+  $str ~~ s:i:s:g/"<code>" (.*?) "</code>"/\\texttt{$0}/; # Replace <code> with \texttt
+#  $str ~~ s:i:s:g/"<small>" (.*?) "</small>"/{\\small $0}/; # Replace <small> with \small
+  $str ~~ s:i:s:g/"<sup>" "</sup>"//; # Remove emtpy <sup>
+  $str ~~ s:i:s:g/"<sup>" (.*?) "</sup>"/\\textsuperscript{$0}/; # Super scripts
+  $str ~~ s:i:s:g/"<supscrpt>" (.*?) "</supscrpt>"/\\textsuperscript{$0}/; # Super scripts
+  $str ~~ s:i:s:g/"<sub>" (.*?) "</sub>"/\\textsubscript{$0}/; # Sub scripts
+
+#  $str ~~ s:i:s:g/"<img src=\"http" "s"? "://www.sciencedirect.com/scidirimg/entities/" (<[0..9a..f]>+) ".gif\"" .*? ">"/{chr(hex $1)}/; # Fix for Science Direct
+  $str ~~ s:i:s:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
+  $str ~~ s:i:s:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
+
+  # MathML formatting
+#  my $xml = XML::Parser->new(Style => 'Tree');
+#  $str ~~ s:g:s/("<" <?"mml:">? "math" <wb> <-[>]>* ">" .*? "</" <?"mml:">? "math>")
+#            /\\ensuremath\{{rec(@($xml->parse($0)))}\}/; # TODO: ensuremath (but avoid latex encoding)
+
+  # Trim spaces before NBSP (otherwise they have not effect in LaTeX)
+  $str ~~ s:g/" "* \xA0/\xA0/;
+
+  # Encode unicode but skip any \, {, or } that we already encoded.
+  my @parts = $str.split(rx/("\$" .*? "\$"|<[\\{}_^]>)/);
+
+  return @parts.map({ /<[_^{}\\\$]>/ ?? $_ !! unicode2tex($_) }).join('');
+}
+
+sub unicode2tex(Str $str) { $str }
+
+#sub rec {
+#    my ($tag, $body) = @_;
+#
+#    if ($tag eq '0') { return greek($body); }
+#    my %attr = %{shift @$body};
+#
+#    if ($tag ~~ m[(mml:)?math]) { return xml(@$body); }
+#    if ($tag ~~ m[(mml:)?mtext]) { return xml(@$body); }
+#    if ($tag ~~ m[(mml:)?mi] and exists $attr{'mathvariant'} and $attr{'mathvariant'} eq 'normal') {
+#        return '\mathrm{' . xml(@$body) . '}' }
+#    if ($tag ~~ m[(mml:)?mi]) { return xml(@$body) }
+#    if ($tag ~~ m[(mml:)?mo]) { return xml(@$body) }
+#    if ($tag ~~ m[(mml:)?mn]) { return xml(@$body) }
+#    if ($tag ~~ m[(mml:)?msqrt]) { return '\sqrt{' . xml(@$body) . '}' }
+#    if ($tag ~~ m[(mml:)?mrow]) { return '{' . xml(@$body) . '}' }
+#    if ($tag ~~ m[(mml:)?mspace]) { return '\hspace{' . $attr{'width'} . '}' }
+#    if ($tag ~~ m[(mml:)?msubsup]) { return '{' . xml(@$body[0..1]) .
+#                                     '}_{' . xml(@$body[2..3]) .
+#                                     '}^{' . xml(@$body[4..5]) . '}' }
+#    if ($tag ~~ m[(mml:)?msub]) { return '{' . xml(@$body[0..1]) . '}_{' . xml(@$body[2..3]) . '}' }
+#    if ($tag ~~ m[(mml:)?msup]) { return '{' . xml(@$body[0..1]) . '}^{' . xml(@$body[2..3]) . '}' }
+#}
+
+#sub xml {
+#    if ($#_ == -1) { return ''; }
+#    elsif ($#_ == 0) { die; }
+#    else { rec(@_[0..1]) . xml(@_[2..$#_]); }
+#}
+
+#sub greek {
+#    my ($str) = @_;
+##    370; 390
+## Based on table 131 in Comprehensive Latex
+#    my @mapping = qw(
+#_ A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi O
+#\Pi P _ \Sigma T \Upsilon \Phi X \Psi \Omega _ _ _ _ _ _
+#_ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu \xi o
+#\pi \rho \varsigma \sigma \tau \upsilon \varphi \xi \psi \omega _ _ _ _ _ _);
+#    $str ~~ s[([\N{U+0390}-\N{U+03cf}])]
+#             [@{[$mapping[ord($0)-0x0390] ne '_' ? $mapping[ord($0)-0x0390] : $0]}]g;
+#    return $str;
+#
+##    0x03b1 => '\\textgreek{a}',
+##\varphi
+##    0x03b2 => '\\textgreek{b}',
+##    0x03b3 => '\\textgreek{g}',
+##    0x03b4 => '\\textgreek{d}',
+##    0x03b5 => '\\textgreek{e}',
+##    0x03b6 => '\\textgreek{z}',
+##    0x03b7 => '\\textgreek{h}',
+##    0x03b8 => '\\textgreek{j}',
+##    0x03b9 => '\\textgreek{i}',
+##    0x03ba => '\\textgreek{k}',
+##    0x03bb => '\\textgreek{l}',
+##    0x03bc => '\\textgreek{m}',
+##    0x03bd => '\\textgreek{n}',
+##    0x03be => '\\textgreek{x}',
+##    0x03bf => '\\textgreek{o}',
+##    0x03c0 => '\\textgreek{p}',
+##    0x03c1 => '\\textgreek{r}',
+##    0x03c2 => '\\textgreek{c}',
+##    0x03c3 => '\\textgreek{s}',
+##    0x03c4 => '\\textgreek{t}',
+##    0x03c5 => '\\textgreek{u}',
+##    0x03c6 => '\\textgreek{f}',
+##    0x03c7 => '\\textgreek{q}',
+##    0x03c8 => '\\textgreek{y}',
+##    0x03c9 => '\\textgreek{w}',
+##
+##    0x03d1 => '\\ensuremath{\\vartheta}',
+##    0x03d4 => '\\textgreek{"\\ensuremath{\\Upsilon}}',
+##    0x03d5 => '\\ensuremath{\\phi}',
+##    0x03d6 => '\\ensuremath{\\varpi}',
+##    0x03d8 => '\\textgreek{\\Koppa}',
+##    0x03d9 => '\\textgreek{\\coppa}',
+##    0x03da => '\\textgreek{\\Stigma}',
+##    0x03db => '\\textgreek{\\stigma}',
+##    0x03dc => '\\textgreek{\\Digamma}',
+##    0x03dd => '\\textgreek{\\digamma}',
+##    0x03df => '\\textgreek{\\koppa}',
+##    0x03e0 => '\\textgreek{\\Sampi}',
+##    0x03e1 => '\\textgreek{\\sampi}',
+##    0x03f0 => '\\ensuremath{\\varkappa}',
+##    0x03f1 => '\\ensuremath{\\varrho}',
+##    0x03f4 => '\\ensuremath{\\Theta}',
+##    0x03f5 => '\\ensuremath{\\epsilon}',
+##    0x03f6 => '\\ensuremath{\\backepsilon}',
+#
+##ff
+#
+#}

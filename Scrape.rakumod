@@ -51,6 +51,7 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
   my $domain = $web-driver.url() ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
   my $bibtex = do given $domain {
     when m[ « "acm.org" $] { scrape-acm(); }
+    when m[ « "sciencedirect.com" $] { scrape-science-direct(); }
     default { say "error: unknown domain: $domain"; }
   }
   $bibtex.fields.push((bib-scrape-url => BibTeX::Value.new($url)));
@@ -107,3 +108,35 @@ sub scrape-acm(--> BibTeX::Entry) {
 #
 #    return $entry;
 #}
+
+sub scrape-science-direct(--> BibTeX::Entry) {
+  $web-driver.find('.export-citation-product').click;
+  $web-driver.find('a[data-export-type="bibtex"]').click;
+  sleep 15;
+
+  # export-citation-product
+  #   $mech->content() =~ m[data-prod-id="([0-9A-F]+)">Export citation</a>];
+  #   my $product_id = $1;
+  #   $mech->get("https://www.cambridge.org/core/services/aop-easybib/export/?exportType=bibtex&productIds=$product_id&citationStyle=bibtex");
+  #   my $entry = parse_bibtex($mech->content());
+  #   $mech->back();
+
+  #   my ($abst) = $mech->content() =~ m[<div class="abstract" data-abstract-type="normal">(.*?)</div>]s;
+  #   $abst =~ s[^<title>Abstract</title>][] if $abst;
+  #   $abst =~ s/\n+/\n/g if $abst;
+  #   $entry->set('abstract', $abst) if $abst;
+
+  #   my $html = Text::MetaBib::parse($mech->content());
+
+  #   $entry->set('title', @{$html->get('citation_title')});
+
+  #   my ($month) = (join(' ',@{$html->get('citation_publication_date')}) =~ m[^\d\d\d\d/(\d\d)]);
+  #   $entry->set('month', $month);
+
+  #   my ($doi) = join(' ', @{$html->get('citation_pdf_url')}) =~ m[/(S\d{16})a\.pdf];
+  #   $entry->set('doi', "10.1017/$doi");
+
+  #   print_or_online($entry, 'issn', [$html->get('citation_issn')->[0]], [$html->get('citation_issn')->[1]]);
+
+  #   return $entry;
+}
