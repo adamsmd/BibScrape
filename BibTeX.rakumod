@@ -165,3 +165,13 @@ sub bibtex-parse(Str $str) is export {
 
 #split
 #names
+
+# grammar Names {
+#   token letter { <-[{}]> | <ballanced> }
+#   regex names { <name>+ % " and " } # TODO: check that name never contains " and "
+#   regex name {
+#     <First> \s+ <von> \+s <Last>
+#     <von> <Last> "," <First>
+#     <von> <Last> "," <Jr> "," <First>
+#   }
+# }
