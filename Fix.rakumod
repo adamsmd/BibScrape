@@ -175,7 +175,7 @@ class Fix {
     }
 
     # Canonicalize series: PEPM'97 -> PEPM~'97 (must be after Unicode escaping)
-    update($entry, 'series', { say "<$_>"; s:g/(<upper>+) " "* [ "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
+    update($entry, 'series', { s:g/(<upper>+) " "* [ "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
 
     # Collapse spaces and newlines
     $_ ∈ $.no-collapse or update($entry, $_.key, {
