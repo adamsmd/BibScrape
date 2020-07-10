@@ -87,14 +87,14 @@ sub MAIN(
 # In titles, enclose sequences of two or more uppercase letters (i.e.,
 # an acronym) in braces to that BibTeX preserves their case.
 #
-  MediaType :$isbn-media = Both,
+  Fix::MediaType :$isbn-media = Fix::Both,
 # =item --isbn=<kind> [default=both]
 #
 # When both a print and an online ISBN are available, use only the print
 # ISBN if <kind> is 'print', only the online ISBN if <kind> is 'online',
 # or both if <kind> is 'both'.
 #
-  IsbnType :$isbn-type = Preserve,
+  Isbn::IsbnType :$isbn-type = Isbn::Preserve,
 # =item --isbn13=<mode> [default=0]
 #
 # If <mode> is a positive integer, then always use ISBN-13 in the output.
@@ -108,7 +108,7 @@ sub MAIN(
 # For example, a space is common.
 # Use an empty string to specify no separator.
 #
-  MediaType :$issn-media = Both,
+  Fix::MediaType :$issn-media = Fix::Both,
 # =item --issn=<kind> [default=both]
 #
 # When both a print and an online ISSN are available, use only the print
@@ -209,7 +209,7 @@ sub MAIN(
   my Str @omit = < >;
   my Str @omit-empty = <abstract issn doi keywords>;
 
-  my $fixer = Fix.new(
+  my $fixer = Fix::Fix.new(
     names => @names,
     actions => @actions,
     debug => $debug,

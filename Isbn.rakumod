@@ -1,3 +1,5 @@
+unit module Isbn;
+
 # http://www.isbn-international.org/page/ranges
 # https://www.isbn-international.org/range_file_generation
 # http://pcn.loc.gov/isbncnvt.html

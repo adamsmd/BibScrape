@@ -1,9 +1,12 @@
+unit module Fix;
+
 use ArrayHash;
+use HTML::Entity;
 
 use BibTeX;
 use BibTeX::Months;
 use Isbn;
-use HTML::Entity;
+use Unicode;
 
 enum MediaType <Print Online Both>;
 
@@ -24,7 +27,7 @@ class Fix {
   has Bool $.final-comma;
   has Bool $.escape-acronyms;
   has MediaType $.isbn-media;
-  has IsbnType $.isbn-type;
+  has Isbn::IsbnType $.isbn-type;
   has Str $.isbn-sep;
   has MediaType $.issn-media;
 
@@ -38,11 +41,11 @@ class Fix {
   method fix(BibTeX::Entry $bibtex --> BibTeX::Entry) {
     my $entry = $bibtex.clone;
 
-#     # TODO: $bib_text ~~ s/^\x{FEFF}//; # Remove Byte Order Mark
-#     # Fix any unicode that is in the field values
-# #    $entry->set_key(decode('utf8', $entry->key));
-# #    $entry->set($_, decode('utf8', $entry->get($_)))
-# #        for ($entry->fieldlist());
+    # TODO: $bib_text ~~ s/^\x{FEFF}//; # Remove Byte Order Mark
+    # Fix any unicode that is in the field values
+#    $entry->set_key(decode('utf8', $entry->key));
+#    $entry->set($_, decode('utf8', $entry->get($_)))
+#        for ($entry->fieldlist());
 
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry.fields<doi> = $entry.fields<url> if (
@@ -112,7 +115,7 @@ class Fix {
       /^ \d+ $/ || /^ \d+ "--" \d+ $/ || /^ [\d+]+ % "/" $/ || /^ \d+ "es" $/ ||
       /^ "Special Issue " \d+ ["--" \d+]? $/ || /^ "S" \d+ $/});
 
-#     # TODO: Keywords: ';' vs ','
+    # TODO: Keywords: ';' vs ','
 
     self.isbn($entry, 'isbn', $.isbn-media, &canonical-isbn);
 
@@ -172,7 +175,7 @@ class Fix {
     }
 
     # Canonicalize series: PEPM'97 -> PEPM~'97 (must be after Unicode escaping)
-    update($entry, 'series', { s:g/(<upper>+) " "* "'" (\d+)/$0~'$1/; });
+    update($entry, 'series', { say "<$_>"; s:g/(<upper>+) " "* [ "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
 
     # Collapse spaces and newlines
     $_ ∈ $.no-collapse or update($entry, $_.key, {
@@ -356,8 +359,6 @@ sub latex-encode(Str $s) { # TODO: try "is copy"
 
   return @parts.map({ /<[_^{}\\\$]>/ ?? $_ !! unicode2tex($_) }).join('');
 }
-
-sub unicode2tex(Str $str) { $str }
 
 #sub rec {
 #    my ($tag, $body) = @_;

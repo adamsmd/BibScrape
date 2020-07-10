@@ -1,3 +1,5 @@
+unit module BibTeX::Html;
+
 use BibTeX;
 
 sub html-meta-parse($web-driver --> Hash:D[Str]) is export {

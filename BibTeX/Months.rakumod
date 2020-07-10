@@ -1,3 +1,5 @@
+unit module BibTeX::Months;
+
 use BibTeX;
 
 my @long-names = <january february march april may june july august september october november december>;
