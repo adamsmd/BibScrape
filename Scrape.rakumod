@@ -4,6 +4,7 @@ use BibTeX;
 use BibTeX::Html;
 
 use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
+sub infix:<%>($obj, Str $attr) { $obj.__getattribute__($attr); }
 
 # TODO: ignore non-domain files (timeout on file load?)
 
@@ -139,10 +140,16 @@ sub init() {
     $proc = Inline::Python.new;
     $proc.run("
 import sys
-sys.path += ['dep/py']
+import os
+sys.path.append('dep/py')
+
 from selenium import webdriver
 from selenium.webdriver.firefox import firefox_profile
-import os
+
+from biblib import algo
+
+def parse_names(string):
+  return algo.parse_names(string)
 
 def web_driver():
   profile = firefox_profile.FirefoxProfile()
@@ -154,6 +161,27 @@ def web_driver():
   return webdriver.Firefox(firefox_profile=profile)
 ");
   }
+}
+
+sub to-str($buf) {
+  if $buf.elems == 0 { Nil }
+  else {
+    given $buf {
+      when Str { $buf }
+      when Buf { $buf.decode }
+    }
+  }
+}
+
+sub parse-names(Str $string) is export {
+  init();
+  my @names = $proc.call( '__main__', 'parse_names', $string);
+  @names.map({
+    BibTeX::Name.new(
+      first => to-str($_%<first>),
+      von => to-str($_%<von>),
+      last => to-str($_%<last>),
+      jr => to-str($_%<jr>)) })
 }
 
 sub open() {
@@ -179,8 +207,6 @@ END {
     # TODO: kill all sub-processes
   }
 }
-
-sub infix:<%>($obj, Str $attr) { $obj.__getattribute__($attr); }
 
 ########
 

@@ -163,8 +163,77 @@ sub bibtex-parse(Str $str) is export {
   Grammar.parse($str, actions => Actions).made;
 }
 
-#split
-#names
+grammar Names {
+  regex w { <[\ \t~-]> }
+
+  regex balanced
+  { '{' <balanced>* '}'
+  || <-[{}]> }
+
+  regex balanced2
+  { '{' <balanced>* '}'
+  || <-[{}\ ~,-]> }
+
+# TODO: ignore case
+  regex names {
+    [<.w>* $<name>=[<.balanced>+?] [<.w> | ","]*]* % [ \s+ 'and' <?before \s+> ]
+  }
+
+  regex name {
+    [ \s* <part> \s* ]+ % ','
+  }
+
+  regex part {
+    [ <tok> ]+ % [ <w> <.w>* ]
+  }
+
+  regex tok {
+    <.balanced2>*
+  }
+}
+
+class Name {
+  has Str $.first;
+  has Str $.von;
+  has Str $.last;
+  has Str $.jr;
+
+  method Str {
+    # TODO: a test that has a jr part
+    ($.von.defined ?? "$.von " !! "") ~
+    ($.last) ~
+    ($.jr.defined ?? ", $.jr" !! "") ~
+    ($.first.defined ?? ", $.first" !! "")
+  }
+
+  # method new(Str $str) {
+  #   my @parts = Names.parse($str, :rule<name>)<part>;
+  #   given @parts.elems {
+  #     # First von Last
+  #     when 1 {
+  #       self.bless(last => @parts[0].Str);
+  #     }
+  #     # von Last, First
+  #     when 2 {
+  #       self.bless(first => @parts[1].Str, last => @parts[0].Str);
+  #     }
+  #     # von Last, First, Jr
+  #     when 3 {
+  #       self.bless(first => @parts[1].Str, last => @parts[0].Str, jr => @parts[2].Str);
+  #     }
+  #     default {
+  #       die "failed to parse name \"$str\""
+  #     }
+  #   }
+#  }
+}
+
+# TODO: Jones and others
+
+#sub parse-namesX(Str $str) is export {
+#  BibTeX::Names.parse($str, :rule<names>)<name>.map({Name.new($_.Str)})
+#}
+
 
 # grammar Names {
 #   token letter { <-[{}]> | <ballanced> }

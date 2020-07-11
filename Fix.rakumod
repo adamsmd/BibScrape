@@ -9,6 +9,8 @@ use BibTeX::Months;
 use Isbn;
 use Unicode;
 
+use Scrape;
+
 enum MediaType <Print Online Both>;
 
 class Fix {
@@ -129,8 +131,8 @@ class Fix {
     update($entry, 'language', { $_ = code2language($_) if defined code2language($_) });
 #  List of renames (regex?)
 
-#     if ($entry->exists('author')) { canonical_names($self, $entry, 'author') }
-#     if ($entry->exists('editor')) { canonical_names($self, $entry, 'editor') }
+    if ($entry.fields<author>:exists) { $entry.fields<author> = BibTeX::Value.new(canonical-names($entry.fields<author>.simple-str)) }
+    if ($entry.fields<editor>:exists) { $entry.fields<editor> = BibTeX::Value.new(canonical-names($entry.fields<editor>.simple-str)) }
 
 # #D<onald|.=[onald]> <E.|> Knuth
 # #
@@ -220,19 +222,19 @@ class Fix {
     # Year
     check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
 
-#     # Generate an entry key
-#     # TODO: Formats: author/editor1.last year title/journal.abbriv
-#     # TODO: Remove doi?
-#     if (not defined $entry->key()) {
-#         my ($name) = ($entry->names('author'), $entry->names('editor'));
-#         $name = defined $name ?
-#             purify_string(join("", $name->part('last'))) :
-#             "anon";
-#         my $year = $entry->exists('year') ? ":" . $entry->get('year') : "";
-#         my $doi = $entry->exists('doi') ? ":" . $entry->get('doi') : "";
-#         #$organization, or key
-#         $entry->set_key($name . $year . $doi);
-#     }
+    # Generate an entry key
+    # TODO: Formats: author/editor1.last year title/journal.abbriv
+    # TODO: Remove doi?
+    #if (not defined $entry->key()) {
+    my $name = $entry.fields<author> // $entry.fields<editor>;
+    $name = $name.defined ??
+      purify-string(do given parse-names($name.simple-str)[0].last { S:g/ ' ' // }) !!
+      'anon';
+    my $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
+    my $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
+    #$organization, or key
+    $entry.key = $name ~ $year ~ $doi;
+    #}
 
     # Put fields in a standard order (also cleans out any fields we deleted)
     my %fields = @.fields.map(* => 0);
@@ -301,6 +303,8 @@ sub check(BibTeX::Entry $entry, Str $field, Str $msg, &check) {
     }
   }
 }
+
+sub purify-string (Str $str) { $str }
 
 # Based on TeX::Encode and modified to use braces appropriate for BibTeX.
 sub latex-encode(Str $s) { # TODO: try "is copy"
@@ -452,3 +456,72 @@ sub latex-encode(Str $s) { # TODO: try "is copy"
 ##ff
 #
 #}
+
+sub check-first-name(Str $n) {
+  my $name = $n;
+  $name ~~ s/\s<upper>\.$//; # Allow for a middle initial
+
+  $name ~~ /^<upper><lower>+$/ || # Simple name
+    $name ~~ /^<upper><lower>+ '-' <upper><lower>+$/ || # Hyphenated name with upper
+    $name ~~ /^<upper><lower>+ '-' <lower><lower>+$/ || # Hyphenated name with lower
+    $name ~~ /^<upper><lower>+     <upper><lower>+$/ || # "Asian" name (e.g. XiaoLin)
+    # We could allow the following but publishers often abriviate
+    # names when the actual paper doesn't
+    #$name =~ /^\p{upper}\.$/ || # Initial
+    #$name =~ /^\p{upper}\.-\p{upper}\.$/ || # Double initial
+    False;
+}
+
+sub check-last-name(Str $name) {
+  $name ~~ /^<upper><lower>+$/ || # Simple name
+    $name ~~ /^<upper><lower>+ '-' <upper><lower> +$/ || # Hyphenated name with upper
+    $name ~~ /^("O'"|"Mc"|"Mac") <upper><lower>+$/; # Name with prefix
+}
+
+# sub flatten_name {
+#     my @f = $_[0]->part('first');
+#     my @v = $_[0]->part('von');
+#     my @l = $_[0]->part('last');
+#     my @j = $_[0]->part('jr');
+
+#     @f = () unless defined $f[0];
+#     @v = () unless defined $v[0];
+#     @l = () unless defined $l[0];
+#     @j = () unless defined $j[0];
+
+#     return decode('utf8', join(' ', @f, @v, @l, @j));
+# }
+
+sub canonical-names(Str $names --> Str) {
+  my BibTeX::Name @names = parse-names($names);
+#     my $name_format = new Text::BibTeX::NameFormat ('vljf', 0);
+#     $name_format->set_options(BTN_VON, 0, BTJ_SPACE, BTJ_SPACE);
+#     for (BTN_LAST, BTN_JR, BTN_FIRST) {
+#         $name_format->set_options($_, 0, BTJ_SPACE, BTJ_NOTHING);
+#     }
+  my @new-names;
+  NAME:
+  for @names -> $name {
+    # for my $name_group (@{$self->valid_names}) {
+    #     for (@$name_group) {
+    #         if (lc decode_entities(flatten_name($name)) eq lc flatten_name($_)) {
+    #             push @names, decode('utf8', $name_group->[0]->format($name_format));
+    #             next NAME;
+    #         }
+    #     }
+    # }
+    print "WARNING: Suspect name: {$name.Str}\n" unless
+      (not $name.von.defined and
+        not $name.jr.defined and
+        check-first-name($name.first) and
+        check-last-name($name.last));
+
+    push @new-names, $name.Str;
+  }
+
+  # Warn about duplicate names
+  my %seen;
+  %seen{$_}++ and say "WARNING: Duplicate name: $_" for @new-names;
+
+  @new-names.join( ' and ' );
+}
