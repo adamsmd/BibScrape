@@ -2,6 +2,7 @@ unit module Fix;
 
 use ArrayHash;
 use HTML::Entity;
+use Locale::Language;
 
 use BibTeX;
 use BibTeX::Months;
@@ -121,12 +122,12 @@ class Fix {
 
     self.isbn($entry, 'issn', $.issn-media, &canonical-issn);
 
-#     # TODO: Author, Editor, Affiliation: List of renames
-# # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
+    # TODO: Author, Editor, Affiliation: List of renames
+# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
 
-#     # Change language codes (e.g., "en") to proper terms (e.g., "English")
-#     update($entry, 'language', sub { $_ = code2language($_) if defined code2language($_) });
-# #  List of renames (regex?)
+    # Change language codes (e.g., "en") to proper terms (e.g., "English")
+    update($entry, 'language', { $_ = code2language($_) if defined code2language($_) });
+#  List of renames (regex?)
 
 #     if ($entry->exists('author')) { canonical_names($self, $entry, 'author') }
 #     if ($entry->exists('editor')) { canonical_names($self, $entry, 'editor') }
@@ -188,7 +189,7 @@ class Fix {
     }) for $entry.fields.pairs;
 
     # TODO: Title Capticalization: Initialisms, After colon, list of proper names
-    update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) / "\{" $0 "\}" /; }) if $.escape-acronyms;
+    update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) /\{$0\}/; }) if $.escape-acronyms;
 
 #     for $FIELD ($entry->fieldlist()) {
 #         my $compartment = new Safe;
@@ -316,31 +317,31 @@ sub latex-encode(Str $s) { # TODO: try "is copy"
   $str ~~ s:i:s:g/"<a" (" ".*?)? ">" (.*?)"</a>"/$1/; # Remove <a> links
   $str ~~ s:i:s:g/"<p" (""|" " <-[>]>*) ">" (.*?) "</p>"/$1\n\n/; # Replace <p> with "\n\n"
   $str ~~ s:i:s:g/"<par" (""|" " <-[>]>*) ">" (.*?) "</par>"/$1\n\n/; # Replace <par> with "\n\n"
-  $str ~~ s:i:s:g/"<span style=" <["']> "font-family:monospace" \s* <["']> ">" (.*?) "</span>"/\\texttt{$0}/; # Replace monospace spans with \texttt
-  $str ~~ s:i:s:g/"<span class=" <["']> "monospace" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\texttt{$0}/; # Replace monospace spans with \texttt
-  $str ~~ s:i:s:g/"<span class=" <["']> "small" "-"? "caps" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\textsc{$0}/; # Replace small caps spans with \textsc
-  $str ~~ s:i:s:g/"<span class=" <["']> <-["']>* "type-small-caps" <-["']>* <["']> ">" (.*?) "</span>"/\\textsc{$0}/; # Replace small caps spans with \textsc
-  $str ~~ s:i:s:g/"<span class=" <["']> "italic" <["']> ">" (.*?) "</span>"/\\emph{$0}/; # TODO: \\textit?
-  $str ~~ s:i:s:g/"<span class=" <["']> "bold" <["']> ">" (.*?) "</span>"/\\textbf{$0}/; # TODO: \\textit?
-  $str ~~ s:i:s:g/"<span class=" <["']> "sup" <["']> ">" (.*?) "</span>"/\\textsuperscript{$0}/; # TODO: \\textit?
-  $str ~~ s:i:s:g/"<span class=" <["']> "sub" <["']> ">" (.*?) "</span>"/\\textsubscript{$0}/; # TODO: \\textit?
-  $str ~~ s:i:s:g/"<span class=" <["']> "sc" <["']> ">" (.*?) "</span>"/\\textsc{$0}/;
-  $str ~~ s:i:s:g/"<span class=" <["']> "EmphasisTypeSmallCaps " <["']> ">" (.*?) "</span>"/\\textsc{$0}/;
+  $str ~~ s:i:s:g/"<span style=" <["']> "font-family:monospace" \s* <["']> ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
+  $str ~~ s:i:s:g/"<span class=" <["']> "monospace" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
+  $str ~~ s:i:s:g/"<span class=" <["']> "small" "-"? "caps" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
+  $str ~~ s:i:s:g/"<span class=" <["']> <-["']>* "type-small-caps" <-["']>* <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
+  $str ~~ s:i:s:g/"<span class=" <["']> "italic" <["']> ">" (.*?) "</span>"/\\emph\{$0\}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "bold" <["']> ">" (.*?) "</span>"/\\textbf\{$0\}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "sup" <["']> ">" (.*?) "</span>"/\\textsuperscript\{$0\}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "sub" <["']> ">" (.*?) "</span>"/\\textsubscript\{$0\}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "sc" <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
+  $str ~~ s:i:s:g/"<span class=" <["']> "EmphasisTypeSmallCaps " <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
   $str ~~ s:i:s:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
   $str ~~ s:i:s:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
   $str ~~ s:i:s:g/"<i" (" " <-[>]>*?)? ">" "</i>"//; # Remove empty <i>
-  $str ~~ s:i:s:g/"<i>" (.*?) "</i>"/\\textit{$0}/; # Replace <i> with \textit
-  $str ~~ s:i:s:g/"<italic>" (.*?) "</italic>"/\\textit{$0}/; # Replace <italic> with \textit
-  $str ~~ s:i:s:g/"<em" <wb> <-[>]>*? ">" (.*?) "</em>"/\\emph{$0}/; # Replace <em> with \emph
-  $str ~~ s:i:s:g/"<strong>" (.*?) "</strong>"/\\textbf{$0}/; # Replace <strong> with \textbf
-  $str ~~ s:i:s:g/"<b>" (.*?) "</b>"/\\textbf{$0}/; # Replace <b> with \textbf
-  $str ~~ s:i:s:g/"<tt>" (.*?) "</tt>"/\\texttt{$0}/; # Replace <tt> with \texttt
-  $str ~~ s:i:s:g/"<code>" (.*?) "</code>"/\\texttt{$0}/; # Replace <code> with \texttt
+  $str ~~ s:i:s:g/"<i>" (.*?) "</i>"/\\textit\{$0\}/; # Replace <i> with \textit
+  $str ~~ s:i:s:g/"<italic>" (.*?) "</italic>"/\\textit\{$0\}/; # Replace <italic> with \textit
+  $str ~~ s:i:s:g/"<em" <wb> <-[>]>*? ">" (.*?) "</em>"/\\emph\{$0\}/; # Replace <em> with \emph
+  $str ~~ s:i:s:g/"<strong>" (.*?) "</strong>"/\\textbf\{$0\}/; # Replace <strong> with \textbf
+  $str ~~ s:i:s:g/"<b>" (.*?) "</b>"/\\textbf\{$0\}/; # Replace <b> with \textbf
+  $str ~~ s:i:s:g/"<tt>" (.*?) "</tt>"/\\texttt\{$0\}/; # Replace <tt> with \texttt
+  $str ~~ s:i:s:g/"<code>" (.*?) "</code>"/\\texttt\{$0\}/; # Replace <code> with \texttt
 #  $str ~~ s:i:s:g/"<small>" (.*?) "</small>"/{\\small $0}/; # Replace <small> with \small
   $str ~~ s:i:s:g/"<sup>" "</sup>"//; # Remove emtpy <sup>
-  $str ~~ s:i:s:g/"<sup>" (.*?) "</sup>"/\\textsuperscript{$0}/; # Super scripts
-  $str ~~ s:i:s:g/"<supscrpt>" (.*?) "</supscrpt>"/\\textsuperscript{$0}/; # Super scripts
-  $str ~~ s:i:s:g/"<sub>" (.*?) "</sub>"/\\textsubscript{$0}/; # Sub scripts
+  $str ~~ s:i:s:g/"<sup>" (.*?) "</sup>"/\\textsuperscript\{$0\}/; # Super scripts
+  $str ~~ s:i:s:g/"<supscrpt>" (.*?) "</supscrpt>"/\\textsuperscript\{$0\}/; # Super scripts
+  $str ~~ s:i:s:g/"<sub>" (.*?) "</sub>"/\\textsubscript\{$0\}/; # Sub scripts
 
 #  $str ~~ s:i:s:g/"<img src=\"http" "s"? "://www.sciencedirect.com/scidirimg/entities/" (<[0..9a..f]>+) ".gif\"" .*? ">"/{chr(hex $1)}/; # Fix for Science Direct
   $str ~~ s:i:s:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
@@ -355,7 +356,7 @@ sub latex-encode(Str $s) { # TODO: try "is copy"
   $str ~~ s:g/" "* \xA0/\xA0/;
 
   # Encode unicode but skip any \, {, or } that we already encoded.
-  my @parts = $str.split(rx/("\$" .*? "\$"|<[\\{}_^]>)/);
+  my @parts = $str.split(rx/ "\$" .*? "\$" | <[\\{}_^]> /, :v);
 
   return @parts.map({ /<[_^{}\\\$]>/ ?? $_ !! unicode2tex($_) }).join('');
 }

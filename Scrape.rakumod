@@ -239,6 +239,14 @@ sub scrape-acm(--> BibTeX::Entry) {
     .get_property('innerHTML');
   $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
 
+  # Get the Unicode version that we can properly convert to TeX
+  my $authors = $web-driver.find_elements_by_css_selector( '.citation .author-name' )».get_attribute( 'title' ).join( ' and ' );
+  $bibtex.fields<author> = BibTeX::Value.new($authors);
+
+  # Get the Unicode version that we can properly convert to TeX
+  my $title = $web-driver.find_element_by_css_selector( '.citation__title' ).get_property( 'innerHTML' );
+  $bibtex.fields<title> = BibTeX::Value.new($title);
+
   #html-meta-parse($web-driver);
   # TODO: month
 

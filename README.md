@@ -8,6 +8,7 @@
 
     $ sudo apt install python2-dev
     $ zef install Inline::Python
+    $ zef install Locale::Codes
 
 
 ## Notes
