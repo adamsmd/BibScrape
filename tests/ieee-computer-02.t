@@ -1,4 +1,5 @@
 https://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html
+A simple test
 @inproceedings{Chen:2008:10.1109/SITIS.2008.31,
   author = {Chen, Yangjun and Chen, Yibin},
   title = {Core Labeling: A New Way to Compress Transitive Closure},
