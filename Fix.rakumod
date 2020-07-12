@@ -86,6 +86,9 @@ class Fix {
 #    $entry->set($_, decode('utf8', $entry->get($_)))
 #        for ($entry->fieldlist());
 
+    $entry.key = $entry.key.lc;
+    $entry.fields = multi-hash($entry.fields.map({ $_.key.lc => $_.value }));
+
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry.fields<doi> = $entry.fields<url> if (
         not $entry.fields<doi>:exists and
@@ -192,20 +195,21 @@ class Fix {
     # TODO: omit if ...
     update($entry, 'url', {
       $_ = Nil if m/^
-        [ "http" "s"? "://doi.org/"
-        | "http" "s"? "://dx.doi.org/"
-        | "http" "s"? "://doi.acm.org/"
-        | "http" "s"? "://portal.acm.org/citation.cfm"
-        | "http" "s"? "://www.jstor.org/stable/"
-        | "http" "s"? "://www.sciencedirect.com/science/article/"
-        | "http" "s"? "://onlinelibrary.wiley.com/doi/abs/" ]/; });
+        [ 'http' 's'? '://doi.acm.org/'
+        | 'http' 's'? '://doi.ieeecomputersociety.org/'
+        | 'http' 's'? '://doi.org/'
+        | 'http' 's'? '://dx.doi.org/'
+        | 'http' 's'? '://onlinelibrary.wiley.com/doi/abs/'
+        | 'http' 's'? '://portal.acm.org/citation.cfm'
+        | 'http' 's'? '://www.jstor.org/stable/'
+        | 'http' 's'? '://www.sciencedirect.com/science/article/' ]/; });
     # TODO: via omit if empty
-    update($entry, 'note', { $_ = Nil if $_ eq "" });
+    update($entry, 'note', { $_ = Nil if $_ eq '' });
     # TODO: add $doi to omit if matches
     # [][note][$doi][]
     # regex delete if looks like doi
     # Fix Springer's use of 'note' to store 'doi'
-    update($entry, 'note', { $_ = Nil if $_ eq ($entry.fields<doi> // "") });
+    update($entry, 'note', { $_ = Nil if $_ eq ($entry.fields<doi> // '') });
 
     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
     for $entry.fields.keys -> $field {

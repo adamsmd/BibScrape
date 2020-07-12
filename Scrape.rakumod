@@ -145,6 +145,7 @@ sys.path.append('dep/py')
 
 from selenium import webdriver
 from selenium.webdriver.firefox import firefox_profile
+from selenium.webdriver.support import ui
 
 from biblib import algo
 
@@ -154,11 +155,14 @@ def parse_names(string):
 def web_driver():
   profile = firefox_profile.FirefoxProfile()
   #profile.set_preference('browser.download.panel.shown', False)
-  #profile.set_preference('browser.helperApps.neverAsk.openFile','text/plain,text/x-bibtex')
-  profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'text/plain,text/x-bibtex')
+  #profile.set_preference('browser.helperApps.neverAsk.openFile','text/plain,text/x-bibtex,application/x-research-info-systems')
+  profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'text/plain,text/x-bibtex,application/x-research-info-systems')
   profile.set_preference('browser.download.folderList', 2)
   profile.set_preference('browser.download.dir', os.getcwd() + '/downloads')
   return webdriver.Firefox(firefox_profile=profile)
+
+def select(element):
+  return ui.Select(element)
 ");
   }
 }
@@ -247,6 +251,7 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
 
 sub scrape-acm(--> BibTeX::Entry) {
   # TODO: XPath
+  # TODO: side pill with issn
   $web-driver.find_element_by_css_selector('a[data-title="Export Citation"]').click;
   sleep 1;
   my @citation-text = $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline").map({ $_ % <text> });
@@ -274,7 +279,7 @@ sub scrape-acm(--> BibTeX::Entry) {
   $bibtex.fields<title> = BibTeX::Value.new($title);
 
   my $date = $web-driver.find_element_by_css_selector( '.epub-section__date' ).get_property( 'innerHTML' );
-  my $month = $date.split(rx/\s+/)[0];
+  my $month = $date.split(rx/\s+/).head;
   $bibtex.fields<month> = BibTeX::Value.new($month);
 
   my @keywords = $web-driver.find_elements_by_css_selector( '.tags-widget__content a' );
@@ -311,10 +316,9 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   $web-driver.find_element_by_css_selector('[data-export-type="bibtex"]').click;
 
   # TODO: remove all 'die' and warn instead
+  # TODO: mktemp
   my @files = 'downloads'.IO.dir;
-  my $bibtex = bibtex-parse(@files[0].slurp).items[0];
-  $bibtex.fields<doi> = $bibtex.fields<DOI>;
-  $bibtex.fields<DOI>:delete;
+  my $bibtex = bibtex-parse(@files.head.slurp).items.head;
   $bibtex;
 
   #   my ($abst) = $mech->content() =~ m[<div class="abstract" data-abstract-type="normal">(.*?)</div>]s;
@@ -338,17 +342,19 @@ sub scrape-cambridge(--> BibTeX::Entry) {
 }
 
 sub scrape-ieee-computer {
-  die "unimplemented";
+  $web-driver.find_element_by_css_selector( '.article-action-toolbar button' ).click;
+  sleep 1;
+  my $link = $web-driver.find_element_by_link_text( 'BibTex' );
+  $web-driver.execute_script( 'arguments[0].removeAttribute("target")', $link);
+  $web-driver.find_element_by_link_text( 'BibTex' ).click;
+  sleep 1;
+  my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
+  $text ~~ s/ "\{," /\{key,/;
+  my $bibtex = bibtex-parse($text).items.head;
+  $bibtex;
 
 #     my $html = Text::MetaBib::parse(decode('utf8', $mech->content()));
 #     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
-
-#     $mech->follow_link(text => 'BibTex');
-#     my $bib_text = $mech->content();
-#     $bib_text =~ s[<br/>][\n]g;
-#     $bib_text =~ s[\@(.*?)\{,][\@$1\{unknown_key,];
-#     my $f = parse_bibtex($bib_text);
-#     $mech->back();
 
 #     if ($entry->type() eq 'inproceedings') { # IEEE gets this all wrong
 #         $entry->set('series', $f->get('journal')) if $f->exists('journal');
@@ -366,21 +372,15 @@ sub scrape-ieee-computer {
 }
 
 sub scrape-ieee-explore {
-  die "unimplemented";
-# IEEE is evil because they require a subscription just to get bibliography data
-# (they also use JavaScript to implement simple links)
-
-#     my ($record) = $mech->content() =~ m["(?:articleId|articleNumber)":"(\d+)"];
-
-#     # Ick, work around javascript by hard coding the URL
-#     $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?" .
-#                "recordIds=$record&" .
-#                "citations-format=citation-abstract&" .
-#                "download-format=download-bibtex");
-#     my $cont = $mech->content();
-#     $cont =~ s/<br>//gi;
-#     my $entry = parse_bibtex($cont);
-#     $mech->back();
+  $web-driver.find_element_by_tag_name( 'xpl-cite-this-modal' ).click;
+  sleep 1;
+  $web-driver.find_element_by_link_text( 'BibTeX' ).click;
+  sleep 1;
+  $web-driver.find_element_by_css_selector( '.enable-abstract input' ).click;
+  sleep 1;
+  my $text = $web-driver.find_element_by_class_name( 'ris-text' ).get_property( 'innerHTML' );
+  my $bibtex = bibtex-parse($text).items.head;
+  $bibtex;
 
 #     # Extract data from embedded JSON
 #     my @affiliations = $mech->content() =~ m[\{.*?"affiliation":"([^"]+)".*?\}]sg;
@@ -432,7 +432,17 @@ sub scrape-ios-press {
 }
 
 sub scrape-jstor {
-  die "unimplemented";
+  # Remove Covid-19 overlay
+  my @overlays = $web-driver.find_elements_by_class_name( 'reveal-overlay' );
+  @overlays.map({ $web-driver.execute_script( 'arguments[0].removeAttribute("style")', $_) });
+  sleep 1;
+  $web-driver.find_element_by_class_name( 'cite-this-item' ).click;
+  sleep 1;
+  $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ).click;
+  sleep 1;
+  my @files = 'downloads'.IO.dir;
+  my $bibtex = bibtex-parse(@files.head.slurp).items.head;
+  $bibtex;
 #     print STDERR "WARNING: JSTOR imposes strict rate limiting.  You might have `Error GETing` errors if you try to get the BibTeX for multiple papers in a row.\n";
 
 #     my $html = Text::MetaBib::parse($mech->content());
@@ -460,7 +470,18 @@ sub scrape-jstor {
 }
 
 sub scrape-oxford {
-  die 'unimplemented';
+  $web-driver.find_element_by_class_name( 'js-cite-button' ).click;
+  sleep 2;
+  my $select-element = $web-driver.find_element_by_id( 'selectFormat' );
+  my $select = $proc.call( '__main__', 'select', $select-element);
+  $select.select_by_visible_text( '.bibtex (BibTex)' );
+  sleep 1;
+  $web-driver.find_element_by_class_name( 'citation-download-link' ).click;
+  sleep 1;
+
+  my @files = 'downloads'.IO.dir;
+  my $bibtex = bibtex-parse(@files.head.slurp).items.head;
+  $bibtex;
 #     my $html = Text::MetaBib::parse($mech->content());
 #     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
 #     $html->bibtex($entry);
@@ -474,10 +495,10 @@ sub scrape-oxford {
 }
 
 sub scrape-science-direct(--> BibTeX::Entry) {
-  $web-driver.find_element_by_id('export-citation').click;
-  $web-driver.find_element_by_css_selector('button[aria-label="bibtex"]').click;
+  $web-driver.find_element_by_id( 'export-citation' ).click;
+  $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
   my @files = 'downloads'.IO.dir;
-  my $bibtex = bibtex-parse(@files[0].slurp).items[0];
+  my $bibtex = bibtex-parse(@files.head.slurp).items.head;
   $bibtex;
 
 #     # Evil Elsiver uses JavaScript to redirect
@@ -576,10 +597,20 @@ sub scrape-springer {
 }
 
 sub scrape-wiley {
-#     $mech->follow_link(text => 'Export citation');
-#     $mech->submit_form(with_fields => {'format' => 'bibtex', 'direct' => 'other-type'});
-#     my $entry = parse_bibtex($mech->content());
-#     $mech->back(); $mech->back();
+  $web-driver.find_element_by_class_name( 'article-tools__ctrl' ).click;
+  sleep 1;
+  $web-driver.find_elements_by_class_name( 'article-tool' )[1].click;
+  sleep 5;
+
+  $web-driver.find_element_by_css_selector( 'input[value="bibtex"] + span' ).click;
+  sleep 1;
+  $web-driver.find_element_by_css_selector( 'input[value="other-type"] + span' ).click;
+  sleep 1;
+  $web-driver.find_element_by_css_selector( 'input[value="Download"]' ).click;
+  sleep 5;
+  my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
+  my $bibtex = bibtex-parse($text).items.head;
+  $bibtex;
 
 #     my $html = Text::MetaBib::parse($mech->content());
 #     $html->bibtex($entry);

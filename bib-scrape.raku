@@ -192,6 +192,8 @@ sub MAIN(
 ) {
   ## INPUTS
   # TODO: $FindBin::RealBin/config/names.cfg
+  #say $*PROGRAM;
+  #say $*PROGRAM-NAME;
   my Str $names = <config/names.cfg>;
   my Str $nouns = <config/nouns.cfg>;
 
@@ -335,28 +337,4 @@ sub MAIN(
 #         $old_entry);
 #     $entry->set_key($old_entry->key());
 #     print $FIX ? $fixer->fix($entry) : $entry->print_s;
-# }
-
-# sub read_valid_names {
-#     my ($name_file) = @_;
-#     open(NAME_FILE, "<", $name_file) || die "Could not open name file '$name_file': $!";
-#     my @names = ([]);
-#     for (<NAME_FILE>) {
-#         chomp;
-#         s/#.*//; # Remove comments (which start with `#`)
-#         if (m/^\s*$/) { push @names, [] }
-#         else { push @{$names[$#names]}, new Text::BibTeX::Name($_) }
-#     }
-#     close NAME_FILE;
-#     return map { @{$_} ? ($_) : () } @names;
-# }
-
-# sub slurp_file {
-#     my @files = ();
-#     for (@_) {
-#         open(FILE, "<", $_) || die "Could not open file '$_': $!";
-#         push @files, join('', <FILE>);
-#         close FILE;
-#     }
-#     return @files;
 # }

@@ -19,4 +19,4 @@ sub macro(Str $macro) { $macro.defined ?? BibTeX::Piece.new($macro, BibTeX::Bare
 sub num2month(Str $num) is export {
   $num ~~ m/^ \d+ $/ ?? macro(@macro-names[$num-1]) !! die "Invalid month number: $num"
 }
-sub str2month(Str $str) is export { macro(%months{$str.lc}) }
+sub str2month(Str $str) is export { %months{$str.lc} && macro(%months{$str.lc}) }
