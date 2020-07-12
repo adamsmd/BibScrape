@@ -257,7 +257,7 @@ sub scrape-acm(--> BibTeX::Entry) {
     .flatmap({ bibtex-parse($_).items })
     .grep({ $_ ~~ BibTeX::Entry })
     .classify({ .fields<journal>:exists });
-  my $bibtex = (flat (@(%bibtex<False>), @(%bibtex<True>)))[0];
+  my $bibtex = (%bibtex<False> // %bibtex<True>).head;
 
   my $abstract = $web-driver
     .find_elements_by_css_selector(".abstractSection.abstractInFull")
@@ -273,17 +273,22 @@ sub scrape-acm(--> BibTeX::Entry) {
   my $title = $web-driver.find_element_by_css_selector( '.citation__title' ).get_property( 'innerHTML' );
   $bibtex.fields<title> = BibTeX::Value.new($title);
 
-  #html-meta-parse($web-driver);
-  # TODO: month
+  my $date = $web-driver.find_element_by_css_selector( '.epub-section__date' ).get_property( 'innerHTML' );
+  my $month = $date.split(rx/\s+/)[0];
+  $bibtex.fields<month> = BibTeX::Value.new($month);
 
-#    # Abstract
-#    my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
-#    $mech->get($abstr_url);
+  my @keywords = $web-driver.find_elements_by_css_selector( '.tags-widget__content a' );
+  @keywords = @keywords».get_property( 'innerHTML' );
+  # ACM is inconsistent about the order in which these are returned.
+  # We sort them so that we are deterministic.
+  @keywords = @keywords.sort;
+  $bibtex.fields<keywords> = BibTeX::Value.new(@keywords.join( '; ' )) if @keywords.elems > 0;
+
 #    # Fix the double HTML encoding of the abstract (Bug in ACM?)
 #    $entry->set('abstract', decode_entities($1)) if $mech->content() =~
 #        m[<div style="display:inline">((?:<par>|<p>)?.+?(?:</par>|</p>)?)</div>];
-#    $mech->back();
 #
+#    html-meta-parse($web-driver);
 #    my $html = Text::MetaBib::parse($mech->content());
 #    $html->bibtex($entry, 'booktitle');
 #
@@ -295,7 +300,6 @@ sub scrape-acm(--> BibTeX::Entry) {
 #                                   { keyGen => sub { lc shift }})) if $entry->exists('booktitle');
 #
 #    $entry->set('title', $mech->content() =~ m[<h1 class="mediumb-text" style="margin-top:0px; margin-bottom:0px;">(.*?)</h1>]);
-
 
   $bibtex;
 }

@@ -191,8 +191,9 @@ sub MAIN(
 # =cut
 ) {
   ## INPUTS
-  my List @names; # List of List of BibTeX Names
-  my IO::Path @actions; # TODO: Executable
+  # TODO: $FindBin::RealBin/config/names.cfg
+  my Str $names = <config/names.cfg>;
+  my Str $nouns = <config/nouns.cfg>;
 
   ## FIELD OPTIONS
   my @fields = <
@@ -210,8 +211,8 @@ sub MAIN(
   my Str @omit-empty = <abstract issn doi keywords>;
 
   my $fixer = Fix::Fix.new(
-    names => @names,
-    actions => @actions,
+    name-file => $names,
+    noun-file => $nouns,
     debug => $debug,
     scrape => $scrape,
     fix => $fix,

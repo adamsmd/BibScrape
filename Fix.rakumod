@@ -18,8 +18,8 @@ class Fix {
   #field_actions => join('\n', slurp_file(@FIELD_ACTION_FILE)),
 
   ## INPUTS
-  has List @.names; # List of List of BibTeX Names
-  has IO::Path @.actions; # TODO: Executable
+  has List @.names; # List of List of BibTeX Names # TODO: fix @.names.head
+  has Str @.nouns; # TODO: has Str @.nouns
 
   ## OPERATING MODES
   has Bool $.debug;
@@ -40,6 +40,42 @@ class Fix {
   has Str @.no-collapse;
   has Str @.omit;
   has Str @.omit-empty;
+
+  method new(*%args) {
+    my @names;
+    @names[0] = ();
+    for %args<name-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
+      my $line = $l;
+      $line.chomp;
+      $line ~~ s/"#".*//; # Remove comments (which start with `#`)
+      if $line ~~ /^\s*$/ { push @names, []; } # Start a new block
+      else {
+        my @new-names = parse-names($line);
+        die if @new-names.elems != 1;
+        push @names[@names.end], @new-names.head;
+      }
+    }
+    @names = @names.grep({ .elems > 0});
+    #say @names.elems;
+    #%args<names> = |@names.List;
+    #say %args<names>.elems;
+    #say @names;
+
+    my Str @nouns;
+    for %args<noun-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
+      my $line = $l;
+      $line.chomp;
+      $line ~~ s/"#".*//; # Remove comments (which start with `#`)
+      if $line !~~ /^\s*$/ {
+        push @nouns, $line;
+      }
+    }
+    #%args<nouns> = @nouns.List;
+    #say @nouns;
+    #say %args<nouns>;
+
+    self.bless(names => @names, nouns => @nouns, |%args);
+  }
 
   method fix(BibTeX::Entry $bibtex --> BibTeX::Entry) {
     my $entry = $bibtex.clone;
@@ -131,8 +167,8 @@ class Fix {
     update($entry, 'language', { $_ = code2language($_) if defined code2language($_) });
 #  List of renames (regex?)
 
-    if ($entry.fields<author>:exists) { $entry.fields<author> = BibTeX::Value.new(canonical-names($entry.fields<author>.simple-str)) }
-    if ($entry.fields<editor>:exists) { $entry.fields<editor> = BibTeX::Value.new(canonical-names($entry.fields<editor>.simple-str)) }
+    if ($entry.fields<author>:exists) { $entry.fields<author> = BibTeX::Value.new(canonical-names(@.names, $entry.fields<author>.simple-str)) }
+    if ($entry.fields<editor>:exists) { $entry.fields<editor> = BibTeX::Value.new(canonical-names(@.names, $entry.fields<editor>.simple-str)) }
 
 # #D<onald|.=[onald]> <E.|> Knuth
 # #
@@ -207,11 +243,12 @@ class Fix {
       s/ "." ($|"-")/$0/; # Remove dots due to abbriviations
       my @x =
         .split(rx/<wb>/)
+        .grep(rx/./)
         .map({
-          ($_ eq '/' || $_ eq '-' || $_ eq '--') and BibTeX::Value($_) or
+          ($_ eq '/' || $_ eq '-' || $_ eq '--') and BibTeX::Piece.newx($_) or
           str2month($_) or
           /^ \d+ $/ and num2month($_) or
-          print "WARNING: Suspect month: $_\n" and BibTeX::Value($_)});
+          print "WARNING: Suspect month: $_\n" and BibTeX::Piece.newx($_)});
       $_ = BibTeX::Value.new(@x)});
 
     # Omit fields we don't want
@@ -228,7 +265,7 @@ class Fix {
     #if (not defined $entry->key()) {
     my $name = $entry.fields<author> // $entry.fields<editor>;
     $name = $name.defined ??
-      purify-string(do given parse-names($name.simple-str)[0].last { S:g/ ' ' // }) !!
+      purify-string(do given parse-names($name.simple-str).head.last { S:g/ ' ' // }) !!
       'anon';
     my $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
     my $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
@@ -478,30 +515,33 @@ sub check-last-name(Str $name) {
     $name ~~ /^("O'"|"Mc"|"Mac") <upper><lower>+$/; # Name with prefix
 }
 
-# sub flatten_name {
-#     my @f = $_[0]->part('first');
-#     my @v = $_[0]->part('von');
-#     my @l = $_[0]->part('last');
-#     my @j = $_[0]->part('jr');
+sub flatten-name(BibTeX::Name $name) {
+  join( ' ',
+    $name.first // (),
+    $name.von // (),
+    $name.last // (),
+    $name.jr // ());
+}
 
-#     @f = () unless defined $f[0];
-#     @v = () unless defined $v[0];
-#     @l = () unless defined $l[0];
-#     @j = () unless defined $j[0];
-
-#     return decode('utf8', join(' ', @f, @v, @l, @j));
-# }
-
-sub canonical-names(Str $names --> Str) {
+sub canonical-names(@known-names, Str $names --> Str) {
   my BibTeX::Name @names = parse-names($names);
 #     my $name_format = new Text::BibTeX::NameFormat ('vljf', 0);
 #     $name_format->set_options(BTN_VON, 0, BTJ_SPACE, BTJ_SPACE);
 #     for (BTN_LAST, BTN_JR, BTN_FIRST) {
 #         $name_format->set_options($_, 0, BTJ_SPACE, BTJ_NOTHING);
 #     }
-  my @new-names;
+  my Str @new-names;
+  # TODO: == vs eq
   NAME:
   for @names -> $name {
+    for @known-names -> @name-group {
+      for @name-group -> $n {
+        if flatten-name($name).lc eq flatten-name($n).lc {
+          push @new-names, @name-group.head.Str;
+          next NAME;
+        }
+      }
+    }
     # for my $name_group (@{$self->valid_names}) {
     #     for (@$name_group) {
     #         if (lc decode_entities(flatten_name($name)) eq lc flatten_name($_)) {
