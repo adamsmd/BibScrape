@@ -1,7 +1,5 @@
 #!/usr/bin/env raku
 
-#$|++;
-
 use lib '.';
 use BibTeX;
 use Isbn;
@@ -9,7 +7,7 @@ use Fix;
 use Scrape; # Must be last (See comment in Scrape.rakumod)
 
 # TODO: version 20.07.05
-# TODO: @ flags
+# TODO: list flags
 
 sub MAIN(
 # =head1 SYNOPSIS
