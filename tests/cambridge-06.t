@@ -31,4 +31,3 @@ Submissions should be sent to Gilles Barthe (Gilles.Barthe@inria.fr), with a cop
 {\par}
 The submission deadline is December 1st, 2001.},
 }
-

@@ -15,4 +15,3 @@ Broken abstract
   bib-scrape-url = {https://www.sciencedirect.com/science/article/pii/0020019083901060},
   keywords = {Applicative programming; linked list; number system; random-access stack},
 }
-

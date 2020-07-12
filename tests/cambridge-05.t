@@ -14,4 +14,3 @@ Bookreview
   doi = {10.1017/S0956796801004130},
   bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?aid=83371},
 }
-

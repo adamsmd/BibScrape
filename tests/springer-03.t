@@ -14,4 +14,3 @@ Test ISBN and warning about suspect names.
   doi = {10.1007/978-1-84628-609-4_20},
   bib-scrape-url = {https://www.springerlink.com/content/l4m0g48020261740/about/},
 }
-

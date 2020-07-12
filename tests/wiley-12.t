@@ -19,4 +19,3 @@ Multiple months
   keywords = {economics; evolution; genetic algorithms; risk aversion; optimization under uncertainty},
   abstract = {Economic decision making under uncertainty is universally characterized by aversion to risk. One of the most basic concepts in economic theory, risk aversion is usually explained by the concavity of the utility function, which, in turn, is based on a person's satiability for wealth. I use genetic algorithms to show that risk aversion, and some related consequences, emerge naturally as a result of evolutionary pressures. In analogy to the well{-}known hillclimbing metaphor, it is helpful in this context to characterize optimizing under uncertainty as {\textquotedblleft}surfing in a fitness seascape.{\textquotedblright}},
 }
-

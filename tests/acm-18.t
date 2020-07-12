@@ -22,4 +22,3 @@ A third algorithm solves a problem of intermediate complexity. We require the an
 {\par}
 We apply the first on line algorithm to a problem in code optimization, that of computing immediate dominators in a reducible flow graph. We show how this computation can be performed in O(n log n) steps.},
 }
-

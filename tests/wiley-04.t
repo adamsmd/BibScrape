@@ -19,4 +19,3 @@ Unicode in first author's last name
   keywords = {combinatorial optimization; branch and cut; branch and price; software frameworks; object{-}oriented design},
   abstract = {The development of new mathematical theory and its application in software systems for the solution of hard optimization problems have a long tradition in mathematical programming. In this tradition we implemented ABACUS, an object{-}oriented software framework for branch{-}and{-}cut{-}and{-}price algorithms for the solution of mixed integer and combinatorial optimization problems. This paper discusses some difficulties in the implementation of branch{-}and{-}cut{-}and{-}price algorithms for combinatorial optimization problems and shows how they are managed by ABACUS.},
 }
-

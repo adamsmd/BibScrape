@@ -17,4 +17,3 @@ Acronym in title
   doi = {10.1145/984505.984506},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?id=984506},
 }
-

@@ -1,5 +1,4 @@
 https://content.iospress.com/articles/ai-communications/aic444
-
 @article{Torta:2009:10.3233/AIC-2009-0444,
   author = {Torta, Gianluca and Torasso, Pietro},
   title = {Parametric abstraction of behavioral modes for model-based diagnosis},
@@ -17,4 +16,3 @@ https://content.iospress.com/articles/ai-communications/aic444
 {\par}
 This paper extends and complements existing work on automatic abstraction in MBD in different directions: we propose a framework to integrate different parameters (system observability, context restriction and status restriction) that can influence the abstractions; we develop an algorithm for the computation of abstractions that can take advantage of the symbolic compilation of the system model for giving both theoretical guarantees about the computational cost and good experimental performance on non-trivial domains; finally, we discuss the properties of the abstractions resulting by the combination of a-priori, user-provided abstractions with the ones automatically computed by our algorithm.},
 }
-

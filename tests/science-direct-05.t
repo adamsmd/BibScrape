@@ -16,4 +16,3 @@ Unicode in author
   keywords = {Cryptography; Pseudorandom numbers; Linear complexity},
   abstract = {We obtain a lower bound on the linear complexity of the Naor{--}Reingold sequence. This result solves an open problem proposed by Igor Shparlinski and improves known results in some cases.},
 }
-

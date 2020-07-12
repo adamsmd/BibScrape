@@ -18,4 +18,3 @@ broken by quotes in abstract
 {\par}
 We also consider a {\textquotedblleft}fuzzy{\textquotedblright} variant of LSCA that allows to compute a node that is only an LSCA of a given percentage of the query nodes. The space and construction time of our scheme for fuzzy LSCAs is linear, whereas the query time has a sub-logarithmic slow-down. This {\textquotedblleft}fuzzy{\textquotedblright} algorithm is also applicable to LCAs in trees, with the same complexities.},
 }
-

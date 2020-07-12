@@ -16,4 +16,3 @@ Multi range month
   keywords = {Tree graphs; Performance evaluation; Testing},
   abstract = {We present a method for computing ancestor information in trees. We show the method is tunable to specific applications, and compare it to other methods. Finally, we apply our procedures to the problem of finding negative cycles in sparse graphs.},
 }
-

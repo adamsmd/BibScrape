@@ -21,4 +21,3 @@ Non-export tab
 {\par}
 The question is a type of discrete moment problem, and our approach is based on showing that bounds obtained from the theory of the classical moment problem provide good approximations for it. The main tool we use is a bound controlling the change in the expectation of a polynomial after small perturbation of its zeros.},
 }
-

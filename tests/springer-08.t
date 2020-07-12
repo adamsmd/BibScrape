@@ -18,4 +18,3 @@ Unicode in title
   doi = {10.1007/BFb0013061},
   bib-scrape-url = {https://www.springerlink.com/content/5x552812m8150709/abstract/},
 }
-

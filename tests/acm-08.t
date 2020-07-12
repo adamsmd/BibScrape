@@ -20,4 +20,3 @@ Unicode in title
   keywords = {Abbreviations; environments as terms; terms as types},
   abstract = {The formal system {\textgreek{l}}{\textgreek{d}} is a typed {\textgreek{l}}-calculus that pursues the unification of terms, types, environments, and contexts as the main goal. {\textgreek{l}}{\textgreek{d}} takes some features from the Automath-related {\textgreek{l}}-calculi and some from the pure type systems, but differs from both in that it does not include the {\textgreek{P}} construction while it provides for an abbreviation mechanism at the level of terms. {\textgreek{l}}{\textgreek{d}} enjoys some important desirable properties such as the confluence of reduction, the correctness of types, the uniqueness of types up to conversion, the subject reduction of the type assignment, the strong normalization of the typed terms, and, as a corollary, the decidability of type inference problem.},
 }
-

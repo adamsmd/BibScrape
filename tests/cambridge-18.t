@@ -19,4 +19,3 @@ Two pillars of this approach are types and effects. Typed multilevel languages s
 {\par}
 We introduce the first multilevel calculus with control effects and a sound type system. We give small-step operational semantics as well as a one-pass continuation-passing-style translation. For soundness, our calculus restricts the code generator's effects to the scope of generated binders. Even with this restriction, we can finally write efficient code generators for dynamic programming and numerical methods in direct style, like in algorithm textbooks, rather than in continuation-passing or monadic style.},
 }
-

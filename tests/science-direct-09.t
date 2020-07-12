@@ -19,4 +19,3 @@ We characterize when two different completions of the same run-time typed progra
 {\par}
 We show that every untyped {\textgreek{l}}-term has a safe completion at any type and that it is unique modulo a suitable congruence relation. Furthermore, we present a rewriting system for generating minimal completions. Assuming strong normalization of this rewriting system we show that every {\textgreek{l}}\emph{I}-term has a minimal completion at any type, which is furthermore unique modulo equality in the dynamically typed {\textgreek{l}}-calculus.},
 }
-

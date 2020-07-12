@@ -16,4 +16,3 @@ Complex math in abstract
   keywords = {Algorithms; Channel assignment; Inclusion{--}exclusion; Exact algorithm; \ensuremath{L(2,1)}-labeling},
   abstract = {We show an \ensuremath{{O}^{{\ensuremath{\ast}}}({{({\ensuremath{\ell}}+1)}}^{n})}-time algorithm for the channel assignment problem, where \emph{{\ensuremath{\ell}}} is the maximum edge weight. This improves on the previous \ensuremath{{O}^{{\ensuremath{\ast}}}({{({\ensuremath{\ell}}+2)}}^{n})}-time algorithm by Kr{\'a}l (2005) [1], as well as algorithms for important special cases, like \ensuremath{L(2,1)}-labeling. For the latter problem, our algorithm works in \ensuremath{{O}^{{\ensuremath{\ast}}}({3}^{n})} time. The progress is achieved by applying the fast zeta transform in combination with the inclusion{--}exclusion principle.},
 }
-

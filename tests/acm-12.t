@@ -17,4 +17,3 @@ WARNING: Suspect name: Teskey, F. N.
   doi = {10.1145/42005.42011},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?id=42011},
 }
-

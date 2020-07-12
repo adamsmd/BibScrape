@@ -19,4 +19,3 @@ Magazine
   keywords = {CARB; CEIDARS; Digital government; Data sharing; National Emission Inventory; Facilities Registry System; Information modeling; Guspin; Sift},
   abstract = {An information theory-based technology measures the importance of observations and leverages them to quantify the similarity between entities, improving accuracy and reducing the time required to find related entities in a population.},
 }
-

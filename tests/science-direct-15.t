@@ -17,4 +17,3 @@ https://www.sciencedirect.com/science/article/pii/S157106611000143X?via%3Dihub
   keywords = {Abstract interpretation; polyhedral abstract domain; acceleration; fixpoint iteration; flowchat programs; compilation; tools},
   abstract = {In this paper, we present \textsc{Aspic}, an automatic polyhedral invariant generation tool for flowcharts programs. \textsc{Aspic} implements an improved Linear Relation Analysis on numeric counter automata. The {\textquotedblleft}accelerated{\textquotedblright} method improves precision by computing locally a precise overapproximation of a loop without using the widening operator. \texttt{c2fsm} is a C preprocessor that generates automata in the format required by \textsc{Aspic}. The experimental results show the performance and precision of the tools.},
 }
-

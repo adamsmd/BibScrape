@@ -16,4 +16,3 @@ Unicode in title
   keywords = {Combinatorial problems; Plane graph; Total coloring; Maximum degree; Chordal cycle},
   abstract = {In this paper, we prove that a plane graph of maximum degree \ensuremath{\Delta{\ensuremath{\geqslant}}6} is \ensuremath{(\Delta+1)}-totally-colorable if it contains neither chordal 5-cycle nor chordal 6-cycle. This further extends the known class of plane graphs of maximum degree \emph{{\textgreek{D}}} in which every graph is \ensuremath{(\Delta+1)}-totally-colorable.},
 }
-

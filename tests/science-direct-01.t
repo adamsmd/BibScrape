@@ -16,4 +16,3 @@ Author name is backwards
   keywords = {Kuramoto model; Coupled oscillators; Kinetic theory; Plasma physics},
   abstract = {The Kuramoto model describes a large population of coupled limit-cycle oscillators whose natural frequencies are drawn from some prescribed distribution. If the coupling strength exceeds a certain threshold, the system exhibits a phase transition: some of the oscillators spontaneously synchronize, while others remain incoherent. The mathematical analysis of this bifurcation has proved both problematic and fascinating. We review 25 years of research on the Kuramoto model, highlighting the false turns as well as the successes, but mainly following the trail leading from Kuramoto{\textquoteright}s work to Crawford{\textquoteright}s recent contributions. It is a lovely winding road, with excursions through mathematical biology, statistical physics, kinetic theory, bifurcation theory, and plasma physics.},
 }
-

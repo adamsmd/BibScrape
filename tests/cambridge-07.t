@@ -15,4 +15,3 @@ Strange volume/issue. Italics in abstract
   bib-scrape-url = {https://journals.cambridge.org/article_S0956796811000128},
   abstract = {O'Neill (The genuine Sieve of Eratosthenes. \emph{J. Funct. Program}. \textbf{19}(1), 2009, 95{--}106) has previously considered a functional implementation for the genuine Sieve of Eratosthenes, based on the well-known heap data structure. Here, we develop it further by adapting this data structure to this particular application.},
 }
-

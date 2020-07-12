@@ -19,4 +19,3 @@ Author should be "R. Kent Dybvig" instead of "R. Dybvig"
   bib-scrape-url = {https://www.springerlink.com/content/m8x0246j74044t6l/},
   abstract = {The effectiveness of an inlining algorithm is determined not only by its ability to recognize inlining opportunities but also by its discretion in exercising those opportunities. This paper presents a new inlining algorithm for higher-order languages that combines simple analysis techniques with demand-driven online transformation to achieve consistent and often dramatic performance gains in fast linear time. The algorithm is shown to be as effective as and significantly faster than offline, analysis-intensive algorithms recently described in the literature.},
 }
-

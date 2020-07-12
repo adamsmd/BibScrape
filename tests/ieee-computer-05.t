@@ -18,4 +18,3 @@ Unicode in title
   keywords = {Quasi-continuous domains; probabilistic powerdomain},
   abstract = {Is there any cartesian-closed category of continuous domains that would be closed under Jones and Plotkin's probabilistic powerdomain construction? This is a major open problem in the area of denotational semantics of probabilistic higher-order languages. We relax the question, and look for quasi-continuous dcpos instead. These retain many nice properties from continuous dcpos. We introduce a natural class of such quasi-continuous dcpos, the omega-QRB-domains. We show that they form a category omega-QRB with pleasing properties: omega-QRB is closed under the probabilistic powerdomain functor, has all finite products, all bilimits, and is stable under retracts, and even under so-called quasi-retracts. But... omega-QRB is not cartesian closed.},
 }
-

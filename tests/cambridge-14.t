@@ -15,4 +15,3 @@ https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=579464
   bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=5794644},
   abstract = {This special issue of the Journal of Functional Programming collects revised selected articles arising from the inaugural meeting of the Workshop on Mathematically Structured Functional Programming, MSFP 2006, held in Kuressaare, Estonia, on 2 July 2006, with support from the European Union's FP6 IST Coordination Action TYPES. This workshop raised the curtain for the Eighth International Conference on Mathematics of Program Construction, MPC 2006, but where MPC is concerned primarily with extrinsic mathematics supporting the programming process, MSFP has a complementary focus on the mathematics intrinsic to programs themselves. MSFP is about the extraction of functionality from structure.},
 }
-

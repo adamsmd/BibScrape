@@ -16,4 +16,3 @@ Page numbers with letters and dashes
   doi = {10.1145/237218.237407},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?doid=237218.237407},
 }
-

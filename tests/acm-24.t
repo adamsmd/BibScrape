@@ -21,4 +21,3 @@ Avoid SIGSOFT Software Engineering Notes
   keywords = {concurrency; context-sensitive; parallelism; program analysis; program slicing},
   abstract = {Program slicing is a technique to identify statements that may influence the computations at other statements. Precise slicing has been shown to be undecidable for concurrent programs. This work presents the first context-sensitive approach to slice concurrent programs accurately. It extends the well known structures of the control flow graph and the (interprocedural) program dependence graph for concurrent programs with interference. This new technique does not require serialization or inlining.},
 }
-

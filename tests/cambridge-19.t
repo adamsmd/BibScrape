@@ -15,4 +15,3 @@ https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=791673
   bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=7916734},
   abstract = {Term-rewriting systems can be expressed as generic programs parameterised over the shape of the terms being rewritten. Previous implementations of generic rewriting libraries require users to either adapt the datatypes that are used to describe these terms or to specify rewrite rules as functions. These are fundamental limitations: the former implies a lot of work for the user, while the latter makes it hard if not impossible to document, test, and analyze rewrite rules. In this article, we demonstrate how to overcome these limitations by making essential use of type-indexed datatypes. Our approach is lightweight in that it is entirely expressible in Haskell with GADTs and type families and can be readily packaged for use with contemporary Haskell distributions.},
 }
-

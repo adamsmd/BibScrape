@@ -14,4 +14,3 @@ Superscript and Unicode in title
   doi = {10.2307/3001616},
   bib-scrape-url = {https://www.jstor.org/stable/10.2307/3001616},
 }
-

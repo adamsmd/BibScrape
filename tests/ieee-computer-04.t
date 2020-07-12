@@ -18,4 +18,3 @@ Subscript in title and abstract
   keywords = {Logic; Trees; Automata; Xpath},
   abstract = {We prove that it is decidable whether a regular unranked tree language is definable in FO2({\textless}h,{\textless};v). By FO2({\textless}h,{\textless}v) we refer to the two variable fragment of first order logic built from the descendant and following sibling predicates. In terms of expressive power it corresponds to a fragment of the navigational core of XPath that contains modalities for going up to some ancestor, down to some descendant, left to some preceding sibling, and right to some following sibling. We also investigate definability in some other fragments of XPath.},
 }
-

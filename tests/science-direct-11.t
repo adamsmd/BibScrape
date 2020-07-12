@@ -15,4 +15,3 @@ Undefined abstract
   bib-scrape-url = {https://www.sciencedirect.com/science/article/pii/S0019995879903620},
   abstract = {A top-down parsing scheme for macro grammars is proposed. It extends the recursive descent method frequently used in context-free parsing. It is shown to be decidable if a macro grammar is top-down parsable. Nearly matching lower and upper bounds for the complexity of the decision procedure are derived. A time and space efficient recognition algorithm is described.},
 }
-

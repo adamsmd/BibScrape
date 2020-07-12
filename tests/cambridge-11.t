@@ -14,4 +14,3 @@ Unicode in author, "Mc" name
   doi = {10.1017/S0959269500002970},
   bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692},
 }
-

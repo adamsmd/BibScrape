@@ -1,5 +1,4 @@
 https://www.jstor.org/stable/2975544
-
 @article{Leron:1983:10.2307/2975544,
   author = {Leron, Uri},
   title = {Structuring Mathematical Proofs},
@@ -14,4 +13,3 @@ https://www.jstor.org/stable/2975544
   doi = {10.2307/2975544},
   bib-scrape-url = {https://www.jstor.org/stable/2975544},
 }
-

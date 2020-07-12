@@ -16,4 +16,3 @@ Issue is "4es"
   doi = {10.1145/242224.242324},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?id=242324},
 }
-

@@ -27,4 +27,3 @@ iA new combination of forwards and backwards abstract fixed-point model-checking
 {\par}
 When abstraction is unsound (as can happen in minimum/maximum path-length problems), it is proposed to use the partial results of a classical combination of forward and backward abstract interpretation analyses for universal safety in order to reduce, on-the-fly, the concrete state space to be searched by model-checking.},
 }
-

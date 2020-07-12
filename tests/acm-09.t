@@ -15,4 +15,3 @@ No abstract
   doi = {10.1145/567752.567756},
   bib-scrape-url = {https://portal.acm.org/citation.cfm?id=567756},
 }
-
