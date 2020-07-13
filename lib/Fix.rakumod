@@ -5,7 +5,7 @@ use HTML::Entity;
 use Locale::Language;
 
 use BibTeX;
-use BibTeX::Months;
+use BibTeX::Month;
 use Isbn;
 use Unicode;
 
@@ -176,13 +176,13 @@ class Fix {
     update($entry, 'series', { s:g/(<upper>+) " "* [ "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
 
     # Collapse spaces and newlines
-    $_ ∈ $.no-collapse or update($entry, $_.key, {
+    $_.key ∈ $.no-collapse or update($entry, $_.key, {
       s/\s* $//; # remove trailing whitespace
       s/^ \s *//; # remove leading whitespace
-      s:s:g/(\n " "*) ** 2..*/"\{\\par}"/; # BibTeX eats whitespace so convert "\n\n" to paragraph break
-      s:s:g/\s* \n \s*/ /; # Remove extra line breaks
-      s:s:g/"\{\\par\}"/\n\{\\par\}\n/; # Nicely format paragraph breaks
-      s:s:g/\s ** 2..* / /; # Remove duplicate whitespace
+      s:g/(\n " "*) ** 2..*/\{\\par}/; # BibTeX eats whitespace so convert "\n\n" to paragraph break
+      s:g/\s* \n \s*/ /; # Remove extra line breaks
+      s:g/"\{\\par\}"/\n\{\\par\}\n/; # Nicely format paragraph breaks
+      s:g/\s ** 2..* / /; # Remove duplicate whitespace
     }) for $entry.fields.pairs;
 
     update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) /\{$0\}/; }) if $.escape-acronyms;
@@ -321,46 +321,46 @@ sub latex-encode(Str $s) {
 
   # HTML -> LaTeX Codes
   $str = decode-entities($str);
-  $str ~~ s:s:g/"<!--" .*? "-->"//; # Remove HTML comments
-  $str ~~ s:i:s:g/"<a " <-[>]>* "onclick=\"toggleTabs(" .*? ")>" .*? "</a>"//; # Fix for Science Direct
+  $str ~~ s:g/"<!--" .*? "-->"//; # Remove HTML comments
+  $str ~~ s:i:g/"<a " <-[>]>* "onclick=\"toggleTabs(" .*? ")>" .*? "</a>"//; # Fix for Science Direct
 
   # HTML formatting
-  $str ~~ s:i:s:g/"<" (<-[>]>*) <wb> "class=\"a-plus-plus\"" (<-[>]>*) ">"/<$0$1>/; # Remove class annotation
-  $str ~~ s:i:s:g/"<" (\w+) \s* ">"/<$0>/; # Removed extra space around simple tags
-  $str ~~ s:i:s:g/"<a" (" ".*?)? ">" (.*?)"</a>"/$1/; # Remove <a> links
-  $str ~~ s:i:s:g/"<p" (""|" " <-[>]>*) ">" (.*?) "</p>"/$1\n\n/; # Replace <p> with "\n\n"
-  $str ~~ s:i:s:g/"<par" (""|" " <-[>]>*) ">" (.*?) "</par>"/$1\n\n/; # Replace <par> with "\n\n"
-  $str ~~ s:i:s:g/"<span style=" <["']> "font-family:monospace" \s* <["']> ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
-  $str ~~ s:i:s:g/"<span class=" <["']> "monospace" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
-  $str ~~ s:i:s:g/"<span class=" <["']> "small" "-"? "caps" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
-  $str ~~ s:i:s:g/"<span class=" <["']> <-["']>* "type-small-caps" <-["']>* <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
-  $str ~~ s:i:s:g/"<span class=" <["']> "italic" <["']> ">" (.*?) "</span>"/\\textit\{$0\}/;
-  $str ~~ s:i:s:g/"<span class=" <["']> "bold" <["']> ">" (.*?) "</span>"/\\textbf\{$0\}/;
-  $str ~~ s:i:s:g/"<span class=" <["']> "sup" <["']> ">" (.*?) "</span>"/\\textsuperscript\{$0\}/;
-  $str ~~ s:i:s:g/"<span class=" <["']> "sub" <["']> ">" (.*?) "</span>"/\\textsubscript\{$0\}/;
-  $str ~~ s:i:s:g/"<span class=" <["']> "sc" <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
-  $str ~~ s:i:s:g/"<span class=" <["']> "EmphasisTypeSmallCaps " <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
-  $str ~~ s:i:s:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
-  $str ~~ s:i:s:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
-  $str ~~ s:i:s:g/"<i" (" " <-[>]>*?)? ">" "</i>"//; # Remove empty <i>
-  $str ~~ s:i:s:g/"<i>" (.*?) "</i>"/\\textit\{$0\}/; # Replace <i> with \textit
-  $str ~~ s:i:s:g/"<italic>" (.*?) "</italic>"/\\textit\{$0\}/; # Replace <italic> with \textit
-  $str ~~ s:i:s:g/"<em" <wb> <-[>]>*? ">" (.*?) "</em>"/\\emph\{$0\}/; # Replace <em> with \emph
-  $str ~~ s:i:s:g/"<strong>" (.*?) "</strong>"/\\textbf\{$0\}/; # Replace <strong> with \textbf
-  $str ~~ s:i:s:g/"<b>" (.*?) "</b>"/\\textbf\{$0\}/; # Replace <b> with \textbf
-  $str ~~ s:i:s:g/"<tt>" (.*?) "</tt>"/\\texttt\{$0\}/; # Replace <tt> with \texttt
-  $str ~~ s:i:s:g/"<code>" (.*?) "</code>"/\\texttt\{$0\}/; # Replace <code> with \texttt
-  $str ~~ s:i:s:g/"<sup>" "</sup>"//; # Remove emtpy <sup>
-  $str ~~ s:i:s:g/"<sup>" (.*?) "</sup>"/\\textsuperscript\{$0\}/; # Super scripts
-  $str ~~ s:i:s:g/"<supscrpt>" (.*?) "</supscrpt>"/\\textsuperscript\{$0\}/; # Super scripts
-  $str ~~ s:i:s:g/"<sub>" (.*?) "</sub>"/\\textsubscript\{$0\}/; # Sub scripts
+  $str ~~ s:i:g/"<" (<-[>]>*) <wb> "class=\"a-plus-plus\"" (<-[>]>*) ">"/<$0$1>/; # Remove class annotation
+  $str ~~ s:i:g/"<" (\w+) \s* ">"/<$0>/; # Removed extra space around simple tags
+  $str ~~ s:i:g/"<a" (" ".*?)? ">" (.*?)"</a>"/$1/; # Remove <a> links
+  $str ~~ s:i:g/"<p" (""|" " <-[>]>*) ">" (.*?) "</p>"/$1\n\n/; # Replace <p> with "\n\n"
+  $str ~~ s:i:g/"<par" (""|" " <-[>]>*) ">" (.*?) "</par>"/$1\n\n/; # Replace <par> with "\n\n"
+  $str ~~ s:i:g/"<span style=" <["']> "font-family:monospace" \s* <["']> ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
+  $str ~~ s:i:g/"<span class=" <["']> "monospace" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
+  $str ~~ s:i:g/"<span class=" <["']> "small" "-"? "caps" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
+  $str ~~ s:i:g/"<span class=" <["']> <-["']>* "type-small-caps" <-["']>* <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
+  $str ~~ s:i:g/"<span class=" <["']> "italic" <["']> ">" (.*?) "</span>"/\\textit\{$0\}/;
+  $str ~~ s:i:g/"<span class=" <["']> "bold" <["']> ">" (.*?) "</span>"/\\textbf\{$0\}/;
+  $str ~~ s:i:g/"<span class=" <["']> "sup" <["']> ">" (.*?) "</span>"/\\textsuperscript\{$0\}/;
+  $str ~~ s:i:g/"<span class=" <["']> "sub" <["']> ">" (.*?) "</span>"/\\textsubscript\{$0\}/;
+  $str ~~ s:i:g/"<span class=" <["']> "sc" <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
+  $str ~~ s:i:g/"<span class=" <["']> "EmphasisTypeSmallCaps " <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
+  $str ~~ s:i:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
+  $str ~~ s:i:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
+  $str ~~ s:i:g/"<i" (" " <-[>]>*?)? ">" "</i>"//; # Remove empty <i>
+  $str ~~ s:i:g/"<i>" (.*?) "</i>"/\\textit\{$0\}/; # Replace <i> with \textit
+  $str ~~ s:i:g/"<italic>" (.*?) "</italic>"/\\textit\{$0\}/; # Replace <italic> with \textit
+  $str ~~ s:i:g/"<em" <wb> <-[>]>*? ">" (.*?) "</em>"/\\emph\{$0\}/; # Replace <em> with \emph
+  $str ~~ s:i:g/"<strong>" (.*?) "</strong>"/\\textbf\{$0\}/; # Replace <strong> with \textbf
+  $str ~~ s:i:g/"<b>" (.*?) "</b>"/\\textbf\{$0\}/; # Replace <b> with \textbf
+  $str ~~ s:i:g/"<tt>" (.*?) "</tt>"/\\texttt\{$0\}/; # Replace <tt> with \texttt
+  $str ~~ s:i:g/"<code>" (.*?) "</code>"/\\texttt\{$0\}/; # Replace <code> with \texttt
+  $str ~~ s:i:g/"<sup>" "</sup>"//; # Remove emtpy <sup>
+  $str ~~ s:i:g/"<sup>" (.*?) "</sup>"/\\textsuperscript\{$0\}/; # Super scripts
+  $str ~~ s:i:g/"<supscrpt>" (.*?) "</supscrpt>"/\\textsuperscript\{$0\}/; # Super scripts
+  $str ~~ s:i:g/"<sub>" (.*?) "</sub>"/\\textsubscript\{$0\}/; # Sub scripts
 
-  $str ~~ s:i:s:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
-  $str ~~ s:i:s:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
+  $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
+  $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
 
   # MathML formatting
 #  my $xml = XML::Parser->new(Style => 'Tree');
-#  $str ~~ s:g:s/("<" <?"mml:">? "math" <wb> <-[>]>* ">" .*? "</" <?"mml:">? "math>")
+#  $str ~~ s:g/("<" <?"mml:">? "math" <wb> <-[>]>* ">" .*? "</" <?"mml:">? "math>")
 #            /\\ensuremath\{{rec(@($xml->parse($0)))}\}/; # TODO: ensuremath (but avoid latex encoding)
 
   # Trim spaces before NBSP (otherwise they have not effect in LaTeX)

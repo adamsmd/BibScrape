@@ -1,4 +1,4 @@
-unit module BibTeX::Months;
+unit module BibTeX::Month;
 
 use BibTeX;
 

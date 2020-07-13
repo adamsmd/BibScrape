@@ -4,6 +4,7 @@ use HTML::Entity;
 
 use BibTeX;
 use BibTeX::Html;
+use BibTeX::Month;
 
 use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
 sub infix:<%>($obj, Str $attr) { $obj.__getattribute__($attr); }
@@ -148,14 +149,17 @@ sub scrape-acm(--> BibTeX::Entry) {
   my $title = $web-driver.find_element_by_css_selector( '.citation__title' ).get_property( 'innerHTML' );
   $bibtex.fields<title> = BibTeX::Value.new($title);
 
-  my $date =
-    do if $bibtex.fields<issue_date>:exists {
-      $bibtex.fields<issue_date>.simple-str
-    } else {
-      $web-driver.find_element_by_css_selector( '.epub-section__date' ).get_property( 'innerHTML' )
+  # ACM publication months are often inconsistent within the same page.
+  # This is a best effort at picking the right month among these inconsistent results.
+  if $bibtex.fields<issue_date>:exists {
+    my $month = $bibtex.fields<issue_date>.simple-str.split(rx/\s+/).head;
+    if str2month($month) {
+      $bibtex.fields<month> = BibTeX::Value.new($month);
     }
-  my $month = $date.split(rx/\s+/).head;
-  $bibtex.fields<month> = BibTeX::Value.new($month);
+  } elsif not $bibtex.fields<month>:exists {
+    my $month = $web-driver.find_element_by_css_selector( '.book-meta + .cover-date' ).get_property( 'innerHTML' ).split(rx/\s+/).head;
+    $bibtex.fields<month> = BibTeX::Value.new($month);
+  }
 
   my @keywords = $web-driver.find_elements_by_css_selector( '.tags-widget__content a' );
   @keywords = @keywords».get_property( 'innerHTML' );
