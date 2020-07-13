@@ -134,9 +134,11 @@ sub scrape-acm(--> BibTeX::Entry) {
     .find_elements_by_css_selector(".abstractSection.abstractInFull")
     .reverse.head
     .get_property('innerHTML');
-  # Fix the double HTML encoding of the abstract (Bug in ACM?)
-  $abstract = decode-entities($abstract);;
-  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+  if $abstract.defined and $abstract ne '<p>No abstract available.</p>' {
+    # Fix the double HTML encoding of the abstract (Bug in ACM?)
+    $abstract = decode-entities($abstract);
+    $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+  }
 
   # Get the Unicode version that we can properly convert to TeX
   my $authors = $web-driver.find_elements_by_css_selector( '.citation .author-name' )».get_attribute( 'title' ).join( ' and ' );
@@ -146,7 +148,12 @@ sub scrape-acm(--> BibTeX::Entry) {
   my $title = $web-driver.find_element_by_css_selector( '.citation__title' ).get_property( 'innerHTML' );
   $bibtex.fields<title> = BibTeX::Value.new($title);
 
-  my $date = $web-driver.find_element_by_css_selector( '.epub-section__date' ).get_property( 'innerHTML' );
+  my $date =
+    do if $bibtex.fields<issue_date>:exists {
+      $bibtex.fields<issue_date>.simple-str
+    } else {
+      $web-driver.find_element_by_css_selector( '.epub-section__date' ).get_property( 'innerHTML' )
+    }
   my $month = $date.split(rx/\s+/).head;
   $bibtex.fields<month> = BibTeX::Value.new($month);
 
@@ -157,6 +164,10 @@ sub scrape-acm(--> BibTeX::Entry) {
   @keywords = @keywords.sort;
   $bibtex.fields<keywords> = BibTeX::Value.new(@keywords.join( '; ' )) if @keywords.elems > 0;
 
+  if $bibtex.type eq 'article' {
+    my @journal = $web-driver.find_elements_by_css_selector( 'meta[name="citation_journal_title"]' );
+    if @journal.elems > 0 { $bibtex.fields<journal> = BibTeX::Value.new(@journal.head.get_property( 'content' )); }
+  }
 #    html-meta-parse($web-driver);
 #    my $html = Text::MetaBib::parse($mech->content());
 #    $html->bibtex($entry, 'booktitle');

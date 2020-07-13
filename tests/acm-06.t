@@ -3,7 +3,7 @@ Italics and quotes in abstract
 @inproceedings{DiGianantonio:1998:10.1145/286936.286955,
   author = {Di Gianantonio, Pietro and Honsell, Furio and Liquori, Luigi},
   title = {A lambda calculus of objects with self-inflicted extension},
-  booktitle = {Proceedings of the 13th ACM SIGPLAN Conference on Object-oriented Programming, Systems, Languages, and Applications},
+  booktitle = {Proceedings of the 13th ACM SIGPLAN Conference on Object-Oriented Programming, Systems, Languages, and Applications},
   series = {OOPSLA~'98},
   location = {Vancouver, British Columbia, Canada},
   pages = {166--178},
