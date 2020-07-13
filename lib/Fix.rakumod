@@ -14,12 +14,9 @@ use Scrape;
 enum MediaType <Print Online Both>;
 
 class Fix {
-  #valid_names => [map {read_valid_names($_)} @NAME_FILE],
-  #field_actions => join('\n', slurp_file(@FIELD_ACTION_FILE)),
-
   ## INPUTS
-  has List @.names; # List of List of BibTeX Names # TODO: fix @.names.head
-  has Str @.nouns; # TODO: has Str @.nouns
+  has Array @.names;
+  has Str @.nouns;
 
   ## OPERATING MODES
   has Bool $.debug;
@@ -56,10 +53,6 @@ class Fix {
       }
     }
     @names = @names.grep({ .elems > 0});
-    #say @names.elems;
-    #%args<names> = |@names.List;
-    #say %args<names>.elems;
-    #say @names;
 
     my Str @nouns;
     for %args<noun-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
@@ -70,9 +63,6 @@ class Fix {
         push @nouns, $line;
       }
     }
-    #%args<nouns> = @nouns.List;
-    #say @nouns;
-    #say %args<nouns>;
 
     self.bless(names => @names, nouns => @nouns, |%args);
   }
@@ -82,9 +72,9 @@ class Fix {
 
     # TODO: $bib_text ~~ s/^\x{FEFF}//; # Remove Byte Order Mark
     # Fix any unicode that is in the field values
-#    $entry->set_key(decode('utf8', $entry->key));
-#    $entry->set($_, decode('utf8', $entry->get($_)))
-#        for ($entry->fieldlist());
+    # $entry->set_key(decode('utf8', $entry->key));
+    # $entry->set($_, decode('utf8', $entry->get($_)))
+    #     for ($entry->fieldlist());
 
     $entry.key = $entry.key.lc;
     $entry.fields = multi-hash($entry.fields.map({ $_.key.lc => $_.value }));
@@ -96,11 +86,8 @@ class Fix {
     update($entry, 'doi', { s:i:g/"http" "s"? "://" <-[/]>+ "/"//; s:i:g/"DOI:"\s*//; });
 
     # Page numbers: no "pp." or "p."
-    # TODO: page fields
-    # [][pages][pp?\.\s*][]ig;
     update($entry, 'pages', { s:i:g/"p" "p"? "." \s*//; });
 
-    # [][number]rename[issue][.+][$1]delete;
     # rename fields
     for ('issue' => 'number', 'keyword' => 'keywords') -> $i {
       # Fix broken field names (SpringerLink and ACM violate this)
@@ -113,8 +100,6 @@ class Fix {
     }
 
     # Ranges: convert "-" to "--"
-    # TODO: option for numeric range
-    # TODO: might misfire if "-" doesn't represent a range, Common for tech report numbers
     for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> $key {
       update($entry, $key, { s:i:g/\s* ["-" | \c[EN DASH] | \c[EM DASH]]+ \s*/--/; });
       update($entry, $key, { s:i:g/"n/a--n/a"//; $_ = Nil if $_ eq "" });
@@ -157,42 +142,17 @@ class Fix {
       /^ \d+ $/ || /^ \d+ "--" \d+ $/ || /^ [\d+]+ % "/" $/ || /^ \d+ "es" $/ ||
       /^ "Special Issue " \d+ ["--" \d+]? $/ || /^ "S" \d+ $/});
 
-    # TODO: Keywords: ';' vs ','
-
     self.isbn($entry, 'isbn', $.isbn-media, &canonical-isbn);
 
     self.isbn($entry, 'issn', $.issn-media, &canonical-issn);
 
-    # TODO: Author, Editor, Affiliation: List of renames
-# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
-
     # Change language codes (e.g., "en") to proper terms (e.g., "English")
     update($entry, 'language', { $_ = code2language($_) if defined code2language($_) });
-#  List of renames (regex?)
 
-    if ($entry.fields<author>:exists) { $entry.fields<author> = BibTeX::Value.new(canonical-names(@.names, $entry.fields<author>.simple-str)) }
-    if ($entry.fields<editor>:exists) { $entry.fields<editor> = BibTeX::Value.new(canonical-names(@.names, $entry.fields<editor>.simple-str)) }
-
-# #D<onald|.=[onald]> <E.|> Knuth
-# #
-# #D(onald|.) (E.) Knuth
-# #D E Knuth
-# #
-# #D[onald] Knuth
-# #D Knuth
-# #
-# #D[onald] [E.] Knuth
-# #D Knuth
-# #
-# #Donald Knuth
-# #D[onald] Knuth
-# #D. Knuth
-# #Knuth, D.
+    if ($entry.fields<author>:exists) { $entry.fields<author> = $.canonical-names($entry.fields<author>) }
+    if ($entry.fields<editor>:exists) { $entry.fields<editor> = $.canonical-names($entry.fields<editor>) }
 
     # Don't include pointless URLs to publisher's page
-    # [][url][http://dx.doi.org/][];
-    # TODO: via Omit if matches
-    # TODO: omit if ...
     update($entry, 'url', {
       $_ = Nil if m/^
         [ 'http' 's'? '://doi.acm.org/'
@@ -203,11 +163,6 @@ class Fix {
         | 'http' 's'? '://portal.acm.org/citation.cfm'
         | 'http' 's'? '://www.jstor.org/stable/'
         | 'http' 's'? '://www.sciencedirect.com/science/article/' ]/; });
-    # TODO: via omit if empty
-    update($entry, 'note', { $_ = Nil if $_ eq '' });
-    # TODO: add $doi to omit if matches
-    # [][note][$doi][]
-    # regex delete if looks like doi
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', { $_ = Nil if $_ eq ($entry.fields<doi> // '') });
 
@@ -230,16 +185,9 @@ class Fix {
       s:s:g/\s ** 2..* / /; # Remove duplicate whitespace
     }) for $entry.fields.pairs;
 
-    # TODO: Title Capticalization: Initialisms, After colon, list of proper names
     update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) /\{$0\}/; }) if $.escape-acronyms;
 
-#     for $FIELD ($entry->fieldlist()) {
-#         my $compartment = new Safe;
-#         $compartment->deny_only();
-#         $compartment->share_from('Text::BibTeX::Fix', ['$FIELD']);
-#         $compartment->share('$_');
-#         update($entry, $FIELD, sub { $compartment->reval($self->field_actions); });
-#     }
+    # TODO: nouns
 
     # Use bibtex month macros
     # Must be after field encoding because we use macros
@@ -256,7 +204,6 @@ class Fix {
       $_ = BibTeX::Value.new(@x)});
 
     # Omit fields we don't want
-    # TODO: controled per type or with other fields or regex matching
     $entry.fields{$_}:exists and $entry.fields{$_}:delete for @.omit;
     $entry.fields{$_}:exists and $entry.fields{$_} eq '' and $entry.fields{$_}:delete for @.omit-empty;
 
@@ -264,18 +211,13 @@ class Fix {
     check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
 
     # Generate an entry key
-    # TODO: Formats: author/editor1.last year title/journal.abbriv
-    # TODO: Remove doi?
-    #if (not defined $entry->key()) {
     my $name = $entry.fields<author> // $entry.fields<editor>;
     $name = $name.defined ??
       purify-string(do given parse-names($name.simple-str).head.last { S:g/ ' ' // }) !!
       'anon';
     my $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
     my $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
-    #$organization, or key
     $entry.key = $name ~ $year ~ $doi;
-    #}
 
     # Put fields in a standard order (also cleans out any fields we deleted)
     my %fields = @.fields.map(* => 0);
@@ -289,12 +231,6 @@ class Fix {
         @.fields.flatmap(
           { $entry.fields{$_}:exists ?? ($_ => $entry.fields{$_}) !! () }));
 
-#     # Force comma or no comma after last field
-#     my $str = $entry->print_s();
-#     $str ~~ s[(})(\s*}\s*)$][$0,$1] if $self->final_comma;
-#     $str ~~ s[(}\s*),(\s*}\s*)$][$0$1] if !$self->final_comma;
-
-#     return $str;
     $entry;
   }
 
@@ -324,6 +260,38 @@ class Fix {
       }
     });
   }
+
+  method canonical-names(BibTeX::Value $value --> BibTeX::Value) {
+    my $names = $value.simple-str;
+    my BibTeX::Name @names = parse-names($names);
+
+    my Str @new-names;
+    NAME:
+    for @names -> $name {
+      for @.names -> @name-group {
+        for @name-group -> $n {
+          if flatten-name($name).lc eq flatten-name($n).lc {
+            push @new-names, @name-group.head.Str;
+            next NAME;
+          }
+        }
+      }
+      print "WARNING: Suspect name: {$name.Str}\n" unless
+        (not $name.von.defined and
+          not $name.jr.defined and
+          check-first-name($name.first) and
+          check-last-name($name.last));
+
+      push @new-names, $name.Str;
+    }
+
+    # Warn about duplicate names
+    my %seen;
+    %seen{$_}++ and say "WARNING: Duplicate name: $_" for @new-names;
+
+    BibTeX::Value.new(@new-names.join( ' and ' ));
+  }
+
 }
 
 sub update(BibTeX::Entry $entry, Str $field, &fun) {
@@ -348,7 +316,7 @@ sub check(BibTeX::Entry $entry, Str $field, Str $msg, &check) {
 sub purify-string (Str $str) { $str }
 
 # Based on TeX::Encode and modified to use braces appropriate for BibTeX.
-sub latex-encode(Str $s) { # TODO: try "is copy"
+sub latex-encode(Str $s) {
   my $str = $s;
 
   # HTML -> LaTeX Codes
@@ -366,10 +334,10 @@ sub latex-encode(Str $s) { # TODO: try "is copy"
   $str ~~ s:i:s:g/"<span class=" <["']> "monospace" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
   $str ~~ s:i:s:g/"<span class=" <["']> "small" "-"? "caps" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
   $str ~~ s:i:s:g/"<span class=" <["']> <-["']>* "type-small-caps" <-["']>* <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
-  $str ~~ s:i:s:g/"<span class=" <["']> "italic" <["']> ">" (.*?) "</span>"/\\emph\{$0\}/; # TODO: \\textit?
-  $str ~~ s:i:s:g/"<span class=" <["']> "bold" <["']> ">" (.*?) "</span>"/\\textbf\{$0\}/; # TODO: \\textit?
-  $str ~~ s:i:s:g/"<span class=" <["']> "sup" <["']> ">" (.*?) "</span>"/\\textsuperscript\{$0\}/; # TODO: \\textit?
-  $str ~~ s:i:s:g/"<span class=" <["']> "sub" <["']> ">" (.*?) "</span>"/\\textsubscript\{$0\}/; # TODO: \\textit?
+  $str ~~ s:i:s:g/"<span class=" <["']> "italic" <["']> ">" (.*?) "</span>"/\\textit\{$0\}/;
+  $str ~~ s:i:s:g/"<span class=" <["']> "bold" <["']> ">" (.*?) "</span>"/\\textbf\{$0\}/;
+  $str ~~ s:i:s:g/"<span class=" <["']> "sup" <["']> ">" (.*?) "</span>"/\\textsuperscript\{$0\}/;
+  $str ~~ s:i:s:g/"<span class=" <["']> "sub" <["']> ">" (.*?) "</span>"/\\textsubscript\{$0\}/;
   $str ~~ s:i:s:g/"<span class=" <["']> "sc" <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
   $str ~~ s:i:s:g/"<span class=" <["']> "EmphasisTypeSmallCaps " <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
   $str ~~ s:i:s:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
@@ -382,13 +350,11 @@ sub latex-encode(Str $s) { # TODO: try "is copy"
   $str ~~ s:i:s:g/"<b>" (.*?) "</b>"/\\textbf\{$0\}/; # Replace <b> with \textbf
   $str ~~ s:i:s:g/"<tt>" (.*?) "</tt>"/\\texttt\{$0\}/; # Replace <tt> with \texttt
   $str ~~ s:i:s:g/"<code>" (.*?) "</code>"/\\texttt\{$0\}/; # Replace <code> with \texttt
-#  $str ~~ s:i:s:g/"<small>" (.*?) "</small>"/{\\small $0}/; # Replace <small> with \small
   $str ~~ s:i:s:g/"<sup>" "</sup>"//; # Remove emtpy <sup>
   $str ~~ s:i:s:g/"<sup>" (.*?) "</sup>"/\\textsuperscript\{$0\}/; # Super scripts
   $str ~~ s:i:s:g/"<supscrpt>" (.*?) "</supscrpt>"/\\textsuperscript\{$0\}/; # Super scripts
   $str ~~ s:i:s:g/"<sub>" (.*?) "</sub>"/\\textsubscript\{$0\}/; # Sub scripts
 
-#  $str ~~ s:i:s:g/"<img src=\"http" "s"? "://www.sciencedirect.com/scidirimg/entities/" (<[0..9a..f]>+) ".gif\"" .*? ">"/{chr(hex $1)}/; # Fix for Science Direct
   $str ~~ s:i:s:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
   $str ~~ s:i:s:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
 
@@ -525,47 +491,4 @@ sub flatten-name(BibTeX::Name $name) {
     $name.von // (),
     $name.last // (),
     $name.jr // ());
-}
-
-sub canonical-names(@known-names, Str $names --> Str) {
-  my BibTeX::Name @names = parse-names($names);
-#     my $name_format = new Text::BibTeX::NameFormat ('vljf', 0);
-#     $name_format->set_options(BTN_VON, 0, BTJ_SPACE, BTJ_SPACE);
-#     for (BTN_LAST, BTN_JR, BTN_FIRST) {
-#         $name_format->set_options($_, 0, BTJ_SPACE, BTJ_NOTHING);
-#     }
-  my Str @new-names;
-  # TODO: == vs eq
-  NAME:
-  for @names -> $name {
-    for @known-names -> @name-group {
-      for @name-group -> $n {
-        if flatten-name($name).lc eq flatten-name($n).lc {
-          push @new-names, @name-group.head.Str;
-          next NAME;
-        }
-      }
-    }
-    # for my $name_group (@{$self->valid_names}) {
-    #     for (@$name_group) {
-    #         if (lc decode_entities(flatten_name($name)) eq lc flatten_name($_)) {
-    #             push @names, decode('utf8', $name_group->[0]->format($name_format));
-    #             next NAME;
-    #         }
-    #     }
-    # }
-    print "WARNING: Suspect name: {$name.Str}\n" unless
-      (not $name.von.defined and
-        not $name.jr.defined and
-        check-first-name($name.first) and
-        check-last-name($name.last));
-
-    push @new-names, $name.Str;
-  }
-
-  # Warn about duplicate names
-  my %seen;
-  %seen{$_}++ and say "WARNING: Duplicate name: $_" for @new-names;
-
-  @new-names.join( ' and ' );
 }

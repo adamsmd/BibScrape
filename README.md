@@ -1,15 +1,13 @@
 # bib-scrape
 
     $ sudo apt install libperl-dev
-    $ zef install Inline::Perl5
+    $ sudo apt install python2-dev
+
     $ zef install ArrayHash
     $ zef install XML
     $ zef install HTML::Entity
-
-    $ sudo apt install python2-dev
     $ zef install Inline::Python
     $ zef install Locale::Codes
-
 
 ## Notes
 

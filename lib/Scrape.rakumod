@@ -1,144 +1,22 @@
 unit module Scrape;
 
+use HTML::Entity;
+
 use BibTeX;
 use BibTeX::Html;
 
 use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
 sub infix:<%>($obj, Str $attr) { $obj.__getattribute__($attr); }
 
-# TODO: ignore non-domain files (timeout on file load?)
-
 ########
 
 my $web-driver;
-my $proc;
-
-# ['CONTEXT_CHROME',
-#  'CONTEXT_CONTENT',
-#  'NATIVE_EVENTS_ALLOWED',
-#  '__class__',
-#  '__delattr__',
-#  '__dict__',
-#  '__doc__',
-#  '__enter__',
-#  '__exit__',
-#  '__format__',
-#  '__getattribute__',
-#  '__hash__',
-#  '__init__',
-#  '__module__',
-#  '__new__',
-#  '__reduce__',
-#  '__reduce_ex__',
-#  '__repr__',
-#  '__setattr__',
-#  '__sizeof__',
-#  '__str__',
-#  '__subclasshook__',
-#  '__weakref__',
-#  '_file_detector',
-#  '_is_remote',
-#  '_mobile',
-#  '_switch_to',
-#  '_unwrap_value',
-#  '_web_element_cls',
-#  '_wrap_value',
-#  'add_cookie',
-#  'application_cache',
-#  'back',
-#  'binary',
-#  'capabilities',
-#  'close',
-#  'command_executor',
-#  'context',
-#  'create_web_element',
-#  'current_url',
-#  'current_window_handle',
-#  'delete_all_cookies',
-#  'delete_cookie',
-#  'desired_capabilities',
-#  'error_handler',
-#  'execute',
-#  'execute_async_script',
-#  'execute_script',
-#  'file_detector',
-#  'file_detector_context',
-#  'find_element',
-#  'find_element_by_class_name',
-#  'find_element_by_css_selector',
-#  'find_element_by_id',
-#  'find_element_by_link_text',
-#  'find_element_by_name',
-#  'find_element_by_partial_link_text',
-#  'find_element_by_tag_name',
-#  'find_element_by_xpath',
-#  'find_elements',
-#  'find_elements_by_class_name',
-#  'find_elements_by_css_selector',
-#  'find_elements_by_id',
-#  'find_elements_by_link_text',
-#  'find_elements_by_name',
-#  'find_elements_by_partial_link_text',
-#  'find_elements_by_tag_name',
-#  'find_elements_by_xpath',
-#  'firefox_profile',
-#  'forward',
-#  'fullscreen_window',
-#  'get',
-#  'get_cookie',
-#  'get_cookies',
-#  'get_log',
-#  'get_screenshot_as_base64',
-#  'get_screenshot_as_file',
-#  'get_screenshot_as_png',
-#  'get_window_position',
-#  'get_window_rect',
-#  'get_window_size',
-#  'implicitly_wait',
-#  'install_addon',
-#  'log_types',
-#  'maximize_window',
-#  'minimize_window',
-#  'mobile',
-#  'name',
-#  'orientation',
-#  'page_source',
-#  'profile',
-#  'quit',
-#  'refresh',
-#  'save_screenshot',
-#  'service',
-#  'session_id',
-#  'set_context',
-#  'set_page_load_timeout',
-#  'set_script_timeout',
-#  'set_window_position',
-#  'set_window_rect',
-#  'set_window_size',
-#  'start_client',
-#  'start_session',
-#  'stop_client',
-#  'switch_to',
-#  'switch_to_active_element',
-#  'switch_to_alert',
-#  'switch_to_default_content',
-#  'switch_to_frame',
-#  'switch_to_window',
-#  'title',
-#  'uninstall_addon',
-#  'w3c',
-#  'window_handles']
-
+my $python;
 
 sub init() {
   unless $web-driver.defined {
-    #$proc = Proc::Async.new('geckodriver', '--log=warn');
-    #$proc.bind-stdout($*ERR);
-    #$proc.start;
-    #await $proc.ready;
-    # TODO: check if already running (use explicit port?)
-    $proc = Inline::Python.new;
-    $proc.run("
+    $python = Inline::Python.new;
+    $python.run("
 import sys
 import os
 sys.path.append('dep/py')
@@ -179,7 +57,7 @@ sub to-str($buf) {
 
 sub parse-names(Str $string) is export {
   init();
-  my @names = $proc.call( '__main__', 'parse_names', $string);
+  my @names = $python.call( '__main__', 'parse_names', $string);
   @names.map({
     BibTeX::Name.new(
       first => to-str($_%<first>),
@@ -191,25 +69,18 @@ sub parse-names(Str $string) is export {
 sub open() {
   init();
   close();
-  #$web-driver = WebDriver::Tiny.new(port => 4444);
-  $web-driver = $proc.call('__main__', 'web_driver');
-  #$web-driver.set_page_load_timeout(5);
+  $web-driver = $python.call('__main__', 'web_driver');
 }
 
 sub close() {
   if $web-driver.defined {
     $web-driver.quit();
-    #$web-driver._req( DELETE => '' );
     $web-driver = Any;
   }
 }
 
 END {
   close();
-  if $proc.defined {
-    #$proc.kill;
-    # TODO: kill all sub-processes
-  }
 }
 
 ########
@@ -226,10 +97,7 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
   sleep 5;
   my $domain = $web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
   my $bibtex = do given $domain {
-    # TODO: https://dblp.org/db/journals/publ/
-    # TODO: all ciated by papers in big four
     when m[ « 'acm.org'             $] { scrape-acm(); }
-    # TODO: arxiv
     when m[ « 'cambridge.org'       $] { scrape-cambridge(); }
     when m[ « 'computer.org'        $] { scrape-ieee-computer(); }
     when m[ « 'ieeexplore.ieee.org' $] { scrape-ieee-explore(); }
@@ -250,8 +118,6 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
 ########
 
 sub scrape-acm(--> BibTeX::Entry) {
-  # TODO: XPath
-  # TODO: side pill with issn
   $web-driver.find_element_by_css_selector('a[data-title="Export Citation"]').click;
   sleep 1;
   my @citation-text = $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline").map({ $_ % <text> });
@@ -268,6 +134,8 @@ sub scrape-acm(--> BibTeX::Entry) {
     .find_elements_by_css_selector(".abstractSection.abstractInFull")
     .reverse.head
     .get_property('innerHTML');
+  # Fix the double HTML encoding of the abstract (Bug in ACM?)
+  $abstract = decode-entities($abstract);;
   $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
 
   # Get the Unicode version that we can properly convert to TeX
@@ -289,10 +157,6 @@ sub scrape-acm(--> BibTeX::Entry) {
   @keywords = @keywords.sort;
   $bibtex.fields<keywords> = BibTeX::Value.new(@keywords.join( '; ' )) if @keywords.elems > 0;
 
-#    # Fix the double HTML encoding of the abstract (Bug in ACM?)
-#    $entry->set('abstract', decode_entities($1)) if $mech->content() =~
-#        m[<div style="display:inline">((?:<par>|<p>)?.+?(?:</par>|</p>)?)</div>];
-#
 #    html-meta-parse($web-driver);
 #    my $html = Text::MetaBib::parse($mech->content());
 #    $html->bibtex($entry, 'booktitle');
@@ -303,8 +167,6 @@ sub scrape-acm(--> BibTeX::Entry) {
 #                                   $html->get('citation_conference')->[0], qr[\b],
 #                                   sub { (lc $_[0] eq lc $_[1]) ? $_[0] : $_[1] },
 #                                   { keyGen => sub { lc shift }})) if $entry->exists('booktitle');
-#
-#    $entry->set('title', $mech->content() =~ m[<h1 class="mediumb-text" style="margin-top:0px; margin-bottom:0px;">(.*?)</h1>]);
 
   $bibtex;
 }
@@ -315,11 +177,8 @@ sub scrape-cambridge(--> BibTeX::Entry) {
 
   $web-driver.find_element_by_css_selector('[data-export-type="bibtex"]').click;
 
-  # TODO: remove all 'die' and warn instead
-  # TODO: mktemp
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
-  $bibtex;
 
   #   my ($abst) = $mech->content() =~ m[<div class="abstract" data-abstract-type="normal">(.*?)</div>]s;
   #   $abst =~ s[^<title>Abstract</title>][] if $abst;
@@ -338,7 +197,7 @@ sub scrape-cambridge(--> BibTeX::Entry) {
 
   #   print_or_online($entry, 'issn', [$html->get('citation_issn')->[0]], [$html->get('citation_issn')->[1]]);
 
-  #   return $entry;
+  $bibtex;
 }
 
 sub scrape-ieee-computer {
@@ -351,7 +210,6 @@ sub scrape-ieee-computer {
   my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
   $text ~~ s/ "\{," /\{key,/;
   my $bibtex = bibtex-parse($text).items.head;
-  $bibtex;
 
 #     my $html = Text::MetaBib::parse(decode('utf8', $mech->content()));
 #     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
@@ -369,6 +227,7 @@ sub scrape-ieee-computer {
 #     # Don't use the MetaBib for this as IEEE doesn't escape quotes property
 #     $entry->set('abstract', $mech->content() =~ m[<div class="abstractText abstractTextMB">(.*?)</div>]);
 
+  $bibtex;
 }
 
 sub scrape-ieee-explore {
@@ -380,7 +239,6 @@ sub scrape-ieee-explore {
   sleep 1;
   my $text = $web-driver.find_element_by_class_name( 'ris-text' ).get_property( 'innerHTML' );
   my $bibtex = bibtex-parse($text).items.head;
-  $bibtex;
 
 #     # Extract data from embedded JSON
 #     my @affiliations = $mech->content() =~ m[\{.*?"affiliation":"([^"]+)".*?\}]sg;
@@ -411,6 +269,7 @@ sub scrape-ieee-explore {
 #     update($entry, 'keywords', sub { s[; *][; ]sg; });
 #     update($entry, 'abstract', sub { s[&lt;&lt;ETX&gt;&gt;$][]; });
 
+  $bibtex;
 }
 
 sub scrape-ios-press {
@@ -442,7 +301,6 @@ sub scrape-jstor {
   sleep 1;
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
-  $bibtex;
 #     print STDERR "WARNING: JSTOR imposes strict rate limiting.  You might have `Error GETing` errors if you try to get the BibTeX for multiple papers in a row.\n";
 
 #     my $html = Text::MetaBib::parse($mech->content());
@@ -467,13 +325,14 @@ sub scrape-jstor {
 #     my ($abs) = $mech->content() =~ m[<div class="abstract1"[^>]*>(.*?)</div>]s;
 #     $entry->set('abstract', $abs) if defined $abs;
 
+  $bibtex;
 }
 
 sub scrape-oxford {
   $web-driver.find_element_by_class_name( 'js-cite-button' ).click;
   sleep 2;
   my $select-element = $web-driver.find_element_by_id( 'selectFormat' );
-  my $select = $proc.call( '__main__', 'select', $select-element);
+  my $select = $python.call( '__main__', 'select', $select-element);
   $select.select_by_visible_text( '.bibtex (BibTex)' );
   sleep 1;
   $web-driver.find_element_by_class_name( 'citation-download-link' ).click;
@@ -481,7 +340,6 @@ sub scrape-oxford {
 
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
-  $bibtex;
 #     my $html = Text::MetaBib::parse($mech->content());
 #     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
 #     $html->bibtex($entry);
@@ -492,6 +350,8 @@ sub scrape-oxford {
 #     print_or_online($entry, 'issn',
 #          [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],
 #          [$mech->content() =~ m[Online ISSN (\d\d\d\d-\d\d\d[0-9X])]]);
+
+  $bibtex;
 }
 
 sub scrape-science-direct(--> BibTeX::Entry) {
@@ -499,14 +359,6 @@ sub scrape-science-direct(--> BibTeX::Entry) {
   $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
-  $bibtex;
-
-#     # Evil Elsiver uses JavaScript to redirect
-#     my ($redirect) = $mech->content() =~ m[<input type="hidden" name="redirectURL" value="([^"]*?)" id="redirectURL"/>];
-#     if (defined $redirect) {
-#         $redirect =~ s[\%([0-9A-Z]{2})][@{[chr(hex $1)]}]ig; # URL decode
-#         $mech->get($redirect);
-#     }
 
 #     my $html = Text::MetaBib::parse($mech->content());
 
@@ -544,13 +396,14 @@ sub scrape-science-direct(--> BibTeX::Entry) {
 #     $entry->set('month', $f->get('month'));
 #     $mech->back();
 
-# # TODO: editor
+# TODO: editor
 
 #     $html->bibtex($entry);
 
 #     my ($title) = $mech->content =~ m[<h1 class="Head"><span class="title-text">(.*?)</span>(<a [^>]+>.</a>)?</h1>]s;
 #     $entry->set('title', $title);
 
+  $bibtex;
 }
 
 sub scrape-springer {
@@ -610,7 +463,6 @@ sub scrape-wiley {
   sleep 5;
   my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
   my $bibtex = bibtex-parse($text).items.head;
-  $bibtex;
 
 #     my $html = Text::MetaBib::parse($mech->content());
 #     $html->bibtex($entry);
@@ -641,4 +493,5 @@ sub scrape-wiley {
 #     update($entry, 'title', sub { s[<span>(?=[^\$])][<span class="monospace">]sg; });
 #     update($entry, 'abstract', sub { s[<span>(?=[^\$])][<span class="monospace">]sg; });
 
+  $bibtex;
 }

@@ -4,7 +4,7 @@ unit module Isbn;
 # https://www.isbn-international.org/range_file_generation
 # http://pcn.loc.gov/isbncnvt.html
 
-# NOTE: Must strip CRLF from first part of file
+# NOTE: due to a bug in XML, must strip tags containing '.' from the file
 
 use XML;
 
@@ -95,7 +95,6 @@ sub canonical-issn(Str $issn, IsbnType $type, Str $sep) is export {
   return $i;
 }
 
-# $isbn13: >0 (force to isbn 13), <0 (use isbn10 if possible), 0 (use whatever came in)
 sub canonical-isbn(Str $isbn, IsbnType $type, Str $sep) is export {
   my Str $i = $isbn;
   $i ~~ s:g/<[- ]>//;
@@ -130,19 +129,19 @@ sub canonical-isbn(Str $isbn, IsbnType $type, Str $sep) is export {
   return $i;
 }
 
-#print canonical-isbn('0-201-53082-1', 0, ''), "\n";
-#print canonical-isbn('0-201-53082-1', 0, '-'), "\n";
-#print canonical-isbn('0-201-53082-1', 1, ''), "\n";
-#print canonical-isbn('0-201-53082-1', 1, '-'), "\n";
+#print canonical-isbn('0-201-53082-1', Preserve, ''), "\n";
+#print canonical-isbn('0-201-53082-1', Preserve, '-'), "\n";
+#print canonical-isbn('0-201-53082-1', Isbn13, ''), "\n";
+#print canonical-isbn('0-201-53082-1', Isbn13, '-'), "\n";
 #
-#print canonical-isbn('978-1-56619-909-4', 0, ''), "\n";
-#print canonical-isbn('978-1-56619-909-4', 0, '-'), "\n";
-#print canonical-isbn('978-1-56619-909-4', 1, ''), "\n";
-#print canonical-isbn('978-1-56619-909-4', 1, '-'), "\n";
+#print canonical-isbn('978-1-56619-909-4', Preserve, ''), "\n";
+#print canonical-isbn('978-1-56619-909-4', Preserve, '-'), "\n";
+#print canonical-isbn('978-1-56619-909-4', Isbn13, ''), "\n";
+#print canonical-isbn('978-1-56619-909-4', Isbn13, '-'), "\n";
 #
-#print canonical-isbn('979-10-00-12222-9', 0, ''), "\n";
-#print canonical-isbn('979-10-00-12222-9', 0, '-'), "\n";
-#print canonical-isbn('979-10-00-12222-9', 0, ' '), "\n";
-#print canonical-isbn('979-10-00-12222-9', 1, ''), "\n";
-#print canonical-isbn('979-10-00-12222-9', 1, '-'), "\n";
-#print canonical-isbn('979-10-00-12222-9', 1, ' '), "\n";
+#print canonical-isbn('979-10-00-12222-9', Preserve, ''), "\n";
+#print canonical-isbn('979-10-00-12222-9', Preserve, '-'), "\n";
+#print canonical-isbn('979-10-00-12222-9', Preserve, ' '), "\n";
+#print canonical-isbn('979-10-00-12222-9', Isbn13, ''), "\n";
+#print canonical-isbn('979-10-00-12222-9', Isbn13, '-'), "\n";
+#print canonical-isbn('979-10-00-12222-9', Isbn13, ' '), "\n";

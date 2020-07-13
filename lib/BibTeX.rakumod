@@ -2,9 +2,6 @@ unit module BibTeX;
 
 # Based on https://github.com/aclements/biblib
 
-#  raku -I . -M BibTeX
-# > g.parse('a@ foo { bar,}')
-
 use ArrayHash;
 
 enum Quotation <Bare Braces Quotes>;
@@ -54,10 +51,6 @@ class Value {
     }
   }
 };
-# use MONKEY-TYPING;
-# augment class Str {
-#   method Value { Value.new(Piece.new(self)); }
-# }
 
 class Item {}
 class Ignored is Item is Str {}
@@ -92,7 +85,6 @@ class Database {
   method Str { @.items».Str.join("\n\n"); }
 }
 
-# TODO: case insensitive
 grammar Grammar {
   token TOP { <bib-db> }
   regex bib-db { <clause>* }
@@ -104,13 +96,13 @@ grammar Grammar {
 
   token ignored { <-[@]>+ }
 
-  regex comment { 'comment' }
+  regex comment { :i 'comment' }
 
-  regex preamble { 'preamble' <ws> [ '{' <ws> <value> <ws> '}'
-                                  || '(' <ws> <value> <ws> ')' ] }
+  regex preamble { :i 'preamble' <ws> [ '{' <ws> <value> <ws> '}'
+                                     || '(' <ws> <value> <ws> ')' ] }
 
-  regex string { 'string' <ws> [ '{' <ws> <string-body> <ws> '}'
-                              || '(' <ws> <string-body> <ws> ')' ] }
+  regex string { :i 'string' <ws> [ '{' <ws> <string-body> <ws> '}'
+                                 || '(' <ws> <string-body> <ws> ')' ] }
 
   regex string-body { <ident> <ws> '=' <ws> <value> }
 
@@ -184,8 +176,7 @@ grammar Names {
   { '{' <balanced>* '}'
   || <-[{}\ ~,-]> }
 
-# TODO: ignore case
-  regex names {
+  regex names { :i
     [<.w>* $<name>=[<.balanced>+?] [<.w> | ","]*]* % [ \s+ 'and' <?before \s+> ]
   }
 
@@ -209,48 +200,9 @@ class Name {
   has Str $.jr;
 
   method Str {
-    # TODO: a test that has a jr part
     ($.von.defined ?? "$.von " !! "") ~
     ($.last) ~
     ($.jr.defined ?? ", $.jr" !! "") ~
     ($.first.defined ?? ", $.first" !! "")
   }
-
-  # method new(Str $str) {
-  #   my @parts = Names.parse($str, :rule<name>)<part>;
-  #   given @parts.elems {
-  #     # First von Last
-  #     when 1 {
-  #       self.bless(last => @parts[0].Str);
-  #     }
-  #     # von Last, First
-  #     when 2 {
-  #       self.bless(first => @parts[1].Str, last => @parts[0].Str);
-  #     }
-  #     # von Last, First, Jr
-  #     when 3 {
-  #       self.bless(first => @parts[1].Str, last => @parts[0].Str, jr => @parts[2].Str);
-  #     }
-  #     default {
-  #       die "failed to parse name \"$str\""
-  #     }
-  #   }
-#  }
 }
-
-# TODO: Jones and others
-
-#sub parse-namesX(Str $str) is export {
-#  BibTeX::Names.parse($str, :rule<names>)<name>.map({Name.new($_.Str)})
-#}
-
-
-# grammar Names {
-#   token letter { <-[{}]> | <ballanced> }
-#   regex names { <name>+ % " and " } # TODO: check that name never contains " and "
-#   regex name {
-#     <First> \s+ <von> \+s <Last>
-#     <von> <Last> "," <First>
-#     <von> <Last> "," <Jr> "," <First>
-#   }
-# }

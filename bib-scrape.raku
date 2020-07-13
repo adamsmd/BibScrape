@@ -6,9 +6,6 @@ use Isbn;
 use Fix;
 use Scrape; # Must be last (See comment in Scrape.rakumod)
 
-# TODO: version 20.07.05
-# TODO: list flags
-
 sub MAIN(
 # =head1 SYNOPSIS
 #
@@ -18,7 +15,7 @@ sub MAIN(
 
 # =head2 INPUTS
 #
-  Str $url, # TODO: @url
+  Str $url,
 # =item <url>
 #
 # The url of the publisher's page for the paper to be scraped.
@@ -26,7 +23,7 @@ sub MAIN(
 # The non-standard URL format 'doi:...' can also be used.
 # May be prefixed with '{key}' in order to specify an explicit key.
 #
-#  Str :@input, # TODO: is File.read or '-' >> where *.IO.f
+#  Str :@input,
 # =item --input=<file>
 #
 # Take BibTeX data from <file> to rescrape or fix.
@@ -35,7 +32,7 @@ sub MAIN(
 # WARNING: "junk" and malformed entities will be omitted from the output
 # (This is an upstream problem with the libraries we use.)
 #
-#  Str :@names = (), # TODO: is File.read
+#  Str :@names = (),
 # =item --names=<file>
 #
 # Add <file> to the list of name files used to canonicalize author names.
@@ -43,13 +40,13 @@ sub MAIN(
 #
 # See the L</NAME FILE> section for details on the format of name files.
 #
-#  Str :@actions = (), # TODO: is File.read and Perl
-# =item --actions=<file>
+#  Str :@nouns = (),
+# =item --nouns=<file>
 #
-# Add <file> to the list of action files used to canonicalize fields.
+# Add <file> to the list of noun files used to canonicalize fields.
 # If <file> is the empty string, clears the list.
 #
-# See the L</ACTION FILE> section for details on the format of action files.
+# See the L</NOUN FILE> section for details on the format of noun files.
 #
 
 
@@ -148,11 +145,47 @@ sub MAIN(
 #
 
 
+# =head2 NAMES
+#
+# We warn the user about author and editor names that publishers often get
+# wrong.  For example, some publisher assume the last name of Simon Peyton Jones
+# is "Jones" when it should be "Peyton Jones", and some publishers put author
+# names in all upper case (e.g., "CONNOR MCBRIDE").
+#
+# We call these names "suspect", not because they are wrong but because the user
+# should double check them.
+#
+# The only names we do not consider suspect are the followin formats, which the
+# publishers are unlikely to get wrong, or ones explicitly listed in the </NAME
+# FILES>.
+#
+# First names:
+#
+#   - Xxxx
+#   - Xxxx-Xxxx
+#   - Xxxx-xxxx
+#   - XxxxXxxx
+#
+# A single middle initial may follow the first name:
+#
+#   - X.
+#
+# Last names:
+#
+#   - Xxxx
+#   - Xxxx
+#   - O'Xxxx
+#   - McXxxx
+#   - MacXxxx
+#
+# This collection of name formats was chosen based the list of all authors in
+# DBLP and tries to strike a ballance between prompting the user about too many
+# names and missing names that should be reported.
+
+
 # =head2 NAME FILES
 #
 # A name file specifies the correct form for author names.
-# Any name that is not of the form "FIRST LAST" is suspect unless
-# it is in a name file.
 #
 # A name file is plain text in Unicode format.
 # In a name file, any line starting with # is a comment.
@@ -172,28 +205,24 @@ sub MAIN(
 #
 
 
-# =head2 ACTION FILES
+# =head2 NOUN FILES
 #
-# An action file specifies transformations to be applied to each field.
+# An noun file specifies words that should be protected from lower-casing
+# by inserting curly braces.
 #
-# This file is just Perl code.
-# On entry, $FIELD will contain the name of the current BibTeX field,
-# and $_ will contain the contents of the field.
-# The value of $_ at the end of this file will be stored back in the field.
-# If it is undef then the field will be deleted.
-#
-# TIP: Remember to check $FIELD so you transform only the correct fields.
-#
-# TIP: Remember to put "\b", "/g" and/or "/i" on substitutions if appropriate.
+# A noun file is plain text in Unicode format.
+# Each line starting with # is a comment.
+# Blank lines are ignored.
+# Each line lists the way that a particular word
+# should be curly braced.  (Curly braces tell BibTeX to not change the captalization of a particular part of a text.)
+# Any word that matches but with the curly braces removed is converted to the form listed in the file.
+# The first line to match in the file wins.
 #
 # =cut
 ) {
   ## INPUTS
-  # TODO: $FindBin::RealBin/config/names.cfg
-  #say $*PROGRAM;
-  #say $*PROGRAM-NAME;
-  my Str $names = <config/names.cfg>;
-  my Str $nouns = <config/nouns.cfg>;
+  my Str $names = $*PROGRAM.dirname ~ </config/names.cfg>;
+  my Str $nouns = $*PROGRAM.dirname ~ </config/nouns.cfg>;
 
   ## FIELD OPTIONS
   my @fields = <
@@ -229,69 +258,8 @@ sub MAIN(
     omit-empty => @omit-empty,
   );
 
-  #for @url -> $url {
-  my $bibtex = scrape($url);
-  $bibtex = $fixer.fix($bibtex);
-  say $bibtex.Str;
-  #}
-}
-
-
-############
-# Options
-############
-#
-# Key: Keep vs generate
-#
-# Author, Editor: title case, initialize, last-first
-# Author, Editor, Affiliation(?): List of renames
-# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
-#  List of renames (regex?)
-#
-# Title
-#  Captialization: Initialisms, After colon, list of proper names
-#
-# ISSN: Print vs Electronic
-# Keywords: ';' vs ','
-
-# TODO:
-#  author as editors?
-#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
-#  follow jstor links to original publisher
-#  add abstract to jstor
-#  get PDF
-#END TODO
-
-# TODO: omit type-regex field-regex (existing entry is in scope)
-
-# Omit:class/type
-# Include:class/type
-# no issn, no isbn
-# title-case after ":"
-# Warn if first alpha after ":" is not capitalized
-# Flag about whether to Unicode, HTML, or LaTeX encode
-# Warning on duplicate names
-
-# TODO:
-# ALWAYS_GEN_KEY
-#$PREFER_NEW 1 = use new when both new and old have a key
-#$ADD_NEW 1 = use new when only new has key
-#$REMOVE_OLD 1 = not use old when only new has key
-
-#my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
-#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
-#my @RENAME
-
-# TODO:
-# preserve key if from bib-tex?
-# warn about duplicate author names
-
-# my (@NAME_FILE) = ("$FindBin::RealBin/config/names.cfg");
-# my (@FIELD_ACTION_FILE) = ("$FindBin::RealBin/config/actions.cfg");
-
-# # TODO: make debug be verbose and go to STDERR
-
-# # TODO: whether to re-scrape bibtex
+# TODO: input files
+# TODO: whether to re-scrape bibtex
 # for my $filename (@INPUT) {
 #     my $bib = new Text::BibTeX::File $filename;
 #     # TODO: print "junk" between entities
@@ -318,21 +286,10 @@ sub MAIN(
 #     }
 # }
 
-# for (@ARGV) {
-#     my $entry = new Text::BibTeX::Entry;
-#     $entry->set_key($1) if $_ =~ s[^\{([^}]*)\}][];
-#     $_ =~ s[^doi:][http(?:s)?://(?:dx)?.doi.org/]i;
-#     $entry->set('bib_scrape_url', $_);
-#     scrape_and_fix_entry($entry);
-# }
-
-# sub scrape_and_fix_entry {
-#     my ($old_entry) = @_;
-
-#     # TODO: warn if not exists bib_scrape_url
-#     my $entry = (($old_entry->exists('bib_scrape_url') && $SCRAPE) ?
-#         Text::BibTeX::Scrape::scrape($old_entry->get('bib_scrape_url')) :
-#         $old_entry);
-#     $entry->set_key($old_entry->key());
-#     print $FIX ? $fixer->fix($entry) : $entry->print_s;
-# }
+  #for @url -> $url {
+  $url ~~ s:i/^ 'doi:' /https:\/\/doi.org/;
+  my $bibtex = scrape($url);
+  $bibtex = $fixer.fix($bibtex);
+  say $bibtex.Str;
+  #}
+}

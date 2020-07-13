@@ -11,9 +11,6 @@ my %months;
 %months{@long-names[$_]} = @macro-names[$_] for @long-names.keys;
 %months{'sept'} = 'sep';
 
-#Text::BibTeX::delete_macro($_) for (keys %months);
-#Text::BibTeX::add_macro-text($_, $months{$_}) for (keys %months);
-
 sub macro(Str $macro) { $macro.defined ?? BibTeX::Piece.new($macro, BibTeX::Bare) !! Nil }
 
 sub num2month(Str $num) is export {
