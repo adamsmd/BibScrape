@@ -130,7 +130,10 @@ class Fix {
 
         # "Front" page
         "f" \d+ |
-        "f" \d+ "--" f\d+
+        "f" \d+ "--" f\d+ |
+
+        # PACMPL uses conference abbreviations (e.g., ICFP)
+        <[A..Z]>+
         ];
       /^ $page+ % "," $/;
     });
