@@ -247,3 +247,7 @@ EISSN from side pill of ACM
 META6.json
 
 use 'is copy' on parameters
+
+Invisible browser (with flag (verbose?) to make visible)
+
+Code coverage

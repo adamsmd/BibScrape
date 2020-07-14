@@ -186,14 +186,35 @@ sub scrape-acm(--> BibTeX::Entry) {
   $bibtex;
 }
 
+# TODO: use meta
+sub meta(Str $name --> Str) {
+  $web-driver.find_element_by_css_selector( "meta[name=\"$name\"]" ).get_attribute( 'content' );
+}
+
+sub metas(Str $name --> Seq) {
+  $web-driver.find_elements_by_css_selector( "meta[name=\"$name\"]" ).map({ .get_attribute( 'content' ) });
+}
+
 sub scrape-cambridge(--> BibTeX::Entry) {
-  $web-driver.find_element_by_class_name('export-citation-product').click;
+  $web-driver.find_element_by_class_name( 'export-citation-product' ).click;
   sleep 5;
 
-  $web-driver.find_element_by_css_selector('[data-export-type="bibtex"]').click;
+  $web-driver.find_element_by_css_selector( '[data-export-type="bibtex"]' ).click;
 
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
+
+  my $abstract = $web-driver.find_element_by_css_selector( 'meta[name="citation_abstract"]' ).get_attribute( 'content' );
+  $abstract ~~ s/^ '<div ' <-[>]>* '>'//;
+  $abstract ~~ s/ '</div>' $//;
+  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+
+  my $date = $web-driver.find_element_by_css_selector( 'meta[name="citation_publication_date"]' ).get_attribute( 'content' );
+  $date ~~ /^ \d ** 4 '/' (\d\d?) $/;
+  $bibtex.fields<month> = BibTeX::Value.new($0.Str);
+
+  my @issns = metas( 'citation_issn' );
+  $bibtex.fields<issn> = BibTeX::Value.new("@issns[0] (Print) @issns[1] (Online)");
 
   #   my ($abst) = $mech->content() =~ m[<div class="abstract" data-abstract-type="normal">(.*?)</div>]s;
   #   $abst =~ s[^<title>Abstract</title>][] if $abst;

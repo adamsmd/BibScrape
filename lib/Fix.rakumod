@@ -132,9 +132,8 @@ class Fix {
         "f" \d+ |
         "f" \d+ "--" f\d+ |
 
-        # PACMPL uses conference abbreviations (e.g., ICFP)
-        <[A..Z]>+
-        ];
+        # "es" as ending number
+        \d+ "--" "es" ];
       /^ $page+ % "," $/;
     });
 
@@ -143,7 +142,9 @@ class Fix {
 
     check($entry, 'number', 'suspect number', {
       /^ \d+ $/ || /^ \d+ "--" \d+ $/ || /^ [\d+]+ % "/" $/ || /^ \d+ "es" $/ ||
-      /^ "Special Issue " \d+ ["--" \d+]? $/ || /^ "S" \d+ $/});
+      /^ "Special Issue " \d+ ["--" \d+]? $/ || /^ "S" \d+ $/ ||
+      # PACMPL uses conference abbreviations (e.g., ICFP)
+      /^ <[A..Z]>+ $/ });
 
     self.isbn($entry, 'isbn', $.isbn-media, &canonical-isbn);
 
@@ -239,20 +240,18 @@ class Fix {
 
   method isbn(BibTeX::Entry $entry, Str $field, MediaType $print_or_online, &canonical) {
     update($entry, $field, {
-      if m:i/^ (<[0..9x-]>+) "(Print)" (<[0..9x-]>+) "(Online)" $/ {
-        given $print_or_online {
-          when Print {
-            $_ = &canonical($0, $.isbn-type, $.isbn-sep);
-          }
-          when Online {
-            $_ = &canonical($1, $.isbn-type, $.isbn-sep);
-          }
-          when Both {
-            $_ = &canonical($0, $.isbn-type, $.isbn-sep)
-              ~ ' (Print) '
-              ~ &canonical($1, $.isbn-type, $.isbn-sep)
-              ~ ' (Online)';
-          }
+      if m:i/^ (<[0..9x-]>+) " (Print) " (<[0..9x-]>+) " (Online)" $/ {
+        if $print_or_online == Print {
+          $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep);
+        }
+        if $print_or_online == Online {
+          $_ = &canonical($1.Str, $.isbn-type, $.isbn-sep);
+        }
+        if $print_or_online == Both {
+          $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep)
+            ~ ' (Print) '
+            ~ &canonical($1.Str, $.isbn-type, $.isbn-sep)
+            ~ ' (Online)';
         }
       } elsif m:i/^ <[0..9x-]>+ $/ {
         $_ = &canonical($_, $.isbn-type, $.isbn-sep);
