@@ -126,7 +126,7 @@ class Fix {
         \d+ <[a..z]> "--" \d+ <[a..z]> |
         # Digits sep Digits
         \d+ <[.:/]> \d+ |
-        \d+ (<[.:/]>) \d+ "--" \d+ \0 \d+ |
+        \d+ (<[.:/]>) \d+ "--" \d+ $0 \d+ |
 
         # "Front" page
         "f" \d+ |

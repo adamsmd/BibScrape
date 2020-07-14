@@ -6,6 +6,7 @@ PACMPL uses conference names as issue numbers
   journal = {Proceedings of the ACM on Programming Languages},
   volume = {1},
   number = {OOPSLA},
+  pages = {82:1--82:25},
   articleno = {82},
   numpages = {25},
   month = oct,

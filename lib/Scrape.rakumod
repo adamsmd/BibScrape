@@ -180,6 +180,13 @@ sub scrape-acm(--> BibTeX::Entry) {
     my @journal = metas( 'citation_journal_title' );
     if @journal.elems > 0 { $bibtex.fields<journal> = BibTeX::Value.new(@journal.head); }
   }
+
+  if $bibtex.fields<articleno>:exists and $bibtex.fields<numpages>:exists
+      and not $bibtex.fields<pages>:exists {
+    my Str $articleno = $bibtex.fields<articleno>.simple-str;
+    my Str $numpages = $bibtex.fields<numpages>.simple-str;
+    $bibtex.fields<pages> = BibTeX::Value.new("$articleno:1--$articleno:$numpages");
+  }
 #    html-meta-parse($web-driver);
 #    my $html = Text::MetaBib::parse($mech->content());
 #    $html->bibtex($entry, 'booktitle');
