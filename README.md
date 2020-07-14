@@ -18,6 +18,8 @@ Once we have python 3, we can use the urllib3 that comes with python.
 
 URL
 
+How you invoked bib-scrape (e.g., any flags)
+
 Expected BibTeX
 
 Actual BibTeX

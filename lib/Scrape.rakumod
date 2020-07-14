@@ -84,6 +84,14 @@ END {
   close();
 }
 
+sub meta(Str $name --> Str) {
+  $web-driver.find_element_by_css_selector( "meta[name=\"$name\"]" ).get_attribute( 'content' );
+}
+
+sub metas(Str $name --> Seq) {
+  $web-driver.find_elements_by_css_selector( "meta[name=\"$name\"]" ).map({ .get_attribute( 'content' ) });
+}
+
 ########
 
 my $downloads = 'downloads'.IO;
@@ -169,8 +177,8 @@ sub scrape-acm(--> BibTeX::Entry) {
   $bibtex.fields<keywords> = BibTeX::Value.new(@keywords.join( '; ' )) if @keywords.elems > 0;
 
   if $bibtex.type eq 'article' {
-    my @journal = $web-driver.find_elements_by_css_selector( 'meta[name="citation_journal_title"]' );
-    if @journal.elems > 0 { $bibtex.fields<journal> = BibTeX::Value.new(@journal.head.get_property( 'content' )); }
+    my @journal = metas( 'citation_journal_title' );
+    if @journal.elems > 0 { $bibtex.fields<journal> = BibTeX::Value.new(@journal.head); }
   }
 #    html-meta-parse($web-driver);
 #    my $html = Text::MetaBib::parse($mech->content());
@@ -186,15 +194,6 @@ sub scrape-acm(--> BibTeX::Entry) {
   $bibtex;
 }
 
-# TODO: use meta
-sub meta(Str $name --> Str) {
-  $web-driver.find_element_by_css_selector( "meta[name=\"$name\"]" ).get_attribute( 'content' );
-}
-
-sub metas(Str $name --> Seq) {
-  $web-driver.find_elements_by_css_selector( "meta[name=\"$name\"]" ).map({ .get_attribute( 'content' ) });
-}
-
 sub scrape-cambridge(--> BibTeX::Entry) {
   $web-driver.find_element_by_class_name( 'export-citation-product' ).click;
   sleep 5;
@@ -204,12 +203,12 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
-  my $abstract = $web-driver.find_element_by_css_selector( 'meta[name="citation_abstract"]' ).get_attribute( 'content' );
+  my $abstract = meta( 'citation_abstract' ).get_attribute( 'content' );
   $abstract ~~ s/^ '<div ' <-[>]>* '>'//;
   $abstract ~~ s/ '</div>' $//;
   $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
 
-  my $date = $web-driver.find_element_by_css_selector( 'meta[name="citation_publication_date"]' ).get_attribute( 'content' );
+  my $date = meta( 'citation_publication_date' ).get_attribute( 'content' );
   $date ~~ /^ \d ** 4 '/' (\d\d?) $/;
   $bibtex.fields<month> = BibTeX::Value.new($0.Str);
 
