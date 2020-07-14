@@ -1,4 +1,4 @@
-http://www.springer.com/computer/theoretical+computer+science/book/978-3-540-65410-0
+https://www.springer.com/computer/theoretical+computer+science/book/978-3-540-65410-0
 Book
 @Book{,
   author =    {Nielson, Flemming and Nielson, Hanne R. and Hankin, Chris},
@@ -16,4 +16,3 @@ Book
   OPTannote =    {},
   isbn = {978-3-540-65410-0},
 }
-
