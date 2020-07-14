@@ -15,7 +15,7 @@ sub MAIN(
 
 # =head2 INPUTS
 #
-  Str $url,
+  Str $url is copy,
 # =item <url>
 #
 # The url of the publisher's page for the paper to be scraped.
@@ -287,9 +287,12 @@ sub MAIN(
 # }
 
   #for @url -> $url {
+  $url ~~ s/^ '{' (<-[}]>*) '}' //;
+  my $key = $0;
   $url ~~ s:i/^ 'doi:' /https:\/\/doi.org/;
   my $bibtex = scrape($url);
   $bibtex = $fixer.fix($bibtex);
+  $bibtex.key = $key.Str if $key;
   say $bibtex.Str;
   #}
 }

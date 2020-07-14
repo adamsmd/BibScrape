@@ -1,6 +1,6 @@
-{cite:loliproc}https://doi.org/10.1145/1863543.1863551
+{loliproc}https://doi.org/10.1145/1863543.1863551
 Specified key
-@inproceedings{cite:loliproc,
+@inproceedings{loliproc,
   author = {Mazurak, Karl and Zdancewic, Steve},
   title = {Lolliproc: to concurrency from classical linear logic via curry-howard and control},
   booktitle = {Proceedings of the 15th ACM SIGPLAN International Conference on Functional Programming},

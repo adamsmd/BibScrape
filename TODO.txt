@@ -245,3 +245,5 @@ Isbn -> ISBN
 EISSN from side pill of ACM
 
 META6.json
+
+use 'is copy' on parameters
