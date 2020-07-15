@@ -16,7 +16,7 @@ enum MediaType <Print Online Both>;
 class Fix {
   ## INPUTS
   has Array @.names;
-  has Str @.nouns;
+  has Str %.nouns; # Maps strings to their replacements
 
   ## OPERATING MODES
   has Bool $.debug;
@@ -54,17 +54,18 @@ class Fix {
     }
     @names = @names.grep({ .elems > 0});
 
-    my Str @nouns;
+    my Str %nouns;
     for %args<noun-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
       my $line = $l;
       $line.chomp;
       $line ~~ s/"#".*//; # Remove comments (which start with `#`)
       if $line !~~ /^\s*$/ {
-        push @nouns, $line;
+        my $key = do given $line { S:g/<[{}]>// };
+        %nouns{$key} = $line;
       }
     }
 
-    self.bless(names => @names, nouns => @nouns, |%args);
+    self.bless(names => @names, nouns => %nouns, |%args);
   }
 
   method fix(BibTeX::Entry $bibtex --> BibTeX::Entry) {
@@ -189,9 +190,15 @@ class Fix {
       s:g/\s ** 2..* / /; # Remove duplicate whitespace
     }) for $entry.fields.pairs;
 
+    # Keep acronyms capitalized
     update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) /\{$0\}/; }) if $.escape-acronyms;
 
-    # TODO: nouns
+    # Keep proper nouns capitalized
+    update($entry, 'title', {
+      for %.nouns.kv -> $k, $v {
+        s:g/«$k»/$v/;
+      }
+    });
 
     # Use bibtex month macros
     # Must be after field encoding because we use macros
