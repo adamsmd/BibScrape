@@ -224,7 +224,7 @@ class Fix {
     # Generate an entry key
     my $name = $entry.fields<author> // $entry.fields<editor>;
     $name = $name.defined ??
-      purify-string(do given parse-names($name.simple-str).head.last { S:g/ ' ' // }) !!
+      do given parse-names($name.simple-str).head.last { S:g/ <-[A..Za..z0..9]> //;  } !!
       'anon';
     my $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
     my $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
