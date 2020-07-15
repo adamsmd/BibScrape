@@ -109,7 +109,8 @@ grammar Grammar {
   regex entry { <ident> <ws> [ '{' <ws> <key> <ws> <entry-body> <ws> '}'
                             || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ]}
 
-  token key { <-[,\ \t}\n]>* }
+  # Technically spaces shouldn't be allowed, but some publishers have them anyway
+  token key { <-[,\t}\n]>* }
 
   token key-paren { <-[,\ \t\n]>* }
 
@@ -138,8 +139,8 @@ grammar Grammar {
   { '{' <balanced>* '}'
   || <-[{}]> }
 
-  token ident
-  { <![0..9]> [<![\ \t"#%'(),={}]>  # Fix syntax highlighting: "]
+  token ident {
+    <![0..9]> [<![\ \t"#%'(),={}]>  # Fix syntax highlighting: "]
     <[\x20..\x7f]>]+ } #"])}
 }
 
