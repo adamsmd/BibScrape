@@ -210,34 +210,22 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
-  my $abstract = meta( 'citation_abstract' ).get_attribute( 'content' );
+  my $title = meta( 'citation_title' );
+  $bibtex.fields<title> = BibTeX::Value.new($title);
+
+  my $abstract = meta( 'citation_abstract' );
+  $abstract ~~ s:g/ "\n      \n      " //;
   $abstract ~~ s/^ '<div ' <-[>]>* '>'//;
   $abstract ~~ s/ '</div>' $//;
-  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+  $bibtex.fields<abstract> = BibTeX::Value.new($abstract)
+    unless $abstract ~~ /^ '//static.cambridge.org/content/id/urn' /;
 
-  my $date = meta( 'citation_publication_date' ).get_attribute( 'content' );
+  my $date = meta( 'citation_publication_date' );
   $date ~~ /^ \d ** 4 '/' (\d\d?) $/;
   $bibtex.fields<month> = BibTeX::Value.new($0.Str);
 
   my @issns = metas( 'citation_issn' );
   $bibtex.fields<issn> = BibTeX::Value.new("@issns[0] (Print) @issns[1] (Online)");
-
-  #   my ($abst) = $mech->content() =~ m[<div class="abstract" data-abstract-type="normal">(.*?)</div>]s;
-  #   $abst =~ s[^<title>Abstract</title>][] if $abst;
-  #   $abst =~ s/\n+/\n/g if $abst;
-  #   $entry->set('abstract', $abst) if $abst;
-
-  #   my $html = Text::MetaBib::parse($mech->content());
-
-  #   $entry->set('title', @{$html->get('citation_title')});
-
-  #   my ($month) = (join(' ',@{$html->get('citation_publication_date')}) =~ m[^\d\d\d\d/(\d\d)]);
-  #   $entry->set('month', $month);
-
-  #   my ($doi) = join(' ', @{$html->get('citation_pdf_url')}) =~ m[/(S\d{16})a\.pdf];
-  #   $entry->set('doi', "10.1017/$doi");
-
-  #   print_or_online($entry, 'issn', [$html->get('citation_issn')->[0]], [$html->get('citation_issn')->[1]]);
 
   $bibtex;
 }
