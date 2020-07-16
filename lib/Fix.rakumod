@@ -3,6 +3,7 @@ unit module Fix;
 use ArrayHash;
 use HTML::Entity;
 use Locale::Language;
+use XML;
 
 use BibTeX;
 use BibTeX::Month;
@@ -68,6 +69,7 @@ class Fix {
     self.bless(names => @names, nouns => %nouns, |%args);
   }
 
+  # TODO: is copy
   method fix(BibTeX::Entry $bibtex --> BibTeX::Entry) {
     my $entry = $bibtex.clone;
 
@@ -77,8 +79,8 @@ class Fix {
     # $entry->set($_, decode('utf8', $entry->get($_)))
     #     for ($entry->fieldlist());
 
-    $entry.key = $entry.key.lc;
-    $entry.fields = multi-hash($entry.fields.map({ $_.key.lc => $_.value }));
+    $entry.type = $entry.type.lc;
+    $entry.fields = multi-hash($entry.fields.map({ $_.defined ?? ($_.key.lc => $_.value) !! () }));
 
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry.fields<doi> = $entry.fields<url> if (
@@ -170,7 +172,6 @@ class Fix {
         | 'http' 's'? '://www.sciencedirect.com/science/article/' ]/; });
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', { $_ = Nil if $_ eq ($entry.fields<doi> // '') });
-
     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
     for $entry.fields.keys -> $field {
       $entry.fields{$field} = BibTeX::Value.new(latex-encode($entry.fields{$field}.simple-str))
@@ -216,7 +217,14 @@ class Fix {
 
     # Omit fields we don't want
     $entry.fields{$_}:exists and $entry.fields{$_}:delete for @.omit;
-    $entry.fields{$_}:exists and $entry.fields{$_} eq '' and $entry.fields{$_}:delete for @.omit-empty;
+    for @.omit-empty {
+      if $entry.fields{$_}:exists {
+        my $str = $entry.fields{$_}.Str;
+        if $str eq '{}' or $str eq '""' or $str eq '' {
+          $entry.fields{$_}:delete;
+        }
+      }
+    }
 
     # Year
     check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
@@ -279,7 +287,7 @@ class Fix {
     for @names -> $name {
       for @.names -> @name-group {
         for @name-group -> $n {
-          if flatten-name($name).lc eq flatten-name($n).lc {
+          if flatten-name($name).fc eq flatten-name($n).fc {
             push @new-names, @name-group.head.Str;
             next NAME;
           }
@@ -322,156 +330,134 @@ sub check(BibTeX::Entry $entry, Str $field, Str $msg, &check) {
   }
 }
 
-sub purify-string (Str $str) { $str }
+sub greek(Str $str is copy) {
+  # Based on table 131 in Comprehensive Latex
+  my @mapping = <
+_ A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi O
+\Pi P _ \Sigma T \Upsilon \Phi X \Psi \Omega _ _ _ _ _ _
+_ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu \xi o
+\pi \rho \varsigma \sigma \tau \upsilon \varphi \xi \psi \omega _ _ _ _ _ _>;
+  $str ~~ s:g/ (<[\x[0390]..\x[03cf]]>)
+             /{ @mapping[ord($0)-0x0390] ne '_' ?? @mapping[ord($0)-0x0390] !! $0}/;
+  return $str;
+}
 
-# Based on TeX::Encode and modified to use braces appropriate for BibTeX.
-sub latex-encode(Str $s) {
-  my $str = $s;
+multi sub math(@nodes) {
+  @nodes.map({math($_)}).join
+}
 
-  # HTML -> LaTeX Codes
-  $str = decode-entities($str);
-  $str ~~ s:g/"<!--" .*? "-->"//; # Remove HTML comments
-  $str ~~ s:i:g/"<a " <-[>]>* "onclick=\"toggleTabs(" .*? ")>" .*? "</a>"//; # Fix for Science Direct
+multi sub math(XML::Node $node) {
+  given $node {
+    when XML::CDATA { $node.data }
+    when XML::Comment { '' } # Remove HTML Comments
+    when XML::Document { math($node.root) }
+    when XML::PI { '' }
+    when XML::Text { greek(decode-entities($node.text)) }
+    when XML::Element {
+      given $node.name {
+        when 'mtext' { math($node.nodes) }
+        when 'mi' {
+          if ($node.attribs<mathvariant> // '') eq 'normal' {
+            '\mathrm{' ~ math($node.nodes) ~ '}'
+          } else {
+            math($node.nodes)
+          }
+        }
+        when 'mo' { math($node.nodes) }
+        when 'mn' { math($node.nodes) }
+        when 'msqrt' { '\sqrt{' ~ math($node.nodes) ~ '}' }
+        when 'mrow' { '{' ~ math($node.nodes) ~ '}' }
+        when 'mspace' { '\hspace{' ~ $node.attribs<width> ~ '}' }
+        when 'msubsup' { '{' ~ math($node.nodes[0]) ~ '}_{' ~ math($node.nodes[1]) ~ '}^{' ~ math($node.nodes[2]) ~ '}' }
+        when 'msub' { '{' ~ math($node.nodes[0]) ~ '}_{' ~ math($node.nodes[1]) ~ '}' }
+        when 'msup' { '{' ~ math($node.nodes[0]) ~ '}^{' ~ math($node.nodes[1]) ~ '}' }
+        default { say "WARNING: unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
+      }
+    }
 
-  # HTML formatting
-  $str ~~ s:i:g/"<" (<-[>]>*) <wb> "class=\"a-plus-plus\"" (<-[>]>*) ">"/<$0$1>/; # Remove class annotation
-  $str ~~ s:i:g/"<" (\w+) \s* ">"/<$0>/; # Removed extra space around simple tags
-  $str ~~ s:i:g/"<a" (" ".*?)? ">" (.*?)"</a>"/$1/; # Remove <a> links
-  $str ~~ s:i:g/"<p" (""|" " <-[>]>*) ">" (.*?) "</p>"/$1\n\n/; # Replace <p> with "\n\n"
-  $str ~~ s:i:g/"<par" (""|" " <-[>]>*) ">" (.*?) "</par>"/$1\n\n/; # Replace <par> with "\n\n"
-  $str ~~ s:i:g/"<span style=" <["']> "font-family:monospace" \s* <["']> ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
-  $str ~~ s:i:g/"<span class=" <["']> "monospace" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\texttt\{$0\}/; # Replace monospace spans with \texttt
-  $str ~~ s:i:g/"<span class=" <["']> "small" "-"? "caps" \s* <["']> <-[>]>* ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
-  $str ~~ s:i:g/"<span class=" <["']> <-["']>* "type-small-caps" <-["']>* <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/; # Replace small caps spans with \textsc
-  $str ~~ s:i:g/"<span class=" <["']> "italic" <["']> ">" (.*?) "</span>"/\\textit\{$0\}/;
-  $str ~~ s:i:g/"<span class=" <["']> "bold" <["']> ">" (.*?) "</span>"/\\textbf\{$0\}/;
-  $str ~~ s:i:g/"<span class=" <["']> "sup" <["']> ">" (.*?) "</span>"/\\textsuperscript\{$0\}/;
-  $str ~~ s:i:g/"<span class=" <["']> "sub" <["']> ">" (.*?) "</span>"/\\textsubscript\{$0\}/;
-  $str ~~ s:i:g/"<span class=" <["']> "sc" <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
-  $str ~~ s:i:g/"<span class=" <["']> "EmphasisTypeSmallCaps " <["']> ">" (.*?) "</span>"/\\textsc\{$0\}/;
-  $str ~~ s:i:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
-  $str ~~ s:i:g/"<span" (" " .*?)? ">" (.*?) "</span>"/$1/; # Remove <span>
-  $str ~~ s:i:g/"<i" (" " <-[>]>*?)? ">" "</i>"//; # Remove empty <i>
-  $str ~~ s:i:g/"<i>" (.*?) "</i>"/\\textit\{$0\}/; # Replace <i> with \textit
-  $str ~~ s:i:g/"<italic>" (.*?) "</italic>"/\\textit\{$0\}/; # Replace <italic> with \textit
-  $str ~~ s:i:g/"<em" <wb> <-[>]>*? ">" (.*?) "</em>"/\\emph\{$0\}/; # Replace <em> with \emph
-  $str ~~ s:i:g/"<strong>" (.*?) "</strong>"/\\textbf\{$0\}/; # Replace <strong> with \textbf
-  $str ~~ s:i:g/"<b>" (.*?) "</b>"/\\textbf\{$0\}/; # Replace <b> with \textbf
-  $str ~~ s:i:g/"<tt>" (.*?) "</tt>"/\\texttt\{$0\}/; # Replace <tt> with \texttt
-  $str ~~ s:i:g/"<code>" (.*?) "</code>"/\\texttt\{$0\}/; # Replace <code> with \texttt
-  $str ~~ s:i:g/"<sup>" "</sup>"//; # Remove emtpy <sup>
-  $str ~~ s:i:g/"<sup>" (.*?) "</sup>"/\\textsuperscript\{$0\}/; # Super scripts
-  $str ~~ s:i:g/"<supscrpt>" (.*?) "</supscrpt>"/\\textsuperscript\{$0\}/; # Super scripts
-  $str ~~ s:i:g/"<sub>" (.*?) "</sub>"/\\textsubscript\{$0\}/; # Sub scripts
+    default { die }
+  }
+}
 
-  $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
-  $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
+multi sub rec(@nodes) {
+  @nodes.map({rec($_)}).join
+}
+multi sub rec(XML::Node $node) {
+  # # HTML -> LaTeX Codes
+  # $str = decode-entities($str);
+  # $str ~~ s:i:g/"<a " <-[>]>* "onclick=\"toggleTabs(" .*? ")>" .*? "</a>"//; # Fix for Science Direct
 
-  # MathML formatting
-#  my $xml = XML::Parser->new(Style => 'Tree');
-#  $str ~~ s:g/("<" <?"mml:">? "math" <wb> <-[>]>* ">" .*? "</" <?"mml:">? "math>")
-#            /\\ensuremath\{{rec(@($xml->parse($0)))}\}/; # TODO: ensuremath (but avoid latex encoding)
+  # # HTML formatting
+  # $str ~~ s:i:g/"<" (<-[>]>*) <wb> "class=\"a-plus-plus\"" (<-[>]>*) ">"/<$0$1>/; # Remove class annotation
+  # $str ~~ s:i:g/"<" (\w+) \s* ">"/<$0>/; # Removed extra space around simple tags
 
-  # Trim spaces before NBSP (otherwise they have not effect in LaTeX)
+  # $str ~~ s:i:g/"<i" (" " <-[>]>*?)? ">" "</i>"//; # Remove empty <i>
+
+  # $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
+  # $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
+
+  given $node {
+    when XML::CDATA { $node.data }
+    when XML::Comment { '' } # Remove HTML Comments
+    when XML::Document { rec($node.root) }
+    when XML::PI { '' }
+    when XML::Text { decode-entities($node.text) }
+
+    when XML::Element {
+      given $node.name {
+        when 'a' { rec($node.nodes) } # Remove <a> links
+        when 'p' | 'par' { rec($node.nodes) ~ "\n\n" } # Replace <p> with \n\n
+        when 'i' | 'italic' { '\textit{' ~ rec($node.nodes) ~ '}'} # Replace <i> and <italic> with \textit
+        when 'em' { '\emph{' ~ rec($node.nodes) ~ '}' } # Replace <em> with \emph
+        when 'b' | 'strong' { '\textbf{' ~ rec($node.nodes) ~ '}' } # Replace <b> and <strong> with \textbf
+        when 'tt' | 'code' { '\texttt{' ~ rec($node.nodes) ~ '}' } # Replace <tt> and <code> with \texttt
+        when 'sup' | 'supscrpt' { '\textsuperscript{' ~ rec($node.nodes) ~ '}' } # Superscripts
+        when 'sub' { '\textsubscript{' ~ rec($node.nodes) ~ '}' } # Subscripts
+        #when 'img' { '\{' ~ rec($node.nodes) ~ '}' }
+        #when 'email' { '\{' ~ rec($node.nodes) ~ '}' }
+        when 'span' {
+          if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
+            '\texttt{' ~ rec($node.nodes) ~ '}'
+          } elsif $node.attribs<class>:exists {
+            given $node.attribs<class> {
+              when / 'monospace' / { '\texttt{' ~ rec($node.nodes) ~ '}' }
+              when / 'sc' | [ 'type' ? 'small' '-'? 'caps' ] | 'EmphasisTypeSmallCaps' / {
+                '\textsc{' ~ rec($node.nodes) ~ '}'
+              }
+              when / 'italic' / { '\textit{' ~ rec($node.nodes) ~ '}' }
+              when / 'bold' / { '\textbf{' ~ rec($node.nodes) ~ '}' }
+              when / 'sup' / { '\textsuperscript{' ~ rec($node.nodes) ~ '}' }
+              when / 'sub' / { '\textsubscript{' ~ rec($node.nodes) ~ '}' }
+              default { rec($node.nodes) }
+            }
+          } else {
+            rec($node.nodes)
+          }
+        }
+        when 'svg' { '' } 
+        when 'script' { '' }
+        when 'math' { '\ensuremath{' ~ math($node.nodes) ~ '}' }
+        default { say "WARNING: unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
+      }
+    }
+
+    default { die }
+  }
+}
+
+sub latex-encode(Str $str is copy) {
+  my $xml = from-xml("<root>{$str}</root>");
+  $str = rec($xml.root.nodes);
+
+  # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
   $str ~~ s:g/" "* \xA0/\xA0/;
 
+  # TODO: Remove
   # Encode unicode but skip any \, {, or } that we already encoded.
   my @parts = $str.split(rx/ "\$" .*? "\$" | <[\\{}_^]> /, :v);
 
   return @parts.map({ /<[_^{}\\\$]>/ ?? $_ !! unicode2tex($_) }).join('');
 }
-
-#sub rec {
-#    my ($tag, $body) = @_;
-#
-#    if ($tag eq '0') { return greek($body); }
-#    my %attr = %{shift @$body};
-#
-#    if ($tag ~~ m[(mml:)?math]) { return xml(@$body); }
-#    if ($tag ~~ m[(mml:)?mtext]) { return xml(@$body); }
-#    if ($tag ~~ m[(mml:)?mi] and exists $attr{'mathvariant'} and $attr{'mathvariant'} eq 'normal') {
-#        return '\mathrm{' . xml(@$body) . '}' }
-#    if ($tag ~~ m[(mml:)?mi]) { return xml(@$body) }
-#    if ($tag ~~ m[(mml:)?mo]) { return xml(@$body) }
-#    if ($tag ~~ m[(mml:)?mn]) { return xml(@$body) }
-#    if ($tag ~~ m[(mml:)?msqrt]) { return '\sqrt{' . xml(@$body) . '}' }
-#    if ($tag ~~ m[(mml:)?mrow]) { return '{' . xml(@$body) . '}' }
-#    if ($tag ~~ m[(mml:)?mspace]) { return '\hspace{' . $attr{'width'} . '}' }
-#    if ($tag ~~ m[(mml:)?msubsup]) { return '{' . xml(@$body[0..1]) .
-#                                     '}_{' . xml(@$body[2..3]) .
-#                                     '}^{' . xml(@$body[4..5]) . '}' }
-#    if ($tag ~~ m[(mml:)?msub]) { return '{' . xml(@$body[0..1]) . '}_{' . xml(@$body[2..3]) . '}' }
-#    if ($tag ~~ m[(mml:)?msup]) { return '{' . xml(@$body[0..1]) . '}^{' . xml(@$body[2..3]) . '}' }
-#}
-
-#sub xml {
-#    if ($#_ == -1) { return ''; }
-#    elsif ($#_ == 0) { die; }
-#    else { rec(@_[0..1]) . xml(@_[2..$#_]); }
-#}
-
-#sub greek {
-#    my ($str) = @_;
-##    370; 390
-## Based on table 131 in Comprehensive Latex
-#    my @mapping = qw(
-#_ A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi O
-#\Pi P _ \Sigma T \Upsilon \Phi X \Psi \Omega _ _ _ _ _ _
-#_ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu \xi o
-#\pi \rho \varsigma \sigma \tau \upsilon \varphi \xi \psi \omega _ _ _ _ _ _);
-#    $str ~~ s[([\N{U+0390}-\N{U+03cf}])]
-#             [@{[$mapping[ord($0)-0x0390] ne '_' ? $mapping[ord($0)-0x0390] : $0]}]g;
-#    return $str;
-#
-##    0x03b1 => '\\textgreek{a}',
-##\varphi
-##    0x03b2 => '\\textgreek{b}',
-##    0x03b3 => '\\textgreek{g}',
-##    0x03b4 => '\\textgreek{d}',
-##    0x03b5 => '\\textgreek{e}',
-##    0x03b6 => '\\textgreek{z}',
-##    0x03b7 => '\\textgreek{h}',
-##    0x03b8 => '\\textgreek{j}',
-##    0x03b9 => '\\textgreek{i}',
-##    0x03ba => '\\textgreek{k}',
-##    0x03bb => '\\textgreek{l}',
-##    0x03bc => '\\textgreek{m}',
-##    0x03bd => '\\textgreek{n}',
-##    0x03be => '\\textgreek{x}',
-##    0x03bf => '\\textgreek{o}',
-##    0x03c0 => '\\textgreek{p}',
-##    0x03c1 => '\\textgreek{r}',
-##    0x03c2 => '\\textgreek{c}',
-##    0x03c3 => '\\textgreek{s}',
-##    0x03c4 => '\\textgreek{t}',
-##    0x03c5 => '\\textgreek{u}',
-##    0x03c6 => '\\textgreek{f}',
-##    0x03c7 => '\\textgreek{q}',
-##    0x03c8 => '\\textgreek{y}',
-##    0x03c9 => '\\textgreek{w}',
-##
-##    0x03d1 => '\\ensuremath{\\vartheta}',
-##    0x03d4 => '\\textgreek{"\\ensuremath{\\Upsilon}}',
-##    0x03d5 => '\\ensuremath{\\phi}',
-##    0x03d6 => '\\ensuremath{\\varpi}',
-##    0x03d8 => '\\textgreek{\\Koppa}',
-##    0x03d9 => '\\textgreek{\\coppa}',
-##    0x03da => '\\textgreek{\\Stigma}',
-##    0x03db => '\\textgreek{\\stigma}',
-##    0x03dc => '\\textgreek{\\Digamma}',
-##    0x03dd => '\\textgreek{\\digamma}',
-##    0x03df => '\\textgreek{\\koppa}',
-##    0x03e0 => '\\textgreek{\\Sampi}',
-##    0x03e1 => '\\textgreek{\\sampi}',
-##    0x03f0 => '\\ensuremath{\\varkappa}',
-##    0x03f1 => '\\ensuremath{\\varrho}',
-##    0x03f4 => '\\ensuremath{\\Theta}',
-##    0x03f5 => '\\ensuremath{\\epsilon}',
-##    0x03f6 => '\\ensuremath{\\backepsilon}',
-#
-##ff
-#
-#}
 
 sub check-first-name(Str $n) {
   my $name = $n;

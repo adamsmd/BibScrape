@@ -251,3 +251,7 @@ use 'is copy' on parameters
 Invisible browser (with flag (verbose?) to make visible)
 
 Code coverage
+
+non-multi arrays
+
+load browser as under-window

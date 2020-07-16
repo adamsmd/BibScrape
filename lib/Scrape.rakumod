@@ -145,7 +145,6 @@ sub scrape-acm(--> BibTeX::Entry) {
     .get_property('innerHTML');
   if $abstract.defined and $abstract ne '<p>No abstract available.</p>' {
     # Fix the double HTML encoding of the abstract (Bug in ACM?)
-    $abstract = decode-entities($abstract);
     $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
   }
 
@@ -202,6 +201,7 @@ sub scrape-acm(--> BibTeX::Entry) {
 }
 
 sub scrape-cambridge(--> BibTeX::Entry) {
+  # BibTeX Export
   $web-driver.find_element_by_class_name( 'export-citation-product' ).click;
   sleep 5;
 
@@ -210,9 +210,11 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
+  # Title
   my $title = meta( 'citation_title' );
   $bibtex.fields<title> = BibTeX::Value.new($title);
 
+  # Abstract
   my $abstract = meta( 'citation_abstract' );
   $abstract ~~ s:g/ "\n      \n      " //;
   $abstract ~~ s/^ '<div ' <-[>]>* '>'//;
@@ -220,10 +222,12 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   $bibtex.fields<abstract> = BibTeX::Value.new($abstract)
     unless $abstract ~~ /^ '//static.cambridge.org/content/id/urn' /;
 
+  # Month
   my $date = meta( 'citation_publication_date' );
   $date ~~ /^ \d ** 4 '/' (\d\d?) $/;
   $bibtex.fields<month> = BibTeX::Value.new($0.Str);
 
+  # ISSN
   my @issns = metas( 'citation_issn' );
   $bibtex.fields<issn> = BibTeX::Value.new("@issns[0] (Print) @issns[1] (Online)");
 
@@ -231,6 +235,10 @@ sub scrape-cambridge(--> BibTeX::Entry) {
 }
 
 sub scrape-ieee-computer {
+  my $abstract = $web-driver.find_element_by_class_name( 'article-content' ).get_property( 'innerHTML' );
+
+  my @authors = $web-driver.find_elements_by_css_selector( 'a[href^="https://www.computer.org/csdl/search/default?type=author&"]' ).map({ .get_property( 'innerHTML' ) });
+
   $web-driver.find_element_by_css_selector( '.article-action-toolbar button' ).click;
   sleep 1;
   my $link = $web-driver.find_element_by_link_text( 'BibTex' );
@@ -240,6 +248,9 @@ sub scrape-ieee-computer {
   my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
   $text ~~ s/ "\{," /\{key,/;
   my $bibtex = bibtex-parse($text).items.head;
+
+  $bibtex.fields<author> = BibTeX::Value.new(@authors.join( ' and ' ));
+  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
 
 #     my $html = Text::MetaBib::parse(decode('utf8', $mech->content()));
 #     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
@@ -270,6 +281,14 @@ sub scrape-ieee-explore {
   my $text = $web-driver.find_element_by_class_name( 'ris-text' ).get_property( 'innerHTML' );
   my $bibtex = bibtex-parse($text).items.head;
 
+  my $keywords = $bibtex.fields<keywords>.simple-str;
+  $keywords ~~ s:g/ ';' ' '* /; /;
+  $bibtex.fields<keywords> = BibTeX::Value.new($keywords);
+
+  my $author = $bibtex.fields<author>.simple-str;
+  $author ~~ s:g/ '{' (<-[}]>+) '}' /$0/;
+  $bibtex.fields<author> = BibTeX::Value.new($author);
+
 #     # Extract data from embedded JSON
 #     my @affiliations = $mech->content() =~ m[\{.*?"affiliation":"([^"]+)".*?\}]sg;
 #     $entry->set('affiliation', join(" and ", @affiliations)) if @affiliations;
@@ -296,7 +315,6 @@ sub scrape-ieee-explore {
 #       $entry->set('issn', @issns <= 1 ? $issns[0]->[1] : join(" ", map { "$_->[1] ($_->[0])" } @issns));
 #     }
 
-#     update($entry, 'keywords', sub { s[; *][; ]sg; });
 #     update($entry, 'abstract', sub { s[&lt;&lt;ETX&gt;&gt;$][]; });
 
   $bibtex;
@@ -359,6 +377,7 @@ sub scrape-jstor {
 }
 
 sub scrape-oxford {
+  # BibTeX Export
   $web-driver.find_element_by_class_name( 'js-cite-button' ).click;
   sleep 2;
   my $select-element = $web-driver.find_element_by_id( 'selectFormat' );
@@ -385,37 +404,43 @@ sub scrape-oxford {
 }
 
 sub scrape-science-direct(--> BibTeX::Entry) {
+  # BibTeX Export
   $web-driver.find_element_by_id( 'export-citation' ).click;
   $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
-#     my $html = Text::MetaBib::parse($mech->content());
+  # Title
+  my $title = $web-driver.find_element_by_class_name( 'title-text' ).get_property( 'innerHTML' );
+  $bibtex.fields<title> = BibTeX::Value.new($title);
 
-#     # Evil Science Direct uses JavaScript to create links
-#     my ($pii) = $mech->content() =~ m[<meta name="citation_pii" content="(.*?)" />];
+  # Issue number
+  $bibtex.fields<number> = BibTeX::Value.new(meta( 'citation_issue' ));
 
-#     $mech->get("https://www.sciencedirect.com/sdfe/arp/cite?pii=$pii&format=text/x-bibtex&withabstract=true");
-#     my $entry = parse_bibtex($mech->content());
-#     $mech->back();
+  # Month
+  meta( 'citation_publication_date' ) ~~ /^ \d\d\d\d '/' (\d\d) '/' \d\d $/;
+  $bibtex.fields<month> = BibTeX::Value.new($0.Str);
 
-#     my ($keywords) = $mech->content() =~ m[>Keywords</h2>(<div\b[^>]*>.*?</div>)</div>]s;
-#     if (defined $keywords) {
-#         $keywords =~ s[<div\b[^>]*?>(.*?)</div>][$1; ]sg;
-#         $keywords =~ s[; $][];
-#         $entry->set('keywords', $keywords);
-#     }
+  # Publisher
+  $bibtex.fields<publisher> = BibTeX::Value.new(meta( 'citation_publisher' ));
 
-#     my ($abst) = $mech->content() =~ m[<div class="abstract author"[^>]*>(.*?</div>)</div>];
-#     $abst = "" unless defined $abst;
-#     $abst =~ s[<h2\b[^>]*>Abstract</h2>][]g;
-#     $abst =~ s[<div\b[^>]*>(.*)</div>][$1]s;
-#     $entry->set('abstract', $abst);
+  # Keywords
+  my @keywords = $web-driver
+    .find_elements_by_css_selector( '.keywords-section > .keyword > span' )
+    .map({ .get_property( 'innerHTML' )});
+  $bibtex.fields<keywords> = BibTeX::Value.new(@keywords.join( '; ' ));
 
-#     if ($entry->exists('note') and $entry->get('note') ne '') {
-#         $entry->set('series', $entry->get('note'));
-#         $entry->delete('note');
-#     }
+  # Abstract
+  my @abstract = $web-driver.find_elements_by_css_selector( '.abstract > div' ).map({.get_property( 'innerHTML' )});
+  if @abstract.elems > 0 {
+    $bibtex.fields<abstract> = BibTeX::Value.new(@abstract.head);
+  }
+
+  # Series
+  if ($bibtex.fields<note> // '') ne '' {
+    $bibtex.fields<series> = $bibtex.fields<note>;
+    $bibtex.fields<note>:delete;
+  }
 
 #     my ($iss_first) = $mech->content() =~ m["iss-first":"(\d+)"];
 #     my ($iss_last) = $mech->content() =~ m["iss-last":"(\d+)"];
