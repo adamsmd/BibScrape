@@ -5,13 +5,11 @@ use ArrayHash;
 use BibTeX;
 use Month;
 
-# See http://www.refman.com/support/risformat_intro.asp for format
-
 class Ris {
   has Array[Str] %.fields;
 }
 
-sub ris-parse(Str $text) is export {
+sub ris-parse(Str $text --> Ris) is export {
 #   $text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
   my Array[Str] %fields;
@@ -59,7 +57,7 @@ sub ris-author(Array $names) {
     .join( ' and ' );
 }
 
-sub bibtex-of-ris(Ris $ris) is export {
+sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   my $self = $ris.fields;
   my $entry = BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(multi-hash.new()));
 
@@ -86,12 +84,12 @@ sub bibtex-of-ris(Ris $ris) is export {
   # ID: reference id
   $entry.key = %self<ID>;
   # T1|TI|CT: title primary
-  # T2: title secondary
   # BT: title primary (books and unpub), title secondary (otherwise)
   set( 'title', %self<T1> // %self<TI> // %self<CT> //
     (%self<TY> eq 'BOOK' || %self<TY> eq 'UNPB') && %self<BT>);
-  set( 'booktitle', %self<T2> //
-    !(%self<TY> eq 'BOOK' || %self<TY> eq 'UNPB') && %self<BT>);
+  set( 'booktitle', !(%self<TY> eq 'BOOK' || %self<TY> eq 'UNPB') && %self<BT>);
+  # T2: title secondary
+  set( 'journal', %self<T2>);
   # T3: title series
   set( 'series', %self<T3>);
 
@@ -106,7 +104,7 @@ sub bibtex-of-ris(Ris $ris) is export {
     ($month, $day, $year) = ($0, $1, $2);
     set( 'month', $month);
   }
-  set( 'day', $day);
+  set( 'day', $day) if $day.defined;
   # Y2: date secondary
 
   # N1|AB: notes (skip leading doi)

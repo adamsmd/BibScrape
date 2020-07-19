@@ -345,26 +345,37 @@ sub scrape-ieee-explore {
 }
 
 sub scrape-ios-press {
-  die "unimplemented";
+  ## RIS
+  $web-driver.find_element_by_class_name( 'p13n-cite' ).click;
+  sleep 1;
+  $web-driver.find_element_by_class_name( 'btn-clear' ).click;
+  sleep 3;
+  my @files = 'downloads'.IO.dir;
+  my $ris = ris-parse(@files.head.slurp);
+  my $bibtex = bibtex-of-ris($ris);
 
-#  ## HTML Meta
-#  my $html = html-meta-parse($web-driver);
-#  html-meta-bibtex($bibtex, $html, title => True, abstract => False);
+  ## HTML Meta
+  my $html = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $html);
 
+  ## Title
+  my $title = $web-driver.find_element_by_css_selector( '[data-p13n-title]' ).get_attribute( 'data-p13n-title' );
+  $title ~~ s:g/ "\n" //; # Remove extra newlines
+  $bibtex.fields<title> = BibTeX::Value.new($title);
 
-#     my $html = Text::MetaBib::parse($mech->content());
-#     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
-#     $html->bibtex($entry);
+  ## Abstract
+  my $abstract = $web-driver.find_element_by_css_selector( '[data-abstract]' ).get_attribute( 'data-abstract' );
+  $abstract ~~ s:g/ (<[.!?]>) '  ' /$0\n\n/; # Insert missing paragraphs.  This is a heuristic solution.
+  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
 
-#     $entry->set('title', decode_entities($mech->content() =~ m[data-p13n-title="([^"]*)"]));
-#     $entry->set('abstract', decode_entities($mech->content() =~ m[data-abstract="([^"]*)"]));
+  ## ISSN
+  if $ris.fields<SN>:exists {
+    my $eissn = $ris.fields<SN>;
+    my $pissn = meta( 'citation_issn' );
+    $bibtex.fields<issn> = BibTeX::Value.new("$pissn (Print) $eissn (Online)");
+  }
 
-#     # Remove extra newlines
-#     update($entry, 'title', sub { s[\n][]g });
-
-#     # Insert missing paragraphs.  This is a heuristic solution.
-#     update($entry, 'abstract', sub { s[([.!?])  ][$1\n\n]g });
-
+  $bibtex;
 }
 
 sub scrape-jstor {
@@ -470,17 +481,15 @@ sub scrape-science-direct(--> BibTeX::Entry) {
     $bibtex.fields<note>:delete;
   }
 
-  # TODO: editor?
-
   $bibtex;
 }
 
 sub scrape-springer {
-  ## Close Cookie Overlay
+  ## Close overlay
   my @close-banner = $web-driver.find_elements_by_class_name( 'optanon-alert-box-close' );
   if @close-banner { @close-banner.head.click; }
 
-  ## Export BibTeX
+  ## BibTeX
   my @elements = $web-driver.find_elements_by_id( 'button-Dropdown-citations-dropdown' );
 
   my $bibtex;
@@ -526,6 +535,7 @@ sub scrape-springer {
   }
 
   ## Series, Volume and ISSN
+  #
   # Ugh, Springer doesn't have a reliable way to get the series, volume,
   # or issn.  Fortunately, this only happens for LNCS, so we hard code
   # it.
