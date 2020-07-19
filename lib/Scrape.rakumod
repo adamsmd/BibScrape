@@ -438,12 +438,24 @@ sub scrape-oxford {
   my $html = html-meta-parse($web-driver);
   html-meta-bibtex($bibtex, $html, month => True, year => True);
 
-#     $entry->set('title', $mech->content() =~ m[<h1 class="wi-article-title article-title-main">(.*?)</h1>]s);
-#     $entry->set('abstract', $mech->content() =~ m[<section class="abstract">\s*(.*?)\s*</section>]si);
+  ## Title
+  my $title = $web-driver.find_element_by_class_name( 'article-title-main' ).get_property( 'innerHTML' );
+  $bibtex.fields<title> = BibTeX::Value.new($title);
 
-#     print_or_online($entry, 'issn',
-#          [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],
-#          [$mech->content() =~ m[Online ISSN (\d\d\d\d-\d\d\d[0-9X])]]);
+  ## Abstract
+  my $abstract = $web-driver.find_element_by_class_name( 'abstract' ).get_property( 'innerHTML' );
+  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+
+  ## ISSN
+  my $issn = $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' );
+  $issn ~~ / 'Print ISSN ' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)/;
+  my $pissn = $0.Str;
+  $issn ~~ / 'Online ISSN ' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)/;
+  my $eissn = $0.Str;
+  $bibtex.fields<issn> = BibTeX::Value.new("$pissn (Print) $eissn (Online)");
+
+  ## Publisher
+  update($bibtex, 'publisher', { s/^ 'Oxford Academic' $/Oxford University Press/ });
 
   $bibtex;
 }

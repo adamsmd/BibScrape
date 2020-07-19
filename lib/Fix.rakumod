@@ -231,9 +231,9 @@ class Fix {
 
     # Generate an entry key
     my $name = $entry.fields<author> // $entry.fields<editor>;
-    $name = $name.defined ??
-      do given parse-names($name.simple-str).head.last { S:g/ <-[A..Za..z0..9]> //;  } !!
-      'anon';
+    $name = $name.defined ?? parse-names($name.simple-str).head.last !! 'anon';
+    $name ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
+    $name ~~ s:g/ <-[A..Za..z0..9]> //; # Remove non-alphanum
     my $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
     my $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
     $entry.key = $name ~ $year ~ $doi;
@@ -394,39 +394,46 @@ multi sub rec(XML::Node $node) {
     when XML::Text { decode-entities($node.text) }
 
     when XML::Element {
+      sub wrap($tag) {
+        if $node.nodes {
+          "\\$tag\{" ~ rec($node.nodes) ~ "\}"
+        } else {
+          ''
+        }
+      }
       given $node.name {
         when 'a' { rec($node.nodes) } # Remove <a> links
         when 'p' | 'par' { rec($node.nodes) ~ "\n\n" } # Replace <p> with \n\n
-        when 'i' | 'italic' { '\textit{' ~ rec($node.nodes) ~ '}'} # Replace <i> and <italic> with \textit
-        when 'em' { '\emph{' ~ rec($node.nodes) ~ '}' } # Replace <em> with \emph
-        when 'b' | 'strong' { '\textbf{' ~ rec($node.nodes) ~ '}' } # Replace <b> and <strong> with \textbf
-        when 'tt' | 'code' { '\texttt{' ~ rec($node.nodes) ~ '}' } # Replace <tt> and <code> with \texttt
-        when 'sup' | 'supscrpt' { '\textsuperscript{' ~ rec($node.nodes) ~ '}' } # Superscripts
-        when 'sub' { '\textsubscript{' ~ rec($node.nodes) ~ '}' } # Subscripts
+        when 'i' | 'italic' { wrap( 'textit' ) } # Replace <i> and <italic> with \textit
+        when 'em' { wrap( 'emph' ) } # Replace <em> with \emph
+        when 'b' | 'strong' { wrap( 'textbf' ) } # Replace <b> and <strong> with \textbf
+        when 'tt' | 'code' { wrap( 'texttt' ) } # Replace <tt> and <code> with \texttt
+        when 'sup' | 'supscrpt' { wrap( 'textsuperscript' ) } # Superscripts
+        when 'sub' { wrap( 'textsubscript' ) } # Subscripts
+        when 'svg' { '' } 
+        when 'script' { '' }
+        when 'math' { $node.nodes ?? '\ensuremath{' ~ math($node.nodes) ~ '}' !! '' }
         #when 'img' { '\{' ~ rec($node.nodes) ~ '}' }
         #when 'email' { '\{' ~ rec($node.nodes) ~ '}' }
         when 'span' {
           if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
-            '\texttt{' ~ rec($node.nodes) ~ '}'
+            wrap( 'texttt' )
           } elsif $node.attribs<class>:exists {
             given $node.attribs<class> {
-              when / 'monospace' / { '\texttt{' ~ rec($node.nodes) ~ '}' }
+              when / 'monospace' / { wrap( 'texttt' ) }
+              when / 'italic' / { wrap( 'textit' ) }
+              when / 'bold' / { wrap( 'textbf' ) }
+              when / 'sup' / { wrap( 'textsuperscript' ) }
+              when / 'sub' / { wrap( 'textsubscript' ) }
               when / 'sc' | [ 'type' ? 'small' '-'? 'caps' ] | 'EmphasisTypeSmallCaps' / {
-                '\textsc{' ~ rec($node.nodes) ~ '}'
+                wrap( 'textsc' )
               }
-              when / 'italic' / { '\textit{' ~ rec($node.nodes) ~ '}' }
-              when / 'bold' / { '\textbf{' ~ rec($node.nodes) ~ '}' }
-              when / 'sup' / { '\textsuperscript{' ~ rec($node.nodes) ~ '}' }
-              when / 'sub' / { '\textsubscript{' ~ rec($node.nodes) ~ '}' }
               default { rec($node.nodes) }
             }
           } else {
             rec($node.nodes)
           }
         }
-        when 'svg' { '' } 
-        when 'script' { '' }
-        when 'math' { '\ensuremath{' ~ math($node.nodes) ~ '}' }
         default { say "WARNING: unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
       }
     }
