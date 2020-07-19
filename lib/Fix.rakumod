@@ -6,7 +6,7 @@ use Locale::Language;
 use XML;
 
 use BibTeX;
-use BibTeX::Month;
+use Month;
 use Isbn;
 use Unicode;
 

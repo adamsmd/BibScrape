@@ -1,9 +1,9 @@
-unit module BibTeX::Html;
+unit module HtmlMeta;
 
 # TODO: rename to HtmlMeta
 
 use BibTeX;
-use BibTeX::Month;
+use Month;
 
 class HtmlMeta {
   has Array[Str] %.fields;

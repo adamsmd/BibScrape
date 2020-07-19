@@ -3,8 +3,8 @@ unit module Scrape;
 use HTML::Entity;
 
 use BibTeX;
-use BibTeX::Html;
-use BibTeX::Month;
+use HtmlMeta;
+use Month;
 use Ris;
 
 use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)

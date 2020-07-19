@@ -3,7 +3,7 @@ unit module Ris;
 use ArrayHash;
 
 use BibTeX;
-use BibTeX::Month;
+use Month;
 
 # See http://www.refman.com/support/risformat_intro.asp for format
 
