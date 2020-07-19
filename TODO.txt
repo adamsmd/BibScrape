@@ -255,3 +255,13 @@ Code coverage
 non-multi arrays
 
 load browser as under-window
+
+newx
+
+List => Array[Int]
+
+Make field names be case-insensitive (or always lower case)
+
+.fc vs .lc
+
+# TODO: .elems > 0

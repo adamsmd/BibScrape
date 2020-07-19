@@ -311,16 +311,6 @@ class Fix {
 
 }
 
-sub update(BibTeX::Entry $entry, Str $field, &fun) {
-  if $entry.fields{$field}:exists {
-    # Have to put this in a variable so s/// can modify it
-    my $value = $entry.fields{$field}.simple-str;
-    &fun($value); # $value will be $_ in the block
-    if $value.defined { $entry.fields{$field} = BibTeX::Value.new($value); }
-    else { $entry.fields{$field}:delete; }
-  }
-}
-
 sub check(BibTeX::Entry $entry, Str $field, Str $msg, &check) {
   if ($entry.fields{$field}:exists) {
     my Str $value = $entry.fields{$field}.simple-str;

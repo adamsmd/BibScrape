@@ -1,4 +1,4 @@
-https://www.springerlink.com/content/m8x0246j74044t6l/
+doi:10.1007/BFb0032732
 missing "Kent" of R. Kent Dybvig; empty ISBN; over long affiliation; blank abstract
 @inproceedings{Waddell:1997:10.1007/BFb0032732,
   author = {Waddell, Oscar and Dybvig, R. Kent},
@@ -16,6 +16,6 @@ missing "Kent" of R. Kent Dybvig; empty ISBN; over long affiliation; blank abstr
   isbn = {978-3-540-63468-3 (Print) 978-3-540-69576-9 (Online)},
   issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/BFb0032732},
-  bib-scrape-url = {https://www.springerlink.com/content/m8x0246j74044t6l/},
+  bib-scrape-url = {doi:10.1007/BFb0032732},
   abstract = {The effectiveness of an inlining algorithm is determined not only by its ability to recognize inlining opportunities but also by its discretion in exercising those opportunities. This paper presents a new inlining algorithm for higher-order languages that combines simple analysis techniques with demand-driven online transformation to achieve consistent and often dramatic performance gains in fast linear time. The algorithm is shown to be as effective as and significantly faster than offline, analysis-intensive algorithms recently described in the literature.},
 }

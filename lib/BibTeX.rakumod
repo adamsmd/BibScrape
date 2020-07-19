@@ -145,15 +145,20 @@ grammar Grammar {
 }
 
 class Actions {
+  # Use these to head-off issues with different sources using different capitalizations
+  has &.string-key-filter = { .fc };
+  has &.entry-type-filter = { .fc };
+  has &.entry-field-key-filter = { .fc };
+
   method TOP($/) { make Database.new(items => $<bib-db><clause>».made); }
   method clause($/) { make ($<ignored> // $<comment> // $<preamble> // $<string> // $<entry>).made }
   method ignored($/) { make Ignored.new(value => $/); }
   method comment($/) { make Comment.new(); }
   method preamble($/) { make Preamble.new(value => $<value>.made); }
-  method string($/) { make String.new(key => $/<string-body><ident>.Str, value => $/<string-body><value>.made); }
-  method entry($/) { make Entry.new(type => $/<ident>.Str, key => $/<key>.Str, fields => multi-hash($/<entry-body>.made)); }
+  method string($/) { make String.new(key => (&.string-key-filter)($/<string-body><ident>.Str), value => $/<string-body><value>.made); }
+  method entry($/) { make Entry.new(type => (&.entry-type-filter)($/<ident>.Str), key => $/<key>.Str, fields => multi-hash($/<entry-body>.made)); }
   method entry-body($/) { make $/<key-value>».made; }
-  method key-value($/) { make ($/<ident>.Str => $/<value>.made); }
+  method key-value($/) { make ((&.entry-field-key-filter)($/<ident>.Str) => $/<value>.made); }
 
   method value($/) { make Value.new(@($<piece>».made)); }
   method piece($/) { make ($<bare> // $<braces> // $<quotes>).made; }
@@ -163,7 +168,7 @@ class Actions {
 }
 
 sub bibtex-parse(Str $str) is export {
-  Grammar.parse($str, actions => Actions).made;
+  Grammar.parse($str, actions => Actions.new).made;
 }
 
 grammar Names {

@@ -2,6 +2,7 @@ https://journals.cambridge.org/action/displayAbstract?aid=83911
 Call for papers.  Italics in abstract.  Subtitle.
 @article{Barthe:2001:10.1017/S0956796801004105,
   author = {Barthe, Gilles and Dybjer, Peter and Thiemann, Peter},
+  affiliation = {INRIA Sophia-Antipolis and Chalmers Tekniska H{\"o}gskola and Universit{\"a}t Freiburg},
   title = {Special issue on Dependent Type Theory Meets Programming Practice {CALL} {FOR} {PAPERS}},
   journal = {Journal of Functional Programming},
   volume = {11},
@@ -10,7 +11,7 @@ Call for papers.  Italics in abstract.  Subtitle.
   month = jul,
   year = {2001},
   publisher = {Cambridge University Press},
-  issn = {1469-7653 (Print) 0956-7968 (Online)},
+  issn = {0956-7968 (Print) 1469-7653 (Online)},
   doi = {10.1017/S0956796801004105},
   bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?aid=83911},
   abstract = {Modern programming languages rely on advanced type systems that detect errors at compile-time. While the benefits of type systems have long been recognized, there are some areas where the standard systems in programming languages are not expressive enough. Language designers usually trade expressiveness for decidability of the type system. Some interesting programs will always be rejected (despite their semantical soundness) or be assigned uninformative types.

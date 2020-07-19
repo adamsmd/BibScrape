@@ -1,8 +1,8 @@
-https://www.springerlink.com/content/xm722115x3032238/
+doi:10.1023/A:1008649901864
 Multi-paragraph (broken) abstract
 @article{Cousot:1999:10.1023/A:1008649901864,
   author = {Cousot, Patrick and Cousot, Radhia},
-  affiliation = {{\'E}cole Normale Sup{\'e}rieure, DMI and CNRS {\&} {\'E}cole Polytechnique, LIX and {\'E}cole Normale Sup{\'e}rieure, DMI and CNRS {\&} {\'E}cole Polytechnique, LIX},
+  affiliation = {{\'E}cole Normale Sup{\'e}rieure, DMI, Paris cedex 05, France and CNRS {\&} {\'E}cole Polytechnique, LIX, Palaiseau cedex, France and {\'E}cole Normale Sup{\'e}rieure, DMI, Paris cedex 05, France and CNRS {\&} {\'E}cole Polytechnique, LIX, Palaiseau cedex, France},
   title = {Refining Model Checking by Abstract Interpretation},
   journal = {Automated Software Engineering},
   volume = {6},
@@ -15,7 +15,7 @@ Multi-paragraph (broken) abstract
   language = {English},
   issn = {0928-8910 (Print) 1573-7535 (Online)},
   doi = {10.1023/A:1008649901864},
-  bib-scrape-url = {https://www.springerlink.com/content/xm722115x3032238/},
+  bib-scrape-url = {doi:10.1023/A:1008649901864},
   keywords = {model-checking; abstract interpretation; static analysis; transition system; universal safety},
   abstract = {Formal methods combining abstract interpretation and model-checking have been considered for automated analysis of software.
 {\par}

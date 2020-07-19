@@ -2,6 +2,7 @@ https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=604616
 Superscript in title
 @article{Sperber:2009:10.1017/S0956796809990074,
   author = {Sperber, Michael and Dybvig, R. Kent and Flatt, Matthew and van Straaten, Anton and Findler, Robby and Matthews, Jacob},
+  affiliation = {DeinProgramm and Indiana University and University of Utah and AppSolutions and Northwestern University and University of Chicago},
   title = {Revised\textsuperscript{6} Report on the Algorithmic Language {S}cheme},
   journal = {Journal of Functional Programming},
   volume = {19},
@@ -10,7 +11,7 @@ Superscript in title
   month = aug,
   year = {2009},
   publisher = {Cambridge University Press},
-  issn = {1469-7653 (Print) 0956-7968 (Online)},
+  issn = {0956-7968 (Print) 1469-7653 (Online)},
   doi = {10.1017/S0956796809990074},
   bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=6046168&fulltextType=RA&fileId=S0956796809990074},
   abstract = {Programming languages should be designed not by piling feature on top of feature, but by removing the weaknesses and restrictions that make additional features appear necessary. Scheme demonstrates that a very small number of rules for forming expressions, with no restrictions on how they are composed, suffice to form a practical and efficient programming language that is flexible enough to support most of the major programming paradigms in use today.

@@ -4,7 +4,7 @@ Shows unicode handling, but missing name for Bruno C.d.S. Oliveira
   author = {Hinze, Ralf and L{\"o}h, Andres and Oliveira, Bruno C. d. S.},
   editor = {Hagiya, Masami and Wadler, Philip},
   affiliation = {Universit{\"a}t Bonn and Universit{\"a}t Bonn and Oxford University Computing Laboratory},
-  title = {{\textquotedblleft}Scrap Your Boilerplate{\textquotedblright} Reloaded},
+  title = {``Scrap Your Boilerplate'' Reloaded},
   booktitle = {Functional and Logic Programming},
   volume = {3945},
   series = {Lecture Notes in Computer Science},
