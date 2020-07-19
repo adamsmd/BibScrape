@@ -145,7 +145,7 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
 ########
 
 sub scrape-acm(--> BibTeX::Entry) {
-  ## BibTeX Export
+  ## BibTeX
   $web-driver.find_element_by_css_selector('a[data-title="Export Citation"]').click;
   sleep 1;
   my @citation-text = $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline").map({ $_ % <text> });
@@ -221,7 +221,7 @@ sub scrape-acm(--> BibTeX::Entry) {
 }
 
 sub scrape-cambridge(--> BibTeX::Entry) {
-  ## BibTeX Export
+  ## BibTeX
   $web-driver.find_element_by_class_name( 'export-citation-product' ).click;
   sleep 5;
 
@@ -368,10 +368,12 @@ sub scrape-ios-press {
 }
 
 sub scrape-jstor {
-  # Remove Covid-19 overlay
+  ## Remove overlay
   my @overlays = $web-driver.find_elements_by_class_name( 'reveal-overlay' );
   @overlays.map({ $web-driver.execute_script( 'arguments[0].removeAttribute("style")', $_) });
   sleep 1;
+
+  ## BibTeX
   $web-driver.find_element_by_class_name( 'cite-this-item' ).click;
   sleep 1;
   $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ).click;
@@ -381,38 +383,34 @@ sub scrape-jstor {
 
   ## HTML Meta
   my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, title => True, abstract => False);
+  html-meta-bibtex($bibtex, $html);
 
+  ## Title
+  my $title = $web-driver.find_element_by_class_name( 'title' ).get_property( 'innerHTML' );
+  $bibtex.fields<title> = BibTeX::Value.new($title);
 
-#     print STDERR "WARNING: JSTOR imposes strict rate limiting.  You might have `Error GETing` errors if you try to get the BibTeX for multiple papers in a row.\n";
+  ## DOI
+  my $doi = $web-driver.find_element_by_css_selector( '[data-doi]' ).get_attribute( 'data-doi' );
+  $bibtex.fields<doi> = BibTeX::Value.new($doi);
 
-#     my $html = Text::MetaBib::parse($mech->content());
+  ## ISSN
+  update($bibtex, 'issn', { s/^ (<[0..9Xx]>+) ', ' (<[0..9Xx]>+) $/$0 (Print) $1 (Online)/ });
 
-#     $mech->follow_link(text_regex => qr[Cite this Item]);
-#     $mech->follow_link(text => 'Export a Text file');
+  ## Month
+  my $month = $web-driver.find_element_by_class_name( 'src' ).get_property( 'innerHTML' );
+  if $month ~~ / '(' (<alpha>+) / {
+    $bibtex.fields<month> = BibTeX::Value.new($0.Str);
+  }
 
-#     my $cont = $mech->content();
-#     my $entry = parse_bibtex($cont);
-#     $mech->back();
-
-#     $mech->find_link(text => 'Export a RIS file');
-#     $mech->follow_link(text => 'Export a RIS file');
-#     my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
-#     $entry->set('month', $f->get('month'));
-#     $mech->back();
-
-#     $mech->back();
-
-#     $html->bibtex($entry);
-
-#     my ($abs) = $mech->content() =~ m[<div class="abstract1"[^>]*>(.*?)</div>]s;
-#     $entry->set('abstract', $abs) if defined $abs;
+  ## Publisher
+  my $publisher = $web-driver.find_element_by_class_name( 'publisher-link' ).get_property( 'innerHTML' );
+  $bibtex.fields<publisher> = BibTeX::Value.new($publisher);
 
   $bibtex;
 }
 
 sub scrape-oxford {
-  # BibTeX Export
+  # BibTeX
   $web-driver.find_element_by_class_name( 'js-cite-button' ).click;
   sleep 2;
   my $select-element = $web-driver.find_element_by_id( 'selectFormat' );
@@ -427,7 +425,7 @@ sub scrape-oxford {
 
   ## HTML Meta
   my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, title => True, abstract => False);
+  html-meta-bibtex($bibtex, $html, month => True, year => True);
 
 #     $entry->set('title', $mech->content() =~ m[<h1 class="wi-article-title article-title-main">(.*?)</h1>]s);
 #     $entry->set('abstract', $mech->content() =~ m[<section class="abstract">\s*(.*?)\s*</section>]si);
@@ -440,7 +438,7 @@ sub scrape-oxford {
 }
 
 sub scrape-science-direct(--> BibTeX::Entry) {
-  ## BibTeX Export
+  ## BibTeX
   $web-driver.find_element_by_id( 'export-citation' ).click;
   $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
   my @files = 'downloads'.IO.dir;
@@ -571,23 +569,45 @@ sub scrape-wiley {
   sleep 5;
   my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
   my $bibtex = bibtex-parse($text).items.head;
+  $web-driver.back();
+  $web-driver.back();
+  sleep 5;
 
   ## HTML Meta
   my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, title => True, abstract => False);
+  html-meta-bibtex($bibtex, $html, title => True, abstract => False, journal => True, keywords => True);
+
+  ## Abstract
+  my $abstract = $web-driver.find_element_by_class_name( 'article-section__content' ).get_property( 'innerHTML' );
+  # my ($abs) = ($mech->content() =~ m[<section class="article-section article-section__abstract"[^>]*>(.*?)</section>]s);
+  #$abstract ~~ s/ '<h' <[23]> .*? '>Abstract</h' <[23]> '>' ][];
+  # $abs =~ s[<div class="article-section__content[^"]*">(.*)</div>][$1]s;
+  $abstract ~~ s/ [ 'Copyright ' ]? [ . | '&copy;' ] ' ' \d\d\d\d ' John Wiley ' [ . | '&amp;' ] ' Sons, ' [ 'Ltd' | 'Inc' ] '.' \s* //;
+  $abstract ~~ s/ [ . | '&copy;' ] ' ' \d\d\d\d ' Wiley Periodicals, Inc. Random Struct. Alg.' .* ', ' \d\d\d\d //;
+  $abstract ~~ s:g/ '\begin{align*}' (.*?) '\end{align*}' /\\ensuremath\{$0\}/;
+  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
 
 #     # To handle multiple month issues we must use HTML
 #     my ($month_year) = $mech->content() =~ m[<div class="extra-info-wrapper cover-image__details">(.*?)</div>]s;
 #     my ($month) = $month_year =~ m[<p>([^<].*?) \d\d\d\d</p>]s;
 #     $entry->set('month', $month);
 
+  my $title = $web-driver.find_element_by_class_name( 'citation__title' ).get_property( 'innerHTML' );
+  $bibtex.fields<title> = BibTeX::Value.new($title);
+
 #     # Choose the title either from bibtex or HTML based on whether we think the BibTeX has the proper math in it.
 #     $entry->set('title', $mech->content() =~ m[<h2 class="citation__title">(.*?)</h2>]s)
 #         unless $entry->get('title') =~ /\$/;
 
-#     # Remove math rendering images. (The LaTeX code is usually beside the image.)
-#     update($entry, 'title', sub { s[<img .*?>][]sg; });
-#     update($entry, 'abstract', sub { s[<img .*?>][]sg; });
+  ## Remove math rendering images.
+  #
+  # This has to happen before XML parsing in Fix.rakumod because there is no closing tag.
+  # Fortunately, the LaTeX code is usually beside the image, so we just delete the image.
+  update($bibtex, 'title', { s:g/ '<img ' .*? '>' //; });
+  update($bibtex, 'abstract', { s:g/ '<img ' .*? '>' //; });
+
+  update($bibtex, 'title', { s:g/ ' </i>' /<\/i>/; });
+  update($bibtex, 'abstract', { s:g/ ' </i>' /<\/i>/; });
 
 #     # Fix "blank" spans where they should be monospace
 #     update($entry, 'title', sub { s[<span>(?=[^\$])][<span class="monospace">]sg; });

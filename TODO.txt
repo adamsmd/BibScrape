@@ -265,3 +265,12 @@ Make field names be case-insensitive (or always lower case)
 .fc vs .lc
 
 # TODO: .elems > 0
+
+Add Types
+
+Trim known field types
+
+Tell user to always check the title and abstract as they are free form and
+there is little we can do to detect errors (let alone fix errors)
+
+Foo.new(bar) =>? Foo(bar)
