@@ -39,19 +39,19 @@ sub html-meta-parse($web-driver --> HtmlMeta:D) is export {
 #     return Text::MetaBib->new(data => $data);
 # }
 
-# sub Text::MetaBib::type {
-#     my ($self) = @_;
-#     my %data = %{$self->data};
+sub html-meta-type(HtmlMeta $html-meta) is export {
+  my %meta = $html-meta.fields;
 
-#     if (exists $data{'citation_journal_title'}) { return 'article'; }
-#     if (exists $data{'citation_conference'}) { return 'inproceedings'; }
-#     if (exists $data{'citation_conference_title'}) { return 'inproceedings'; }
-#     if (exists $data{'citation_dissertation_institution'}) { return undef; } # phd vs masters
-#     if (exists $data{'citation_technical_report_institution'}) { return 'techreport'; }
-#     if (exists $data{'citation_technical_report_number'}) { return 'techreport'; }
-#     if (exists $data{'citation_patent_number'}) { return 'patent'; }
-#     return undef;
-# }
+  if %meta<citation_conference>:exists { return 'inproceedings'; }
+  if %meta<citation_conference_title>:exists { return 'inproceedings'; }
+  if %meta<citation_dissertation_institution>:exists { return Nil; } # phd vs masters
+  if %meta<citation_inbook_title>:exists { return 'inbook'; }
+  if %meta<citation_journal_title>:exists { return 'article'; }
+  if %meta<citation_patent_number>:exists { return 'patent'; }
+  if %meta<citation_technical_report_institution>:exists { return 'techreport'; }
+  if %meta<citation_technical_report_number>:exists { return 'techreport'; }
+  return Nil;
+}
 
 # sub uniq {
 #     my @result;

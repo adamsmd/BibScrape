@@ -8,7 +8,6 @@ Test starting from the export tab
   volume = {96},
   number = {2},
   pages = {173--185},
-  day = {01},
   month = apr,
   year = {1955},
   publisher = {Springer-Verlag},

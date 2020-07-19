@@ -8,7 +8,6 @@ A simple test
   volume = {96},
   number = {2},
   pages = {168--172},
-  day = {01},
   month = apr,
   year = {1955},
   publisher = {Springer-Verlag},

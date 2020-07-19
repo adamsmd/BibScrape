@@ -8,7 +8,6 @@ Multi-paragraph (broken) abstract
   volume = {6},
   number = {1},
   pages = {69--95},
-  day = {01},
   month = jan,
   year = {1999},
   publisher = {Kluwer Academic Publishers},

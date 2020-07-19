@@ -478,15 +478,16 @@ sub scrape-science-direct(--> BibTeX::Entry) {
 }
 
 sub scrape-springer {
+  ## Close Cookie Overlay
   my @close-banner = $web-driver.find_elements_by_class_name( 'optanon-alert-box-close' );
   if @close-banner { @close-banner.head.click; }
 
+  ## Export BibTeX
   my @elements = $web-driver.find_elements_by_id( 'button-Dropdown-citations-dropdown' );
 
   my $bibtex;
   # Springer seems to have two different page designs
   if @elements {
-    ## Export BibTeX
     #
     # This just scrolls the final link into view, but if we do not do this WebDriver reports an error
     @elements.head.click;
@@ -495,76 +496,44 @@ sub scrape-springer {
     sleep 5;
     my @files = 'downloads'.IO.dir;
     $bibtex = bibtex-parse(@files.head.slurp).items.head;
-
-    for 'author', 'editor' -> $key {
-      if $bibtex.fields{$key}:exists {
-        my $names = $bibtex.fields{$key}.simple-str;
-        $names ~~ s:g/ ' '* "\n" / /;
-        $bibtex.fields{$key} = BibTeX::Value.new($names);
-      }
-    }
-
-    ## HTML Meta
-    my $html = html-meta-parse($web-driver);
-    html-meta-bibtex($bibtex, $html, author => True, publisher => True);
-
-    ## ISBN
-    my $pisbn = $web-driver.find_element_by_id( 'print-isbn' ).get_property( 'innerHTML' );
-    my $eisbn = $web-driver.find_element_by_id( 'electronic-isbn' ).get_property( 'innerHTML' );
-    $bibtex.fields<isbn> = BibTeX::Value.new("$pisbn (Print) $eisbn (Online)");
-
-    ## ISSN
-    if $web-driver.find_element_by_tag_name( 'head' ).get_property( 'innerHTML' )
-        ~~ / '{"eissn":"' (\d\d\d\d '-' \d\d\d\d) '","pissn":"' (\d\d\d\d '-' \d\d\d\d) '"}' / {
-      my $issn = "$1 (Print) $0 (Online)";
-      $bibtex.fields<issn> = BibTeX::Value.new($issn);
-    }
   } else {
-    ## Export BibTeX
-    #
-    # This just scrolls the final link into view, but if we do not do this WebDriver reports an error
-    #$web-driver.find_element_by_css_selector( 'a[data-track-action="cite this article"]' ).click;
-    #sleep 1;
-    $web-driver.find_element_by_css_selector( 'a[data-test="citation-link"]' ).click;
-    sleep 5;
-    my @files = 'downloads'.IO.dir;
-    my $ris = ris-parse(@files.head.slurp);
-    $bibtex = bibtex-of-ris($ris);
-
-    ## HTML Meta
-    my $html = html-meta-parse($web-driver);
-    html-meta-bibtex($bibtex, $html, publisher => True);
-
-    ## ISSN
-    if $web-driver.find_element_by_tag_name( 'head' ).get_property( 'innerHTML' )
-        ~~ / '{"eissn":"' (\d\d\d\d '-' \d\d\d\d) '","pissn":"' (\d\d\d\d '-' \d\d\d\d) '"}' / {
-      my $issn = "$1 (Print) $0 (Online)";
-      $bibtex.fields<issn> = BibTeX::Value.new($issn);
-    }
-
-    # ## Publisher
-    # my $publisher = meta( 'citation_publisher' );
-    # $bibtex.fields<publisher> = BibTeX::Value.new($publisher);
+    $bibtex = BibTeX::Entry.new();
   }
 
-#     my ($abstr) = join('', $mech->content() =~ m[>(?:Abstract|Summary)</h2>(.*?)</section]s);
-#     $entry->set('abstract', $abstr) if defined $abstr;
+  ## HTML Meta
+  my $html = html-meta-parse($web-driver);
+  $bibtex.type = html-meta-type($html);
+  html-meta-bibtex($bibtex, $html, author => True, publisher => True);
 
-#     print_or_online($entry, 'issn',
-#         [$mech->content() =~ m[id="print-issn">(.*?)</span>]],
-#         [$mech->content() =~ m[id="electronic-issn">(.*?)</span>]]);
+  for 'author', 'editor' -> $key {
+    if $bibtex.fields{$key}:exists {
+      my $names = $bibtex.fields{$key}.simple-str;
+      $names ~~ s:g/ ' '* "\n" / /;
+      $bibtex.fields{$key} = BibTeX::Value.new($names);
+    }
+  }
 
-#     print_or_online($entry, 'isbn',
-#         [$mech->content() =~ m[id="print-isbn">(.*?)</span>]],
-#         [$mech->content() =~ m[id="electronic-isbn">(.*?)</span>]]);
+  ## ISBN
+  my @pisbn = $web-driver.find_elements_by_id( 'print-isbn' ).map({.get_property( 'innerHTML' )});
+  my @eisbn = $web-driver.find_elements_by_id( 'electronic-isbn' ).map({.get_property( 'innerHTML' )});
+  if @pisbn and @eisbn {
+    $bibtex.fields<isbn> = BibTeX::Value.new("{@pisbn.head} (Print) {@eisbn.head} (Online)");
+  }
 
+  ## ISSN
+  if $web-driver.find_element_by_tag_name( 'head' ).get_property( 'innerHTML' )
+      ~~ / '{"eissn":"' (\d\d\d\d '-' \d\d\d\d) '","pissn":"' (\d\d\d\d '-' \d\d\d\d) '"}' / {
+    my $issn = "$1 (Print) $0 (Online)";
+    $bibtex.fields<issn> = BibTeX::Value.new($issn);
+  }
+
+  ## Series, Volume and ISSN
   # Ugh, Springer doesn't have a reliable way to get the series, volume,
   # or issn.  Fortunately, this only happens for LNCS, so we hard code
   # it.
   if $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' ) ~~ / '(LNCS, volume ' (\d*) ')' / {
     $bibtex.fields<volume> = BibTeX::Value.new($0.Str);
     $bibtex.fields<series> = BibTeX::Value.new( 'Lecture Notes in Computer Science' );
-    $bibtex.fields<issn> = BibTeX::Value.new( '0302-9743 (Print) 1611-3349 (Online)' );
   }
 
   ## Keywords
@@ -576,18 +545,12 @@ sub scrape-springer {
     ($web-driver.find_elements_by_class_name( 'Abstract' ),
     $web-driver.find_elements_by_id( 'Abs1-content' )).flat;
   if @abstract {
-    my $abstract = @abstract[0].get_property( 'innerHTML' );
+    my $abstract = @abstract.head.get_property( 'innerHTML' );
     $abstract ~~ s/^ '<h' <[23]> .*? '>Abstract</h' <[23]> '>' //;
-#     $abs =~ s[<div class="article-section__content[^"]*">(.*)</div>][$1]s;
-#     $abs =~ s[(Copyright )?(.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, (Ltd|Inc)\.\s*][];
-#     $abs =~ s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\..*, \d\d\d\d][];
-#     $abs =~ s[\\begin\{align\*\}(.*?)\\end\{align\*\}][\\ensuremath\{$1\}]sg;
-#     $entry->set('abstract', $abs);
     $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
   }
 
-#     $html->bibtex($entry, 'abstract', 'month');
-
+  ## Publisher
   # The publisher field should not include the address
   update($bibtex, 'publisher', { $_ = 'Springer' if $_ eq 'Springer, ' ~ ($bibtex.fields<address> // BibTeX::Value.new()).simple-str });
 

@@ -8,7 +8,6 @@ Non-continuously numbered journal
   volume = {1},
   number = {2},
   pages = {1--6},
-  day = {01},
   month = jun,
   year = {1999},
   publisher = {Springer New York},
