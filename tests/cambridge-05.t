@@ -12,5 +12,5 @@ Bookreview
   publisher = {Cambridge University Press},
   issn = {0956-7968 (Print) 1469-7653 (Online)},
   doi = {10.1017/S0956796801004130},
-  bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?aid=83371},
+  bib_scrape_url = {https://journals.cambridge.org/action/displayAbstract?aid=83371},
 }

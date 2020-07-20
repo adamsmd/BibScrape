@@ -12,6 +12,6 @@ Broken abstract
   publisher = {Elsevier},
   issn = {0020-0190},
   doi = {10.1016/0020-0190(83)90106-0},
-  bib-scrape-url = {https://www.sciencedirect.com/science/article/pii/0020019083901060},
+  bib_scrape_url = {https://www.sciencedirect.com/science/article/pii/0020019083901060},
   keywords = {Applicative programming; linked list; number system; random-access stack},
 }

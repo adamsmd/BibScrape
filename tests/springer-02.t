@@ -14,7 +14,7 @@ Test starting from the export tab
   language = {German},
   issn = {0021-8375 (Print) 1439-0361 (Online)},
   doi = {10.1007/BF01975012},
-  bib-scrape-url = {https://doi.org/10.1007/BF01975012},
+  bib_scrape_url = {https://doi.org/10.1007/BF01975012},
   abstract = {Der Versuch, bei Brieftauben durch zeitweisen Entzug der Sonnensicht eine Orientierungst{\"a}uschung hervorzurufen, verlief auch im Herbst 1954 erfolglos. (Negativer Ausfall des ersten Wilhelmshavener Versuchs: K. und\textsc{A. Rawson}, diese Ztschr., dieses Heft, S. 168.)
 {\par}
 Dieser Ausfall spricht zun{\"a}chst gegen die\textsc{Matthewss}che Hypothese der Sonnennavigation, ohne jedoch unbedingt t{\"o}dlich f{\"u}r sie zu sein (s. Diskussion, S. 176).

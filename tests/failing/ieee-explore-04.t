@@ -11,7 +11,7 @@ Multi range month
   language = {English},
   issn = {0272-5428},
   doi = {10.1109/SFCS.1977.4},
-  bib-scrape-url = {https://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4567935&abstractAccess=no&userType=},
+  bib_scrape_url = {https://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4567935&abstractAccess=no&userType=},
   keywords = {Performance evaluation; Testing; Tree graphs},
   abstract = {We present a method for computing ancestor information in trees. We show the method is tunable to specific applications, and compare it to other methods. Finally, we apply our procedures to the problem of finding negative cycles in sparse graphs.},
 }

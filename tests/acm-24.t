@@ -14,7 +14,7 @@ Avoid SIGSOFT Software Engineering Notes
   address = {New York, NY, USA},
   isbn = {1-58113-743-5},
   doi = {10.1145/940071.940096},
-  bib-scrape-url = {https://dl.acm.org/citation.cfm?doid=949952.940096},
+  bib_scrape_url = {https://dl.acm.org/citation.cfm?doid=949952.940096},
   keywords = {concurrency; context-sensitive; parallelism; program analysis; program slicing},
   abstract = {Program slicing is a technique to identify statements that may influence the computations at other statements. Precise slicing has been shown to be undecidable for concurrent programs. This work presents the first context-sensitive approach to slice concurrent programs accurately. It extends the well known structures of the control flow graph and the (interprocedural) program dependence graph for concurrent programs with interference. This new technique does not require serialization or inlining.},
 }

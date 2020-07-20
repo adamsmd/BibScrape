@@ -14,5 +14,5 @@ No abstract
   address = {New York, NY, USA},
   isbn = {978-1-4503-7357-9},
   doi = {10.1145/567752.567756},
-  bib-scrape-url = {https://portal.acm.org/citation.cfm?id=567756},
+  bib_scrape_url = {https://portal.acm.org/citation.cfm?id=567756},
 }

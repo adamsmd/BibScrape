@@ -16,5 +16,5 @@ Unicode in title
   isbn = {978-3-540-55727-2 (Print) 978-3-540-47279-7 (Online)},
   issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/BFb0013061},
-  bib-scrape-url = {doi:10.1007/BFb0013061},
+  bib_scrape_url = {doi:10.1007/BFb0013061},
 }

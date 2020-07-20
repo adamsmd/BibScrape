@@ -14,6 +14,6 @@ Fix author's latex escapes; Key with spaces
   address = {New York, NY, USA},
   isbn = {0-89791-770-7},
   doi = {10.1145/232627.232630},
-  bib-scrape-url = {https://portal.acm.org/citation.cfm?id=232627.232630},
+  bib_scrape_url = {https://portal.acm.org/citation.cfm?id=232627.232630},
   abstract = {Virtually every compiler performs transformations on the program it is compiling in an attempt to improve efficiency. Despite their importance, however, there have been few systematic attempts to categorise such transformations and measure their impact.In this paper we describe a particular group of transformations --- the {\textquotedbl}let-floating{\textquotedbl} transformations --- and give detailed measurements of their effect in an optimizing compiler for the non-strict functional language Haskell. Let-floating has not received much explicit attention in the past, but our measurements show that it is an important group of transformations (at least for lazy languages), offering a reduction of more than 30{\%} in heap allocation and 15{\%} in execution time.},
 }

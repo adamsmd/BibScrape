@@ -137,7 +137,7 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
     when m[ « 'wiley.com'           $] { scrape-wiley(); }
     default { say "error: unknown domain: $domain"; }
   }
-  $bibtex.fields.push((bib-scrape-url => BibTeX::Value.new($url)));
+  $bibtex.fields.push((bib_scrape_url => BibTeX::Value.new($url)));
   close();
   $bibtex;
 }

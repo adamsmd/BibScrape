@@ -13,6 +13,6 @@ Unicode in title, author and abstract
   publisher = {Cambridge University Press},
   issn = {0956-7968 (Print) 1469-7653 (Online)},
   doi = {10.1017/S0956796809007369},
-  bib-scrape-url = {https://journals.cambridge.org/action/displayAbstract?aid=6171400},
+  bib_scrape_url = {https://journals.cambridge.org/action/displayAbstract?aid=6171400},
   abstract = {We present an extension of the {\textgreek{l}}({\textgreek{h}})-calculus with a case construct that propagates through functions like a head linear substitution, and show that this construction permits to recover the expressiveness of ML-style pattern matching. We then prove that this system enjoys the Church{--}Rosser property using a semi-automatic {\textquoteleft}divide and conquer{\textquoteright} technique by which we determine all the pairs of commuting subsystems of the formalism (considering all the possible combinations of the nine primitive reduction rules). Finally, we prove a separation theorem similar to B{\"o}hm's theorem for the whole formalism.},
 }

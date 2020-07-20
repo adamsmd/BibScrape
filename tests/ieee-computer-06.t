@@ -15,7 +15,7 @@ Magazine
   language = {English},
   issn = {0018-9162},
   doi = {10.1109/MC.2005.406},
-  bib-scrape-url = {https://www.computer.org/csdl/mags/co/2005/12/rz043-abs.html},
+  bib_scrape_url = {https://www.computer.org/csdl/mags/co/2005/12/rz043-abs.html},
   keywords = {CARB; CEIDARS; Digital government; Data sharing; National Emission Inventory; Facilities Registry System; Information modeling; Guspin; Sift},
   abstract = {An information theory-based technology measures the importance of observations and leverages them to quantify the similarity between entities, improving accuracy and reducing the time required to find related entities in a population.},
 }

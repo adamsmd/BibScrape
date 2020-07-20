@@ -12,5 +12,5 @@ Test ISBN and warning about suspect names.
   language = {English},
   isbn = {978-1-84628-608-7 (Print) 978-1-84628-609-4 (Online)},
   doi = {10.1007/978-1-84628-609-4_20},
-  bib-scrape-url = {doi:10.1007/978-1-84628-609-4_20},
+  bib_scrape_url = {doi:10.1007/978-1-84628-609-4_20},
 }

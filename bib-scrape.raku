@@ -232,9 +232,9 @@ sub MAIN(
     chapter pages articleno numpages
     edition day month year issue_date jstor_formatteddate
     organization publisher address
-    language isbn issn doi eid acmid url eprint bib-scrape-url
+    language isbn issn doi eid acmid url eprint bib_scrape_url
     note annote keywords abstract copyright>;
-  my Str @no-encode = <doi url eprint bib-scrape-url>;
+  my Str @no-encode = <doi url eprint bib_scrape_url>;
   my Str @no-collapse = < >;
   my Str @omit = < >;
   my Str @omit-empty = <abstract issn doi keywords>;

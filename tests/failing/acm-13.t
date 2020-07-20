@@ -14,5 +14,5 @@ Page numbers with letters and dashes
   address = {New York, NY, USA},
   isbn = {0-89791-804-5},
   doi = {10.1145/237218.237407},
-  bib-scrape-url = {https://portal.acm.org/citation.cfm?doid=237218.237407},
+  bib_scrape_url = {https://portal.acm.org/citation.cfm?doid=237218.237407},
 }

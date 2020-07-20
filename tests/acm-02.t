@@ -14,7 +14,7 @@ Converts HTML italics to Tex, "Van" in author
   address = {New York, NY, USA},
   isbn = {978-1-59593-919-7},
   doi = {10.1145/1411204.1411243},
-  bib-scrape-url = {https://portal.acm.org/citation.cfm?id=1411204.1411243},
+  bib_scrape_url = {https://portal.acm.org/citation.cfm?id=1411204.1411243},
   keywords = {complexity; flow analysis},
   abstract = {We give an exact characterization of the computational complexity of the \textit{k}CFA hierarchy. For any \textit{k} {\textgreater} 0, we prove that the control flow decision problem is complete for deterministic exponential time. This theorem validates empirical observations that such control flow analysis is intractable. It also provides more general insight into the complexity of abstract interpretation.},
 }

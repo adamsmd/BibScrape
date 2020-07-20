@@ -15,7 +15,7 @@ Italics in title
   issn = {1097-024X},
   doi = {10.1002/spe.978},
   eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/spe.978},
-  bib-scrape-url = {https://onlinelibrary.wiley.com/doi/10.1002/spe.978/abstract},
+  bib_scrape_url = {https://onlinelibrary.wiley.com/doi/10.1002/spe.978/abstract},
   keywords = {search engine; web retrieval; usability; efficiency; effectiveness},
   abstract = {In this paper, we describe theit \textit{Search Tree} visual language. It is a novel methodology able to support users to build up complex queries to be run on given search engines. For using this visual language, neither parentheses nor precedence rules are needed, nor the specific ability to perform advanced search tasks. The language is proven to have the same expressive power as the expressions in Sum Of Product form. In order to prove the appropriateness of our proposal, we measured the usability of the proposed querying approach against the traditional Yahoo \textsuperscript{TM} web search query language. Results show that, even if both the approaches fully support users in terms of efficacy, the \textit{Search Tree} visual language significantly improves task efficiency, both in terms of the number of actions performed and the time requested with respect to the advanced search interface.},
 }
