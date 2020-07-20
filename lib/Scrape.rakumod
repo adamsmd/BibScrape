@@ -253,14 +253,14 @@ sub scrape-ieee-computer {
   ## BibTeX
   $web-driver.find_element_by_css_selector( '.article-action-toolbar button' ).click;
   sleep 1;
-  my $link = $web-driver.find_element_by_link_text( 'BibTex' );
-  $web-driver.execute_script( 'arguments[0].removeAttribute("target")', $link);
+  my $bibtex-link = $web-driver.find_element_by_link_text( 'BibTex' );
+  $web-driver.execute_script( 'arguments[0].removeAttribute("target")', $bibtex-link);
   $web-driver.find_element_by_link_text( 'BibTex' ).click;
   sleep 1;
-  my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
-  $text ~~ s/ "\{," /\{key,/;
-  $text = Blob.new($text.ords).decode; # Fix UTF-8 encoding
-  my $bibtex = bibtex-parse($text).items.head;
+  my $bibtex-text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
+  $bibtex-text ~~ s/ "\{," /\{key,/;
+  $bibtex-text = Blob.new($bibtex-text.ords).decode; # Fix UTF-8 encoding
+  my $bibtex = bibtex-parse($bibtex-text).items.head;
   $web-driver.back();
 
   ## HTML Meta
@@ -271,29 +271,12 @@ sub scrape-ieee-computer {
   my @authors = $web-driver.find_elements_by_css_selector( 'a[href^="https://www.computer.org/csdl/search/default?type=author&"]' ).map({ .get_property( 'innerHTML' ) });
   $bibtex.fields<author> = BibTeX::Value.new(@authors.join( ' and ' ));
 
-  ## Abstract
-#  my $abstract = $web-driver.find_element_by_class_name( 'article-content' ).get_property( 'innerHTML' );
-#  $abstract ~~ s:g/ '<script'» <-[>]>* '>' //;
-#  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+  ## Affiliation
+  my @affiliations = $web-driver.find_elements_by_class_name( 'article-author-affiliations' ).map({ .get_property( 'innerHTML' ) });
+  $bibtex.fields<affiliation> = BibTeX::Value.new(@affiliations.join( ' and ' )) if @affiliations;
 
-  #say $bibtex.Str;
-
-
-#     my $meta = Text::MetaBib::parse(decode('utf8', $mech->content()));
-#     my $entry = parse_bibtex("\@" . ($meta->type() || 'misc') . "{unknown_key,}");
-
-#     if ($entry->type() eq 'inproceedings') { # IEEE gets this all wrong
-#         $entry->set('series', $f->get('journal')) if $f->exists('journal');
-#         $entry->delete('journal');
-#     }
-#     $entry->set('address', $f->get('address')) if $f->exists('address');
-#     $entry->set('volume', $f->get('volume')) if $f->exists('volume');
-#     update($entry, 'volume', sub { $_ = undef if $_ eq "00" });
-
-#     $meta->bibtex($entry);
-
-#     # Don't use the MetaBib for this as IEEE doesn't escape quotes property
-#     $entry->set('abstract', $mech->content() =~ m[<div class="abstractText abstractTextMB">(.*?)</div>]);
+  ## Keywords
+  update($bibtex, 'keywords', { s:g/ ';' \s* /; / });
 
   $bibtex;
 }
