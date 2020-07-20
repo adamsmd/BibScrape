@@ -160,8 +160,8 @@ sub scrape-acm(--> BibTeX::Entry) {
 
   # TODO: check SIGPLAN Notices
   ## HTML Meta
-  #my $html = html-meta-parse($web-driver);
-  #html-meta-bibtex($bibtex, $html);
+  #my $meta = html-meta-parse($web-driver);
+  #html-meta-bibtex($bibtex, $meta);
 
   ## Abstract
   my $abstract = $web-driver
@@ -231,8 +231,8 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
   ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, title => True, abstract => False);
+  my $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $meta, title => True, abstract => False);
 
   ## Abstract
   my $abstract = meta( 'citation_abstract' );
@@ -251,10 +251,7 @@ sub scrape-cambridge(--> BibTeX::Entry) {
 }
 
 sub scrape-ieee-computer {
-  my $abstract = $web-driver.find_element_by_class_name( 'article-content' ).get_property( 'innerHTML' );
-
-  my @authors = $web-driver.find_elements_by_css_selector( 'a[href^="https://www.computer.org/csdl/search/default?type=author&"]' ).map({ .get_property( 'innerHTML' ) });
-
+  ## BibTeX
   $web-driver.find_element_by_css_selector( '.article-action-toolbar button' ).click;
   sleep 1;
   my $link = $web-driver.find_element_by_link_text( 'BibTex' );
@@ -263,17 +260,28 @@ sub scrape-ieee-computer {
   sleep 1;
   my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
   $text ~~ s/ "\{," /\{key,/;
+  $text = Blob.new($text.ords).decode; # Fix UTF-8 encoding
   my $bibtex = bibtex-parse($text).items.head;
-
-  $bibtex.fields<author> = BibTeX::Value.new(@authors.join( ' and ' ));
-  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+  $web-driver.back();
 
   ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, title => True, abstract => False);
+  my $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $meta);
 
-#     my $html = Text::MetaBib::parse(decode('utf8', $mech->content()));
-#     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
+  ## Authors
+  my @authors = $web-driver.find_elements_by_css_selector( 'a[href^="https://www.computer.org/csdl/search/default?type=author&"]' ).map({ .get_property( 'innerHTML' ) });
+  $bibtex.fields<author> = BibTeX::Value.new(@authors.join( ' and ' ));
+
+  ## Abstract
+#  my $abstract = $web-driver.find_element_by_class_name( 'article-content' ).get_property( 'innerHTML' );
+#  $abstract ~~ s:g/ '<script'» <-[>]>* '>' //;
+#  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+
+  #say $bibtex.Str;
+
+
+#     my $meta = Text::MetaBib::parse(decode('utf8', $mech->content()));
+#     my $entry = parse_bibtex("\@" . ($meta->type() || 'misc') . "{unknown_key,}");
 
 #     if ($entry->type() eq 'inproceedings') { # IEEE gets this all wrong
 #         $entry->set('series', $f->get('journal')) if $f->exists('journal');
@@ -283,7 +291,7 @@ sub scrape-ieee-computer {
 #     $entry->set('volume', $f->get('volume')) if $f->exists('volume');
 #     update($entry, 'volume', sub { $_ = undef if $_ eq "00" });
 
-#     $html->bibtex($entry);
+#     $meta->bibtex($entry);
 
 #     # Don't use the MetaBib for this as IEEE doesn't escape quotes property
 #     $entry->set('abstract', $mech->content() =~ m[<div class="abstractText abstractTextMB">(.*?)</div>]);
@@ -292,54 +300,68 @@ sub scrape-ieee-computer {
 }
 
 sub scrape-ieee-explore {
+  ## BibTeX
   $web-driver.find_element_by_tag_name( 'xpl-cite-this-modal' ).click;
-  sleep 1;
+  sleep 2;
   $web-driver.find_element_by_link_text( 'BibTeX' ).click;
-  sleep 1;
+  sleep 2;
   $web-driver.find_element_by_css_selector( '.enable-abstract input' ).click;
-  sleep 1;
+  sleep 2;
   my $text = $web-driver.find_element_by_class_name( 'ris-text' ).get_property( 'innerHTML' );
   my $bibtex = bibtex-parse($text).items.head;
 
+  ## HTML Meta
+  my $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $meta);
+
+  ## HTML body text
+  my $body = $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' );
+
+  ## Keywords
   my $keywords = $bibtex.fields<keywords>.simple-str;
   $keywords ~~ s:g/ ';' ' '* /; /;
   $bibtex.fields<keywords> = BibTeX::Value.new($keywords);
 
+  ## Author
   my $author = $bibtex.fields<author>.simple-str;
   $author ~~ s:g/ '{' (<-[}]>+) '}' /$0/;
   $bibtex.fields<author> = BibTeX::Value.new($author);
 
-  ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, title => True, abstract => False);
+  ## ISSN
+  if $body ~~ / '"issn":[{"format":"Print ISSN","value":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '"},{"format":"Electronic ISSN","value":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '"}]' / {
+    $bibtex.fields<issn> = BibTeX::Value.new("$0 (Print) $1 (Online)");
+  }
 
-#     # Extract data from embedded JSON
-#     my @affiliations = $mech->content() =~ m[\{.*?"affiliation":"([^"]+)".*?\}]sg;
-#     $entry->set('affiliation', join(" and ", @affiliations)) if @affiliations;
+  ## ISBN
+  if $body ~~ / '"isbn":[{"format":"Print ISBN","value":"' (<[-0..9Xx]>+) '","isbnType":""},{"format":"CD","value":"' (<[-0..9Xx]>+) '","isbnType":""}]' / {
+    $bibtex.fields<isbn> = BibTeX::Value.new("$0 (Print) $1 (Online)");
+  }
 
-#     $entry->set('publisher', $mech->content() =~ m["publisher":"([^"]+)"]s);
+  ## Publisher
+  my $publisher = $web-driver.find_element_by_class_name( 'publisher-info-label' ).get_property( 'innerHTML' );
+  $publisher ~~ s/^ \s* 'Publisher: ' //;
+  $bibtex.fields<publisher> = BibTeX::Value.new($publisher);
 
-#     $entry->set('location', $1) if $mech->content() =~ m["confLoc":"([^"]+)"]s;
+  ## Affiliation
+  my $affiliation =
+    ($body ~~ m:g/ '"affiliation":"' (<-["]>+) '"' /)
+    .map(sub ($k, $v) { $v[0].Str }).join( ' and ' );
+  $bibtex.fields<affiliation> = BibTeX::Value.new($affiliation) if $affiliation ne '';
 
-#     $entry->set('conference_date', $1) if $mech->content() =~ m["conferenceDate":"([^"]+)"]s;
+  ## Location
+  my $location = ($body ~~ / '"confLoc":"' (<-["]>+) '"' /)[0];
+  if $location {
+    $location ~~ s/ ',' \s+ $//;
+    $location ~~ s/ ', USA, USA' $/, USA/;
+    $bibtex.fields<location> = BibTeX::Value.new($location.Str);
+  }
 
-#     my ($isbns) = $mech->content() =~ m["isbn":\[(.+?)\]]sg;
-#     if ($isbns) {
-#       # TODO: refactor with print_or_online()
-#       $isbns =~ s["CD-ROM ISBN"]["Online ISBN"]sg; # TODO: update Fix.pm to support CD-ROM ISBN
-#       my @isbns = pairs($isbns =~ m[\{"format":"([^"]+) ISBN","value":"([^"]+)"\}]sg);
-#       $entry->set('isbn', @isbns <= 1 ? $isbns[0]->[1] : join(" ", map { "$_->[1] ($_->[0])" } @isbns));
-#     }
+  ## Conference date
+  $body ~~ / '"conferenceDate":"' (<-["]>+) '"' /;
+  $bibtex.fields<conference_date> = BibTeX::Value.new($0.Str) if $0;
 
-#     my ($issns) = $mech->content() =~ m["issn":\[(.+?)\]]sg;
-#     if ($issns) {
-#       # TODO: refactor with print_or_online()
-#       $issns =~ s["Electronic ISSN"]["Online ISSN"]sg; # TODO: update Fix.pm to support Electronic ISSN
-#       my @issns = pairs($issns =~ m[\{"format":"([^"]+) ISSN","value":"([^"]+)"\}]sg);
-#       $entry->set('issn', @issns <= 1 ? $issns[0]->[1] : join(" ", map { "$_->[1] ($_->[0])" } @issns));
-#     }
-
-#     update($entry, 'abstract', sub { s[&lt;&lt;ETX&gt;&gt;$][]; });
+  ## Abstract
+  update($bibtex, 'abstract', { s/ '&lt;&gt;' $// });
 
   $bibtex;
 }
@@ -355,8 +377,8 @@ sub scrape-ios-press {
   my $bibtex = bibtex-of-ris($ris);
 
   ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html);
+  my $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $meta);
 
   ## Title
   my $title = $web-driver.find_element_by_css_selector( '[data-p13n-title]' ).get_attribute( 'data-p13n-title' );
@@ -393,8 +415,8 @@ sub scrape-jstor {
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
   ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html);
+  my $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $meta);
 
   ## Title
   my $title = $web-driver.find_element_by_class_name( 'title' ).get_property( 'innerHTML' );
@@ -435,8 +457,8 @@ sub scrape-oxford {
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
   ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, month => True, year => True);
+  my $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $meta, month => True, year => True);
 
   ## Title
   my $title = $web-driver.find_element_by_class_name( 'article-title-main' ).get_property( 'innerHTML' );
@@ -468,8 +490,8 @@ sub scrape-science-direct(--> BibTeX::Entry) {
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
   ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, number => True);
+  my $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $meta, number => True);
 
   ## Title
   my $title = $web-driver.find_element_by_class_name( 'title-text' ).get_property( 'innerHTML' );
@@ -520,9 +542,9 @@ sub scrape-springer {
   }
 
   ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  $bibtex.type = html-meta-type($html);
-  html-meta-bibtex($bibtex, $html, author => True, publisher => True);
+  my $meta = html-meta-parse($web-driver);
+  $bibtex.type = html-meta-type($meta);
+  html-meta-bibtex($bibtex, $meta, author => True, publisher => True);
 
   for 'author', 'editor' -> $key {
     if $bibtex.fields{$key}:exists {
@@ -541,7 +563,7 @@ sub scrape-springer {
 
   ## ISSN
   if $web-driver.find_element_by_tag_name( 'head' ).get_property( 'innerHTML' )
-      ~~ / '{"eissn":"' (\d\d\d\d '-' \d\d\d\d) '","pissn":"' (\d\d\d\d '-' \d\d\d\d) '"}' / {
+      ~~ / '{"eissn":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '","pissn":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '"}' / {
     my $issn = "$1 (Print) $0 (Online)";
     $bibtex.fields<issn> = BibTeX::Value.new($issn);
   }
@@ -596,8 +618,8 @@ sub scrape-wiley {
   sleep 5;
 
   ## HTML Meta
-  my $html = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $html, title => True, abstract => False, journal => True, keywords => True);
+  my $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($bibtex, $meta, title => True, abstract => False, journal => True, keywords => True);
 
   ## Abstract
   my $abstract = $web-driver.find_element_by_class_name( 'article-section__content' ).get_property( 'innerHTML' );
