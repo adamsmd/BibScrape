@@ -16,7 +16,7 @@ sub ris-parse(Str $text --> Ris) is export {
   my $last_key = "";
   for $text.split(rx/ ["\n" | "\r"]+ /) -> $line is copy {
     $line ~~ s:g/ "\r" | "\n" //;
-    if $line ~~ /^ (<[A..Z]> <[A..Z0..9]> | 'DOI') ' '* '-' ' '* (.*?) ' '* $/ {
+    if $line ~~ /^ (<[A..Z0..9]>+) ' '* '-' ' '* (.*?) ' '* $/ {
       my ($key, $val) = ($0.Str, $1.Str);
       push %fields{$key}, $val;
       $last_key = $key;
@@ -80,14 +80,14 @@ sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   }
 
   # TY: ref type (INCOL|CHAPTER -> CHAP, REP -> RPRT)
-  $entry.type = %ris-types{%self<TY>} // (say "Unknown RIS TY: {%self<TY>}. Using misc." and 'misc');
+  $entry.type = %ris-types{%self<TY> // ''} // ((!%self<TY>.defined or say "Unknown RIS TY: {%self<TY>}. Using misc.") and 'misc');
   # ID: reference id
   $entry.key = %self<ID>;
   # T1|TI|CT: title primary
   # BT: title primary (books and unpub), title secondary (otherwise)
   set( 'title', %self<T1> // %self<TI> // %self<CT> //
-    (%self<TY> eq 'BOOK' || %self<TY> eq 'UNPB') && %self<BT>);
-  set( 'booktitle', !(%self<TY> eq 'BOOK' || %self<TY> eq 'UNPB') && %self<BT>);
+    ((%self<TY> // '') eq 'BOOK' || (%self<TY> // '') eq 'UNPB') && %self<BT>);
+  set( 'booktitle', !((%self<TY> // '') eq 'BOOK' || (%self<TY> // '') eq 'UNPB') && %self<BT>);
   # T2: title secondary
   set( 'journal', %self<T2>);
   # T3: title series
@@ -96,7 +96,7 @@ sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   # A3: author series
   # A[4-9]: author (undocumented)
   # Y1|PY: date primary
-  my ($year, $month, $day) = (%self<DA> // %self<PY> // %self<Y1>).split(rx/ "/" | "-" /);
+  my ($year, $month, $day) = (%self<DA> // %self<PY> // %self<Y1> // '').split(rx/ "/" | "-" /);
   set( 'year', $year);
   $entry.fields<month> = BibTeX::Value.new(num2month($month)) if $month;
   if (%self<C1>:exists) {

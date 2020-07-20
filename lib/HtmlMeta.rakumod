@@ -168,10 +168,8 @@ sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is exp
 
   # TODO: disable?
   # 'dc.description' also contains abstract information
-  if %meta<description>:exists {
-    for %meta<description> -> $d {
-      set( 'abstract', $d[0]) if $d ne '' and $d ne '****' and $d !~~ /^( 'IEEE Xplore' | 'IEEE Computer Society' )/;
-    }
+  for (%meta<description>, %meta<Description>).flat -> $d {
+    set( 'abstract', $d[0]) if $d.defined and $d ne '' and $d ne '****' and $d !~~ /^( 'IEEE Xplore' | 'IEEE Computer Society' )/;
   }
 
   set( 'affiliation', %meta<citation_author_institution>.join( ' and ' ))

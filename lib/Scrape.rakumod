@@ -600,6 +600,7 @@ sub scrape-springer {
 }
 
 sub scrape-wiley {
+  ## BibTeX
   $web-driver.find_element_by_class_name( 'article-tools__ctrl' ).click;
   sleep 1;
   $web-driver.find_elements_by_class_name( 'article-tool' )[1].click;
@@ -611,33 +612,49 @@ sub scrape-wiley {
   sleep 1;
   $web-driver.find_element_by_css_selector( 'input[value="Download"]' ).click;
   sleep 5;
-  my $text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
-  my $bibtex = bibtex-parse($text).items.head;
+  my $bibtex-text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
+  my $bibtex = bibtex-parse($bibtex-text).items.head;
   $web-driver.back();
+
+  ## RIS
+  $web-driver.find_element_by_css_selector( 'input[value="medlars"] + span' ).click;
+  sleep 1;
+  $web-driver.find_element_by_css_selector( 'input[value="Download"]' ).click;
+  sleep 5;
+  my $ris-text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
+  my $ris = ris-parse($ris-text);
+  $web-driver.back();
+
   $web-driver.back();
   sleep 5;
 
+  #$bibtex = bibtex-of-ris($ris);
+
   ## HTML Meta
   my $meta = html-meta-parse($web-driver);
-  html-meta-bibtex($bibtex, $meta, title => True, abstract => False, journal => True, keywords => True);
+  html-meta-bibtex($bibtex, $meta, title => True, journal => True, keywords => True);
+
+  #say $ris.fields<TI>;
 
   ## Abstract
-  my $abstract = $web-driver.find_element_by_class_name( 'article-section__content' ).get_property( 'innerHTML' );
-  # my ($abs) = ($mech->content() =~ m[<section class="article-section article-section__abstract"[^>]*>(.*?)</section>]s);
-  #$abstract ~~ s/ '<h' <[23]> .*? '>Abstract</h' <[23]> '>' ][];
-  # $abs =~ s[<div class="article-section__content[^"]*">(.*)</div>][$1]s;
-  $abstract ~~ s/ [ 'Copyright ' ]? [ . | '&copy;' ] ' ' \d\d\d\d ' John Wiley ' [ . | '&amp;' ] ' Sons, ' [ 'Ltd' | 'Inc' ] '.' \s* //;
-  $abstract ~~ s/ [ . | '&copy;' ] ' ' \d\d\d\d ' Wiley Periodicals, Inc. Random Struct. Alg.' .* ', ' \d\d\d\d //;
-  $abstract ~~ s:g/ '\begin{align*}' (.*?) '\end{align*}' /\\ensuremath\{$0\}/;
-  $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
+  $bibtex.fields<abstract>:delete;
+  #say $ris.fields<AB>;
+  # my $abstract = $web-driver.find_element_by_class_name( 'article-section__content' ).get_property( 'innerHTML' );
+  # # my ($abs) = ($mech->content() =~ m[<section class="article-section article-section__abstract"[^>]*>(.*?)</section>]s);
+  # #$abstract ~~ s/ '<h' <[23]> .*? '>Abstract</h' <[23]> '>' ][];
+  # # $abs =~ s[<div class="article-section__content[^"]*">(.*)</div>][$1]s;
+  # $abstract ~~ s/ [ 'Copyright ' ]? [ . | '&copy;' ] ' ' \d\d\d\d ' John Wiley ' [ . | '&amp;' ] ' Sons, ' [ 'Ltd' | 'Inc' ] '.' \s* //;
+  # $abstract ~~ s/ [ . | '&copy;' ] ' ' \d\d\d\d ' Wiley Periodicals, Inc. Random Struct. Alg.' .* ', ' \d\d\d\d //;
+  # $abstract ~~ s:g/ '\begin{align*}' (.*?) '\end{align*}' /\\ensuremath\{$0\}/;
+  # $bibtex.fields<abstract> = BibTeX::Value.new($abstract);
 
 #     # To handle multiple month issues we must use HTML
 #     my ($month_year) = $mech->content() =~ m[<div class="extra-info-wrapper cover-image__details">(.*?)</div>]s;
 #     my ($month) = $month_year =~ m[<p>([^<].*?) \d\d\d\d</p>]s;
 #     $entry->set('month', $month);
 
-  my $title = $web-driver.find_element_by_class_name( 'citation__title' ).get_property( 'innerHTML' );
-  $bibtex.fields<title> = BibTeX::Value.new($title);
+  #my $title = $web-driver.find_element_by_class_name( 'citation__title' ).get_property( 'innerHTML' );
+  #$bibtex.fields<title> = BibTeX::Value.new($title);
 
 #     # Choose the title either from bibtex or HTML based on whether we think the BibTeX has the proper math in it.
 #     $entry->set('title', $mech->content() =~ m[<h2 class="citation__title">(.*?)</h2>]s)
