@@ -41,7 +41,8 @@ def web_driver():
     'text/plain,text/x-bibtex,application/x-bibtex,application/x-research-info-systems')
   profile.set_preference('browser.download.folderList', 2)
   profile.set_preference('browser.download.dir', os.getcwd() + '/downloads')
-  return webdriver.Firefox(firefox_profile=profile)
+
+  return webdriver.Firefox(firefox_profile=profile, service_log_path='/dev/null')
 
 def select(element):
   return ui.Select(element)
