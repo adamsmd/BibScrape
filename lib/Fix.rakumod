@@ -166,7 +166,6 @@ class Fix {
         | 'http' 's'? '://doi.ieeecomputersociety.org/'
         | 'http' 's'? '://doi.org/'
         | 'http' 's'? '://dx.doi.org/'
-        | 'http' 's'? '://onlinelibrary.wiley.com/doi/abs/'
         | 'http' 's'? '://portal.acm.org/citation.cfm'
         | 'http' 's'? '://www.jstor.org/stable/'
         | 'http' 's'? '://www.sciencedirect.com/science/article/' ]/; });
