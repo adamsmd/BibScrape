@@ -287,8 +287,7 @@ sub MAIN(
 # }
 
   #for @url -> $url {
-  $url ~~ s/^ '{' (<-[}]>*) '}' //;
-  my $key = $0;
+  my $key = ($url ~~ s/^ '{' (<-[}]>*) '}' //)[0];
   my $bibtex = scrape($url);
   $bibtex = $fixer.fix($bibtex);
   $bibtex.key = $key.Str if $key;

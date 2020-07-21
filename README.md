@@ -50,7 +50,7 @@ Install `zef`
 
 --headless
 
-Browser page load time
+Browser page load timeout
 
 ## Notes
 

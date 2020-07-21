@@ -70,8 +70,8 @@ class Fix {
   }
 
   # TODO: is copy
-  method fix(BibTeX::Entry $bibtex --> BibTeX::Entry) {
-    my $entry = $bibtex.clone;
+  method fix(BibTeX::Entry $entry is copy --> BibTeX::Entry) {
+    $entry = $entry.clone;
 
     # TODO: $bib_text ~~ s/^\x{FEFF}//; # Remove Byte Order Mark
     # Fix any unicode that is in the field values
@@ -278,8 +278,7 @@ class Fix {
   }
 
   method canonical-names(BibTeX::Value $value --> BibTeX::Value) {
-    my $names = $value.simple-str;
-    my BibTeX::Name @names = parse-names($names);
+    my BibTeX::Name @names = parse-names($value.simple-str);
 
     my Str @new-names;
     NAME:
@@ -457,8 +456,7 @@ sub latex-encode(Str $str is copy) {
   return @parts.map({ /<[_^{}\\\$]>/ ?? $_ !! unicode2tex($_) }).join('');
 }
 
-sub check-first-name(Str $n) {
-  my $name = $n;
+sub check-first-name(Str $name is copy) {
   $name ~~ s/\s<upper>\.$//; # Allow for a middle initial
 
   $name ~~ /^<upper><lower>+$/ || # Simple name

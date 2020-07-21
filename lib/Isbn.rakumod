@@ -4,7 +4,7 @@ unit module Isbn;
 # https://www.isbn-international.org/range_file_generation
 # http://pcn.loc.gov/isbncnvt.html
 
-# NOTE: due to a bug in XML, must strip tags containing '.' from the file
+# NOTE: due to a bug in the XML module, must strip tags containing '.' from the file
 
 use XML;
 
@@ -104,15 +104,15 @@ sub canonical-isbn(Str $isbn, IsbnType $type, Str $sep) is export {
 
   if $i ~~ m/^ <[0..9]> ** 9 <[0..9Xx]> $/ {
       my $check = check-digit10($i);
-      die "Bad check digit in ISBN10. Expecting $check in $i" unless $i ~~ / $check $/;
+      die "Bad check digit in ISBN10. Expecting $check in $isbn" unless $i ~~ / $check $/;
       $i = '978' ~ $i;
       $was-isbn13 = False;
   } elsif $i ~~ m/^ <[0..9]> ** 12 <[0..9Xx]> $/ {
       my $check = check-digit13($i);
-      die "Bad check digit in ISBN13. Expecting $check in $i" unless $i ~~ / $check $/;
+      die "Bad check digit in ISBN13. Expecting $check in $isbn" unless $i ~~ / $check $/;
       $was-isbn13 = True;
   } else {
-      die "Invalid digits or wrong number of digits in ISBN: $i";
+      die "Invalid digits or wrong number of digits in ISBN: $isbn";
   }
 
   # By this point we know it is a valid ISBN13 w/o dashes but with a possibly wrong check digit

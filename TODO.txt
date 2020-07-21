@@ -9,14 +9,18 @@ Flags
   %no-collapse
   %omit
   %omit-empty
+  comma or no comma after last field
 
   Case-insensitive nouns?
 
 Key generation:
   keep vs generate
+  doi in key option
   use first n (non-trivial) words
+  Format: author/editor1.last year title/journal.abbriv
 
-Capital After colon in title?
+Titlecase After colon in title?
+  Warn if not?
 
 follow jstor links to original publisher
 add abstract to jstor
@@ -25,54 +29,33 @@ get PDF (eprint?)
 # Omit:class/type
 # Include:class/type
 # no issn, no isbn
-# title-case after ":"
-# Warn if first alpha after ":" is not capitalized
-# Flag about whether to Unicode, HTML, or LaTeX encode
-# Warning on duplicate names
 
-# TODO:
-# ALWAYS_GEN_KEY
-#$PREFER_NEW 1 = use new when both new and old have a key
-#$ADD_NEW 1 = use new when only new has key
-#$REMOVE_OLD 1 = not use old when only new has key
-
-#my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
-#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
-#my @RENAME
-
-# TODO:
-# preserve key if from bib-tex?
-# warn about duplicate author names
+Bibtex
+  warn if not exists bib_scrape_url when rescraping and fallback to doi
 
 # TODO: make debug be verbose and go to STDERR
-# TODO: rescrape based on doi
 
-Set bibtex key with {key}url
-DOI urls
+Tests
+  a test that has a jr part
+  a test that has 'others' in author names
 
-# TODO: warn if not exists bib_scrape_url
+Code
+  parse names in Raku instead of Python
+  Better cleanup of child processes
+  Better way to put Inline::Python last (phasor?)
+  == vs eq
+  has Array[BibTeX::Name] @.names;
 
-    # TODO: a test that has a jr part
-# TODO: test that uses 'others' in author names
-
-# TODO: parse names in Raku instead of Python
-
-# Automate cleaning of Isbn file
+Automate cleaning of Isbn file
 
 # TODO: ignore non-domain files (timeout on file load?)
 
-# Better cleanup of child processes
+$web-driver.set_page_load_timeout(5);
 
-  #$web-driver.set_page_load_timeout(5);
-
-# Better support for waiting (e.g., await until object in dom)
-
-Better way to put Inline::Python last (phasor?)
-
-
-    # TODO: https://dblp.org/db/journals/publ/
-    # TODO: all ciated by papers in big four
-    # TODO: arxiv
+Publishers
+  https://dblp.org/db/journals/publ/
+  all ciated by papers in big four
+  arxiv
 
   # TODO: remove all 'die' and warn instead
   # TODO: mktemp
@@ -80,34 +63,15 @@ Move downloads into own module? (or just a function in Scrape)
 
 # TODO: numeric ranges might misfire if "-" doesn't represent a range, Common for tech report numbers
 
-    # TODO: Keywords: ';' vs ','
 
-    # TODO: Author, Editor, Affiliation: List of renames
-# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
-
-    # TODO: via omit if empty
-    update($entry, 'note', { $_ = Nil if $_ eq '' });
-
-    # TODO: Title Capticalization: Initialisms, After colon, list of proper names
-
-Entry key
-    # Format: author/editor1.last year title/journal.abbriv
-    # TODO: Remove doi?
-
-#     # Force comma or no comma after last field
 #     my $str = $entry->print_s();
 #     $str ~~ s[(})(\s*}\s*)$][$0,$1] if $self->final_comma;
 #     $str ~~ s[(}\s*),(\s*}\s*)$][$0$1] if !$self->final_comma;
 
-purify-string
-
-    # TODO: == vs eq
-
-  has Array[BibTeX::Name] @.names;
 
 Isbn -> ISBN
 
-  # TODO: XPath
+XPath
 
 EISSN from side pill of ACM
 
