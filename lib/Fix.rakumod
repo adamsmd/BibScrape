@@ -69,18 +69,11 @@ class Fix {
     self.bless(names => @names, nouns => %nouns, |%args);
   }
 
-  # TODO: is copy
   method fix(BibTeX::Entry $entry is copy --> BibTeX::Entry) {
     $entry = $entry.clone;
 
-    # TODO: $bib_text ~~ s/^\x{FEFF}//; # Remove Byte Order Mark
-    # Fix any unicode that is in the field values
-    # $entry->set_key(decode('utf8', $entry->key));
-    # $entry->set($_, decode('utf8', $entry->get($_)))
-    #     for ($entry->fieldlist());
-
-    $entry.type = $entry.type.fc;
-    $entry.fields = multi-hash($entry.fields.map({ $_.defined ?? ($_.key.fc => $_.value) !! () }));
+    # Remove undefined fields
+    $entry.fields = multi-hash($entry.fields.map({ $_ // () }));
 
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry.fields<doi> = $entry.fields<url> if (

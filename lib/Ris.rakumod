@@ -23,7 +23,7 @@ sub ris-parse(Str $text --> Ris) is export {
     } elsif $line eq '' {
       # Do nothing
     } else {
-      die; # TODO: remove this branch if it is not used
+      # TODO: Test this code
       my $list = %fields{$last_key};
       $list[$list.end] ~= "\n" ~ $line;
     }
@@ -174,7 +174,6 @@ sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
 
 #     my $doi = qr[^(\s*doi:\s*\w+\s+)?(.*)$]s;
 
-#     # TODO: flattening
 #     $entry->set_type(exists $ris_types{$self->{'TY'}} ?
 #         $ris_types{$self->{'TY'}} :
 #         (print STDERR "Unknown RIS TY: $self->{'TY'}. Using misc.\n" and 'misc'));

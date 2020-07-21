@@ -164,7 +164,6 @@ sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is exp
 
   set( 'language', %meta<citation_language>[0] // %meta<dc.language>[0]);
 
-  # TODO: disable?
   # 'dc.description' also contains abstract information
   for (%meta<description>, %meta<Description>).flat -> $d {
     set( 'abstract', $d[0]) if $d.defined and $d ne '' and $d ne '****' and $d !~~ /^( 'IEEE Xplore' | 'IEEE Computer Society' )/;
