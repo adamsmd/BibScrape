@@ -25,6 +25,7 @@ sys.path.append('dep/py')
 
 from selenium import webdriver
 from selenium.webdriver.firefox import firefox_profile
+from selenium.webdriver.firefox import options
 from selenium.webdriver.support import ui
 
 from biblib import algo
@@ -42,7 +43,9 @@ def web_driver():
   profile.set_preference('browser.download.folderList', 2)
   profile.set_preference('browser.download.dir', os.getcwd() + '/downloads')
 
-  return webdriver.Firefox(firefox_profile=profile, service_log_path='/dev/null')
+  opt = options.Options()
+
+  return webdriver.Firefox(firefox_profile=profile, options = opt, service_log_path='/dev/null')
 
 def select(element):
   return ui.Select(element)
@@ -215,12 +218,12 @@ sub scrape-acm(--> BibTeX::Entry) {
   # ACM is inconsistent about the order in which these are returned.
   # We sort them so that we are deterministic.
   @keywords = @keywords.sort;
-  $bibtex.fields<keywords> = BibTeX::Value.new(@keywords.join( '; ' )) if @keywords.elems > 0;
+  $bibtex.fields<keywords> = BibTeX::Value.new(@keywords.join( '; ' )) if @keywords;
 
   ## Journal
   if $bibtex.type eq 'article' {
     my @journal = metas( 'citation_journal_title' );
-    if @journal.elems > 0 { $bibtex.fields<journal> = BibTeX::Value.new(@journal.head); }
+    if @journal { $bibtex.fields<journal> = BibTeX::Value.new(@journal.head); }
   }
 
   ## Pages
@@ -495,7 +498,7 @@ sub scrape-science-direct(--> BibTeX::Entry) {
 
   ## Abstract
   my @abstract = $web-driver.find_elements_by_css_selector( '.abstract > div' ).map({.get_property( 'innerHTML' )});
-  if @abstract.elems > 0 {
+  if @abstract {
     $bibtex.fields<abstract> = BibTeX::Value.new(@abstract.head);
   }
 
@@ -552,7 +555,7 @@ sub scrape-springer {
   ## Series, Volume and ISSN
   #
   # Ugh, Springer doesn't have a reliable way to get the series, volume,
-  # or issn.  Fortunately, this only happens for LNCS, so we hard code
+  # or ISSN.  Fortunately, this only happens for LNCS, so we hard code
   # it.
   if $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' ) ~~ / '(LNCS, volume ' (\d*) ')' / {
     $bibtex.fields<volume> = BibTeX::Value.new($0.Str);

@@ -1,7 +1,5 @@
 unit module HtmlMeta;
 
-# TODO: rename to HtmlMeta
-
 use BibTeX;
 use Month;
 

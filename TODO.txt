@@ -1,107 +1,81 @@
-Flags
-  flags for lists
-  @url flag instead of $url
-  --input where *.IO.f
-  --names where *.IO.f
-  --nouns where *.IO.f
-  %field
-  %no-encode
-  %no-collapse
-  %omit
-  %omit-empty
-  comma or no comma after last field
+# Flags
 
-  Case-insensitive nouns?
+flags for lists
+@url flag instead of $url
+--input where *.IO.f
+--names where *.IO.f
+--nouns where *.IO.f
+%field
+%no-encode
+%no-collapse
+%omit
+%omit-empty
+comma or no comma after last field
+headless
+Case-insensitive nouns?
+Omit:class/type
+Include:class/type
+no issn, no isbn
 
-Key generation:
-  keep vs generate
-  doi in key option
-  use first n (non-trivial) words
-  Format: author/editor1.last year title/journal.abbriv
+debug?
+
+# Key generation:
+
+keep vs generate
+doi in key option
+use first n (non-trivial) words
+Format: author/editor1.last year title/journal.abbriv
+
+# Output
 
 Titlecase After colon in title?
   Warn if not?
-
 follow jstor links to original publisher
 add abstract to jstor
 get PDF (eprint?)
+EISSN from side pill of ACM
+Trim known field types
+warn if not exists bib_scrape_url when rescraping and fallback to doi
 
-# Omit:class/type
-# Include:class/type
-# no issn, no isbn
+# Tests
 
-Bibtex
-  warn if not exists bib_scrape_url when rescraping and fallback to doi
+a test that has a jr part
+a test that has 'others' in author names
 
-# TODO: make debug be verbose and go to STDERR
+# Code
 
-Tests
-  a test that has a jr part
-  a test that has 'others' in author names
-
-Code
-  parse names in Raku instead of Python
-  Better cleanup of child processes
-  Better way to put Inline::Python last (phasor?)
-  == vs eq
-  has Array[BibTeX::Name] @.names;
-
-Automate cleaning of Isbn file
-
-# TODO: ignore non-domain files (timeout on file load?)
-
-$web-driver.set_page_load_timeout(5);
-
-Publishers
-  https://dblp.org/db/journals/publ/
-  all ciated by papers in big four
-  arxiv
-
-  # TODO: remove all 'die' and warn instead
-  # TODO: mktemp
+parse names in Raku instead of Python
+Better cleanup of child processes
+Better way to put Inline::Python last (phasor?)
+== vs eq
+remove all 'die' and warn instead
+mktemp
 Move downloads into own module? (or just a function in Scrape)
+Automate cleaning of Isbn file
+META6.json
+Code coverage
+non-multi arrays
+newx
+List => Array[Int]
+Add Types
 
-# TODO: numeric ranges might misfire if "-" doesn't represent a range, Common for tech report numbers
+# WebDriver
 
+ignore non-domain files (timeout on file load?)
+$web-driver.set_page_load_timeout(5);
+load browser as under-window
 
-#     my $str = $entry->print_s();
-#     $str ~~ s[(})(\s*}\s*)$][$0,$1] if $self->final_comma;
-#     $str ~~ s[(}\s*),(\s*}\s*)$][$0$1] if !$self->final_comma;
+# Publishers
 
+https://dblp.org/db/journals/publ/
+all ciated by papers in big four
+arxiv
 
-Isbn -> ISBN
+# Other
+
+numeric ranges might misfire if "-" doesn't represent a range, Common for tech report numbers
 
 XPath
 
-EISSN from side pill of ACM
-
-META6.json
-
-use 'is copy' on parameters
-
-Invisible browser (with flag (verbose?) to make visible)
-
-Code coverage
-
-non-multi arrays
-
-load browser as under-window
-
-newx
-
-List => Array[Int]
-
-Make field names be case-insensitive (or always lower case)
-
-.fc vs .lc
-
-# TODO: .elems > 0
-
-Add Types
-
-Trim known field types
-
 Tell user to always check the title and abstract as they are free form and
 there is little we can do to detect errors (let alone fix errors)
-
-Foo.new(bar) =>? Foo(bar)

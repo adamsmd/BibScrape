@@ -53,7 +53,7 @@ class Fix {
         push @names[@names.end], @new-names.head;
       }
     }
-    @names = @names.grep({ .elems > 0});
+    @names = @names.grep({ .elems > 0 });
 
     my Str %nouns;
     for %args<noun-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
@@ -79,8 +79,8 @@ class Fix {
     # $entry->set($_, decode('utf8', $entry->get($_)))
     #     for ($entry->fieldlist());
 
-    $entry.type = $entry.type.lc;
-    $entry.fields = multi-hash($entry.fields.map({ $_.defined ?? ($_.key.lc => $_.value) !! () }));
+    $entry.type = $entry.type.fc;
+    $entry.fields = multi-hash($entry.fields.map({ $_.defined ?? ($_.key.fc => $_.value) !! () }));
 
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry.fields<doi> = $entry.fields<url> if (
@@ -408,7 +408,7 @@ multi sub rec(XML::Node $node) {
         when 'tt' | 'code' { wrap( 'texttt' ) } # Replace <tt> and <code> with \texttt
         when 'sup' | 'supscrpt' { wrap( 'textsuperscript' ) } # Superscripts
         when 'sub' { wrap( 'textsubscript' ) } # Subscripts
-        when 'svg' { '' } 
+        when 'svg' { '' }
         when 'script' { '' }
         when 'math' { $node.nodes ?? '\ensuremath{' ~ math($node.nodes) ~ '}' !! '' }
         #when 'img' { '\{' ~ rec($node.nodes) ~ '}' }
