@@ -122,7 +122,6 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
   $web-driver.get($driver-url);
 
   # Get the domain after following any redirects
-  sleep 5;
   my $domain = $web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
   my $bibtex = do given $domain {
     when m[ « 'acm.org'             $] { scrape-acm(); }
@@ -142,13 +141,28 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
   $bibtex;
 }
 
+sub await(&block) {
+  my constant $timeout = 30.0;
+  my constant $sleep = 0.5;
+  my $result;
+  my $start = now.Num;
+  while True {
+    $result = &block();
+    if $result { return $result }
+    if now - $start > $timeout {
+      die "Timeout while waiting for the browser"
+    }
+    sleep $sleep;
+    CATCH { default { sleep $sleep; } }
+  }
+}
+
 ########
 
 sub scrape-acm(--> BibTeX::Entry) {
   ## BibTeX
   $web-driver.find_element_by_css_selector('a[data-title="Export Citation"]').click;
-  sleep 1;
-  my @citation-text = $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline").map({ $_ % <text> });
+  my @citation-text = await({ $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline") }).map({ $_ % <text> });
 
   # Avoid SIGPLAN Notices, SIGSOFT Software Eng Note, etc. by prefering
   # non-journal over journal
@@ -222,10 +236,9 @@ sub scrape-acm(--> BibTeX::Entry) {
 
 sub scrape-cambridge(--> BibTeX::Entry) {
   ## BibTeX
-  $web-driver.find_element_by_class_name( 'export-citation-product' ).click;
-  sleep 5;
+  await({ $web-driver.find_element_by_class_name( 'export-citation-product' ) }).click;
 
-  $web-driver.find_element_by_css_selector( '[data-export-type="bibtex"]' ).click;
+  await({ $web-driver.find_element_by_css_selector( '[data-export-type="bibtex"]' ) }).click;
 
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
@@ -252,13 +265,11 @@ sub scrape-cambridge(--> BibTeX::Entry) {
 
 sub scrape-ieee-computer {
   ## BibTeX
-  $web-driver.find_element_by_css_selector( '.article-action-toolbar button' ).click;
-  sleep 1;
-  my $bibtex-link = $web-driver.find_element_by_link_text( 'BibTex' );
+  await({ $web-driver.find_element_by_css_selector( '.article-action-toolbar button' ) }).click;
+  my $bibtex-link = await({ $web-driver.find_element_by_link_text( 'BibTex' ) });
   $web-driver.execute_script( 'arguments[0].removeAttribute("target")', $bibtex-link);
   $web-driver.find_element_by_link_text( 'BibTex' ).click;
-  sleep 1;
-  my $bibtex-text = $web-driver.find_element_by_tag_name( 'pre' ).get_property( 'innerHTML' );
+  my $bibtex-text = await({ $web-driver.find_element_by_tag_name( 'pre' ) }).get_property( 'innerHTML' );
   $bibtex-text ~~ s/ "\{," /\{key,/;
   $bibtex-text = Blob.new($bibtex-text.ords).decode; # Fix UTF-8 encoding
   my $bibtex = bibtex-parse($bibtex-text).items.head;
@@ -284,13 +295,10 @@ sub scrape-ieee-computer {
 
 sub scrape-ieee-explore {
   ## BibTeX
-  $web-driver.find_element_by_tag_name( 'xpl-cite-this-modal' ).click;
-  sleep 2;
-  $web-driver.find_element_by_link_text( 'BibTeX' ).click;
-  sleep 2;
-  $web-driver.find_element_by_css_selector( '.enable-abstract input' ).click;
-  sleep 2;
-  my $text = $web-driver.find_element_by_class_name( 'ris-text' ).get_property( 'innerHTML' );
+  await({ $web-driver.find_element_by_tag_name( 'xpl-cite-this-modal' ) }).click;
+  await({ $web-driver.find_element_by_link_text( 'BibTeX' ) }).click;
+  await({ $web-driver.find_element_by_css_selector( '.enable-abstract input' ) }).click;
+  my $text = await({ $web-driver.find_element_by_class_name( 'ris-text' ) }).get_property( 'innerHTML' );
   my $bibtex = bibtex-parse($text).items.head;
 
   ## HTML Meta
@@ -351,10 +359,8 @@ sub scrape-ieee-explore {
 
 sub scrape-ios-press {
   ## RIS
-  $web-driver.find_element_by_class_name( 'p13n-cite' ).click;
-  sleep 1;
-  $web-driver.find_element_by_class_name( 'btn-clear' ).click;
-  sleep 3;
+  await({ $web-driver.find_element_by_class_name( 'p13n-cite' ) }).click;
+  await({ $web-driver.find_element_by_class_name( 'btn-clear' ) }).click;
   my @files = 'downloads'.IO.dir;
   my $ris = ris-parse(@files.head.slurp);
   my $bibtex = bibtex-of-ris($ris);
@@ -387,13 +393,10 @@ sub scrape-jstor {
   ## Remove overlay
   my @overlays = $web-driver.find_elements_by_class_name( 'reveal-overlay' );
   @overlays.map({ $web-driver.execute_script( 'arguments[0].removeAttribute("style")', $_) });
-  sleep 1;
 
   ## BibTeX
-  $web-driver.find_element_by_class_name( 'cite-this-item' ).click;
-  sleep 1;
-  $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ).click;
-  sleep 1;
+  await({ $web-driver.find_element_by_class_name( 'cite-this-item' ) }).click;
+  await({ $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ) }).click;
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
@@ -427,14 +430,15 @@ sub scrape-jstor {
 
 sub scrape-oxford {
   # BibTeX
-  $web-driver.find_element_by_class_name( 'js-cite-button' ).click;
-  sleep 2;
-  my $select-element = $web-driver.find_element_by_id( 'selectFormat' );
+  await({ $web-driver.find_element_by_class_name( 'js-cite-button' ) }).click;
+  my $select-element = await({ $web-driver.find_element_by_id( 'selectFormat' ) });
   my $select = $python.call( '__main__', 'select', $select-element);
-  $select.select_by_visible_text( '.bibtex (BibTex)' );
-  sleep 1;
-  $web-driver.find_element_by_class_name( 'citation-download-link' ).click;
-  sleep 1;
+  await({
+    $select.select_by_visible_text( '.bibtex (BibTex)' );
+    my $button = $web-driver.find_element_by_class_name( 'citation-download-link' );
+    # Make sure the drop-down was populated
+    $button.get_attribute( 'class' ) !~~ / « 'disabled' » /
+      and $button }).click;
 
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
@@ -467,8 +471,11 @@ sub scrape-oxford {
 
 sub scrape-science-direct(--> BibTeX::Entry) {
   ## BibTeX
-  $web-driver.find_element_by_id( 'export-citation' ).click;
-  $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
+  await({
+    $web-driver.find_element_by_id( 'export-citation' ).click;
+    $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
+    True
+  });
   my @files = 'downloads'.IO.dir;
   my $bibtex = bibtex-parse(@files.head.slurp).items.head;
 
@@ -502,26 +509,17 @@ sub scrape-science-direct(--> BibTeX::Entry) {
 }
 
 sub scrape-springer {
-  ## Close overlay
-  my @close-banner = $web-driver.find_elements_by_class_name( 'optanon-alert-box-close' );
-  if @close-banner { @close-banner.head.click; }
+  ## Close the cookie/GDPR overlay
+  await({ $web-driver.find_element_by_class_name( 'optanon-alert-box-close' ).click; True });
 
   ## BibTeX
+  my $bibtex = BibTeX::Entry.new();
   my @elements = $web-driver.find_elements_by_id( 'button-Dropdown-citations-dropdown' );
-
-  my $bibtex;
-  # Springer seems to have two different page designs
-  if @elements {
-    #
-    # This just scrolls the final link into view, but if we do not do this WebDriver reports an error
-    @elements.head.click;
-    sleep 5;
-    $web-driver.find_element_by_css_selector( '#Dropdown-citations-dropdown a[data-track-label="BIB"]' ).click;
-    sleep 5;
+  if @elements { # Use the BibTeX download if it is available
+    @elements.head.click; # Scroll to the link.  (Otherwise WebDriver reports an error.)
+    await({ $web-driver.find_element_by_css_selector( '#Dropdown-citations-dropdown a[data-track-label="BIB"]' ) }).click;
     my @files = 'downloads'.IO.dir;
     $bibtex = bibtex-parse(@files.head.slurp).items.head;
-  } else {
-    $bibtex = BibTeX::Entry.new();
   }
 
   ## HTML Meta

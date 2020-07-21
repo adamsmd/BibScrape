@@ -417,6 +417,8 @@ multi sub rec(XML::Node $node) {
         when 'span' {
           if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
             wrap( 'texttt' )
+          } elsif $node.attribs<aria-hidden>:exists {
+            ''
           } elsif $node.attribs<class>:exists {
             given $node.attribs<class> {
               when / 'monospace' / { wrap( 'texttt' ) }
