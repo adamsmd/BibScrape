@@ -58,6 +58,7 @@ non-multi arrays
 newx
 List => Array[Int]
 Add Types
+$bibtex vs $entry
 
 # WebDriver
 
@@ -82,4 +83,12 @@ there is little we can do to detect errors (let alone fix errors)
 
 # Unsorted
 
-Files via file:<path> and bib_scrape_url doi or url
+test for doi:
+test for file:
+test for {label}doi:
+
+multiple $url
+
+whether to re-scrape bibtex
+
+url or howpubilshed that starts with http://[dx.]?doi.org/

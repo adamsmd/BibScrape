@@ -40,9 +40,11 @@ def web_driver():
   profile.set_preference('browser.download.dir', os.getcwd() + '/downloads')
 
   opt = options.Options()
-  opt.headless = True
+  # Run without showing a browser window
+  #opt.headless = True
 
   capabilities = DesiredCapabilities.FIREFOX.copy()
+  # Prevent alert or prompt boxes
   capabilities['unhandledPromptBehavior'] = 'dismiss'
 
   return webdriver.Firefox(
@@ -97,7 +99,7 @@ sub update(BibTeX::Entry $entry, Str $field, &fun) is export {
 my IO $downloads = 'downloads'.IO;
 
 sub read-downloads {
-  for 0..60 {
+  for 0..120 {
     my @files = $downloads.dir;
     if @files { return @files.head.slurp }
     sleep 0.5;
@@ -123,16 +125,13 @@ sub await(&block) {
 
 ########
 
-sub scrape(Str $url --> BibTeX::Entry) is export {
-  $downloads.dir».unlink;
-
-  open();
-
+sub scrape(Str $url is copy--> BibTeX::Entry) is export {
   # Support 'doi:' as a url type
-  my $driver-url = $url;
-  $driver-url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
+  $url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
 
-  $web-driver.get($driver-url);
+  $downloads.dir».unlink;
+  open();
+  $web-driver.get($url);
 
   # Get the domain after following any redirects
   my $domain = $web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
@@ -149,8 +148,9 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
     when m[ « 'springer.com'        $] { scrape-springer(); }
     default { say "error: unknown domain: $domain"; }
   }
-  $bibtex.fields.push((bib_scrape_url => BibTeX::Value.new($url)));
+
   close();
+
   $bibtex;
 }
 
@@ -242,12 +242,16 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   html-meta-bibtex($bibtex, $meta, title => True, abstract => False);
 
   ## Abstract
-  my $abstract = meta( 'citation_abstract' );
-  $abstract ~~ s:g/ "\n      \n      " //;
-  $abstract ~~ s/^ '<div ' <-[>]>* '>'//;
-  $abstract ~~ s/ '</div>' $//;
-  $bibtex.fields<abstract> = BibTeX::Value.new($abstract)
-    unless $abstract ~~ /^ '//static.cambridge.org/content/id/urn' /;
+  my @abstract = $web-driver.find_elements_by_class_name( 'abstract' );
+  if @abstract {
+    my $abstract = @abstract.head.get_property( 'innerHTML' );
+    #my $abstract = meta( 'citation_abstract' );
+    $abstract ~~ s:g/ "\n      \n      " //;
+    $abstract ~~ s/^ '<div ' <-[>]>* '>'//;
+    $abstract ~~ s/ '</div>' $//;
+    $bibtex.fields<abstract> = BibTeX::Value.new($abstract)
+      unless $abstract ~~ /^ '//static.cambridge.org/content/id/urn' /;
+  }
 
   ## ISSN
   my $issn = $web-driver.find_element_by_name( 'productIssn' ).get_attribute( 'value' );

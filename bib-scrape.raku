@@ -258,39 +258,43 @@ sub MAIN(
     omit-empty => @omit-empty,
   );
 
-# TODO: input files
-# TODO: whether to re-scrape bibtex
-# for my $filename (@INPUT) {
-#     my $bib = new Text::BibTeX::File $filename;
-#     # TODO: print "junk" between entities
+  sub go(Str $url) {
+    my $driver-url = $url;
 
-#     until ($bib->eof()) {
-#         my $entry = new Text::BibTeX::Entry $bib;
-#         next unless defined $entry and $entry->parse_ok;
+    # Support `{key}` before the url to specify the key
+    my $key = ($driver-url ~~ s/^ '{' (<-[}]>*) '}' \s* //)[0];
 
-#         if (not $entry->metatype == BTE_REGULAR) {
-#             print $entry->print_s;
-#         } else {
-#             if (not $entry->exists('bib_scrape_url')) {
-#                 # Try to find a URL to scrape
-#                 if ($entry->exists('doi') and $entry->get('doi') =~ m[http(?:s)?://[^/]+/(.*)]i) {
-#                     (my $url = $1) =~ s[DOI:\s*][]ig;
-#                     $entry->set('bib_scrape_url', "https://doi.org/$url");
-#                 } elsif ($entry->exists('url') and $entry->get('url') =~ m[^http(?:s)?://(?:dx.)?doi.org/.*$]) {
-#                     $entry->set('bib_scrape_url', $entry->get('url'));
-#                 }
-#             }
-# ###TODO(?): decode utf8
-#             scrape_and_fix_entry($entry);
-#         }
-#     }
-# }
+    my $bibtex = scrape($driver-url);
+    $bibtex.fields<bib_scrape_url> = BibTeX::Value.new($url);
 
-  #for @url -> $url {
-  my $key = ($url ~~ s/^ '{' (<-[}]>*) '}' //)[0];
-  my $bibtex = scrape($url);
-  $bibtex = $fixer.fix($bibtex);
-  $bibtex.key = $key.Str if $key;
-  say $bibtex.Str;
-  #}
+    $bibtex = $fixer.fix($bibtex);
+
+    $bibtex.key = $key.Str if $key;
+
+    say $bibtex.Str;
+  }
+
+  for ($url) -> $url {
+    if $url !~~ /^ 'file:' / {
+      go($url);
+    } else {
+      my $bibtex = bibtex-parse($/.postmatch.IO.slurp);
+      for $bibtex.items -> $item {
+        if $item !~~ BibTeX::Entry {
+          say $item.Str;
+        } else {
+          my $prefix = '{' ~ $item.key ~ '}';
+          if $item.fields<bib_scrape_url> {
+            go( $prefix ~ $item.fields<bib_scrape_url>.simple-str);
+          } elsif $item.fields<doi> {
+            my $doi = $item.fields<doi>;
+            $doi = "doi:$doi" unless $doi ~~ m:i/^ 'doi:' /;
+            go($prefix ~ $doi);
+          } else {
+            say $item.Str
+          }
+        }
+      }
+    }
+  }
 }
