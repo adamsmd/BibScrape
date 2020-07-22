@@ -9,6 +9,7 @@ use BibTeX;
 use Month;
 use Isbn;
 use Unicode;
+use Names;
 
 use Scrape;
 
@@ -16,7 +17,7 @@ enum MediaType <Print Online Both>;
 
 class Fix {
   ## INPUTS
-  has Array @.names;
+  has Array[Str] @.names;
   has Str %.nouns; # Maps strings to their replacements
 
   ## OPERATING MODES
@@ -40,18 +41,14 @@ class Fix {
   has Str @.omit-empty;
 
   method new(*%args) {
-    my @names;
-    @names[0] = ();
+    my Array[Str] @names;
+    @names[0] = Array[Str].new;
     for %args<name-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
       my $line = $l;
       $line.chomp;
       $line ~~ s/"#".*//; # Remove comments (which start with `#`)
-      if $line ~~ /^\s*$/ { push @names, []; } # Start a new block
-      else {
-        my @new-names = parse-names($line);
-        die if @new-names.elems != 1;
-        push @names[@names.end], @new-names.head;
-      }
+      if $line ~~ /^\s*$/ { push @names, Array[Str].new; } # Start a new block
+      else { push @names[@names.end], $line; } # Add to existing block
     }
     @names = @names.grep({ .elems > 0 });
 
@@ -223,7 +220,7 @@ class Fix {
 
     # Generate an entry key
     my $name = $entry.fields<author> // $entry.fields<editor>;
-    $name = $name.defined ?? parse-names($name.simple-str).head.last !! 'anon';
+    $name = $name.defined ?? last-name(split-names($name.simple-str).head) !! 'anon';
     $name ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
     $name ~~ s:g/ <-[A..Za..z0..9]> //; # Remove non-alphanum
     my $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
@@ -271,26 +268,42 @@ class Fix {
   }
 
   method canonical-names(BibTeX::Value $value --> BibTeX::Value) {
-    my BibTeX::Name @names = parse-names($value.simple-str);
+    my Str @names = split-names($value.simple-str);
 
     my Str @new-names;
     NAME:
     for @names -> $name {
+      my $flattened-name = flatten-name($name);
       for @.names -> @name-group {
         for @name-group -> $n {
-          if flatten-name($name).fc eq flatten-name($n).fc {
+          if $flattened-name.fc eq flatten-name($n).fc {
             push @new-names, @name-group.head.Str;
             next NAME;
           }
         }
       }
-      print "WARNING: Suspect name: {$name.Str}\n" unless
-        (not $name.von.defined and
-          not $name.jr.defined and
-          check-first-name($name.first) and
-          check-last-name($name.last));
 
-      push @new-names, $name.Str;
+      my $first = rx/
+          <upper><lower>+                     # Simple name
+        | <upper><lower>+ '-' <upper><lower>+ # Hyphenated name with upper
+        | <upper><lower>+ '-' <lower><lower>+ # Hyphenated name with lower
+        | <upper><lower>+     <upper><lower>+ # "Asian" name (e.g. XiaoLin)
+        # We could allow the following but publishers often abriviate
+        # names when the actual paper doesn't
+        # | <upper> '.'                       # Initial
+        # | <upper> '.-' <upper> '.'          # Double initial
+        /;
+      my $middle = rx/<upper>\./; # Allow for a middle initial
+      my $last = rx/
+          <upper><lower>+                     # Simple name
+        | <upper><lower>+ '-' <upper><lower>+ # Hyphenated name with upper
+        | ["O'"|"Mc"|"Mac"] <upper><lower>+   # Name with prefix
+        /;
+      unless $flattened-name ~~ /^ \s* $first \s+ [$middle \s+]? $last \s* $/ {
+        print "WARNING: Suspect name: {order-name($name)}\n"
+      }
+
+      push @new-names, order-name($name);
     }
 
     # Warn about duplicate names
@@ -447,32 +460,4 @@ sub latex-encode(Str $str is copy) {
   my @parts = $str.split(rx/ "\$" .*? "\$" | <[\\{}_^]> /, :v);
 
   return @parts.map({ /<[_^{}\\\$]>/ ?? $_ !! unicode2tex($_) }).join('');
-}
-
-sub check-first-name(Str $name is copy) {
-  $name ~~ s/\s<upper>\.$//; # Allow for a middle initial
-
-  $name ~~ /^<upper><lower>+$/ || # Simple name
-    $name ~~ /^<upper><lower>+ '-' <upper><lower>+$/ || # Hyphenated name with upper
-    $name ~~ /^<upper><lower>+ '-' <lower><lower>+$/ || # Hyphenated name with lower
-    $name ~~ /^<upper><lower>+     <upper><lower>+$/ || # "Asian" name (e.g. XiaoLin)
-    # We could allow the following but publishers often abriviate
-    # names when the actual paper doesn't
-    #$name =~ /^\p{upper}\.$/ || # Initial
-    #$name =~ /^\p{upper}\.-\p{upper}\.$/ || # Double initial
-    False;
-}
-
-sub check-last-name(Str $name) {
-  $name ~~ /^<upper><lower>+$/ || # Simple name
-    $name ~~ /^<upper><lower>+ '-' <upper><lower> +$/ || # Hyphenated name with upper
-    $name ~~ /^("O'"|"Mc"|"Mac") <upper><lower>+$/; # Name with prefix
-}
-
-sub flatten-name(BibTeX::Name $name) {
-  join( ' ',
-    $name.first // (),
-    $name.von // (),
-    $name.last // (),
-    $name.jr // ());
 }

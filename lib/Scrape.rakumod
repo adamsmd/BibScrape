@@ -28,11 +28,6 @@ from selenium.webdriver.firefox import firefox_profile
 from selenium.webdriver.firefox import options
 from selenium.webdriver.support import ui
 
-from biblib import algo
-
-def parse_names(string):
-  return algo.parse_names(string)
-
 def web_driver():
   profile = firefox_profile.FirefoxProfile()
   #profile.set_preference('browser.download.panel.shown', False)
@@ -51,27 +46,6 @@ def select(element):
   return ui.Select(element)
 ");
   }
-}
-
-sub to-str($buf) {
-  if $buf.elems == 0 { Nil }
-  else {
-    given $buf {
-      when Str { $buf }
-      when Buf { $buf.decode }
-    }
-  }
-}
-
-sub parse-names(Str $string) is export {
-  init();
-  my @names = $python.call( '__main__', 'parse_names', $string);
-  @names.map({
-    BibTeX::Name.new(
-      first => to-str($_%<first>),
-      von => to-str($_%<von>),
-      last => to-str($_%<last>),
-      jr => to-str($_%<jr>)) })
 }
 
 sub open() {
