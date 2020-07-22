@@ -41,17 +41,12 @@ def web_driver():
 
   opt = options.Options()
   # Run without showing a browser window
-  #opt.headless = True
-
-  capabilities = DesiredCapabilities.FIREFOX.copy()
-  # Prevent alert or prompt boxes
-  capabilities['unhandledPromptBehavior'] = 'dismiss'
+  opt.headless = True
 
   return webdriver.Firefox(
     firefox_profile = profile,
     options = opt,
-    service_log_path = '/dev/null',
-    desired_capabilities = capabilities)
+    service_log_path = '/dev/null')
 
 def select(element):
   return ui.Select(element)
@@ -99,10 +94,10 @@ sub update(BibTeX::Entry $entry, Str $field, &fun) is export {
 my IO $downloads = 'downloads'.IO;
 
 sub read-downloads {
-  for 0..120 {
+  for 0..10 {
     my @files = $downloads.dir;
     if @files { return @files.head.slurp }
-    sleep 0.5;
+    sleep 0.1;
   }
   die "Could not find downloaded file";
 }
@@ -232,13 +227,15 @@ sub scrape-acm(--> BibTeX::Entry) {
 }
 
 sub scrape-cambridge(--> BibTeX::Entry) {
+  # This must be before BibTeX otherwise Cambridge sometimes hangs due to an alert box
+  my $meta = html-meta-parse($web-driver);
+
   ## BibTeX
   await({ $web-driver.find_element_by_class_name( 'export-citation-product' ) }).click;
   await({ $web-driver.find_element_by_css_selector( '[data-export-type="bibtex"]' ) }).click;
   my $bibtex = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
-  my $meta = html-meta-parse($web-driver);
   html-meta-bibtex($bibtex, $meta, title => True, abstract => False);
 
   ## Abstract
