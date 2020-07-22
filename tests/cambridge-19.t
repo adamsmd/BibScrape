@@ -1,6 +1,6 @@
 https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=7916734
 "Van" name
-@article{Noort:2010:10.1017/S0956796810000183,
+@article{vanNoort:2010:10.1017/S0956796810000183,
   author = {van Noort, Thomas and Rodriguez Yakushev, Alexey and Holdermans, Stefan and Jeuring, Johan and Heeren, Bastiaan and Magalh{\~a}es, Jos{\'e} Pedro},
   affiliation = {Radboud University Nijmegen and Utrecht University and Open University of the Netherlands and Utrecht University},
   title = {A lightweight approach to datatype-generic rewriting},

@@ -79,3 +79,7 @@ XPath
 
 Tell user to always check the title and abstract as they are free form and
 there is little we can do to detect errors (let alone fix errors)
+
+# Unsorted
+
+Files via file:<path> and bib_scrape_url doi or url

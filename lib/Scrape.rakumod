@@ -24,6 +24,7 @@ import os
 sys.path.append('dep/py')
 
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox import firefox_profile
 from selenium.webdriver.firefox import options
 from selenium.webdriver.support import ui
@@ -41,7 +42,14 @@ def web_driver():
   opt = options.Options()
   opt.headless = True
 
-  return webdriver.Firefox(firefox_profile=profile, options = opt, service_log_path='/dev/null')
+  capabilities = DesiredCapabilities.FIREFOX.copy()
+  capabilities['unhandledPromptBehavior'] = 'dismiss'
+
+  return webdriver.Firefox(
+    firefox_profile = profile,
+    options = opt,
+    service_log_path = '/dev/null',
+    desired_capabilities = capabilities)
 
 def select(element):
   return ui.Select(element)
@@ -86,7 +94,34 @@ sub update(BibTeX::Entry $entry, Str $field, &fun) is export {
 
 ########
 
-my $downloads = 'downloads'.IO;
+my IO $downloads = 'downloads'.IO;
+
+sub read-downloads {
+  for 0..60 {
+    my @files = $downloads.dir;
+    if @files { return @files.head.slurp }
+    sleep 0.5;
+  }
+  die "Could not find downloaded file";
+}
+
+sub await(&block) {
+  my constant $timeout = 30.0;
+  my constant $sleep = 0.5;
+  my $result;
+  my $start = now.Num;
+  while True {
+    $result = &block();
+    if $result { return $result }
+    if now - $start > $timeout {
+      die "Timeout while waiting for the browser"
+    }
+    sleep $sleep;
+    CATCH { default { sleep $sleep; } }
+  }
+}
+
+########
 
 sub scrape(Str $url --> BibTeX::Entry) is export {
   $downloads.dir».unlink;
@@ -117,22 +152,6 @@ sub scrape(Str $url --> BibTeX::Entry) is export {
   $bibtex.fields.push((bib_scrape_url => BibTeX::Value.new($url)));
   close();
   $bibtex;
-}
-
-sub await(&block) {
-  my constant $timeout = 30.0;
-  my constant $sleep = 0.5;
-  my $result;
-  my $start = now.Num;
-  while True {
-    $result = &block();
-    if $result { return $result }
-    if now - $start > $timeout {
-      die "Timeout while waiting for the browser"
-    }
-    sleep $sleep;
-    CATCH { default { sleep $sleep; } }
-  }
 }
 
 ########
@@ -215,11 +234,8 @@ sub scrape-acm(--> BibTeX::Entry) {
 sub scrape-cambridge(--> BibTeX::Entry) {
   ## BibTeX
   await({ $web-driver.find_element_by_class_name( 'export-citation-product' ) }).click;
-
   await({ $web-driver.find_element_by_css_selector( '[data-export-type="bibtex"]' ) }).click;
-
-  my @files = 'downloads'.IO.dir;
-  my $bibtex = bibtex-parse(@files.head.slurp).items.head;
+  my $bibtex = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
   my $meta = html-meta-parse($web-driver);
@@ -339,8 +355,7 @@ sub scrape-ios-press {
   ## RIS
   await({ $web-driver.find_element_by_class_name( 'p13n-cite' ) }).click;
   await({ $web-driver.find_element_by_class_name( 'btn-clear' ) }).click;
-  my @files = 'downloads'.IO.dir;
-  my $ris = ris-parse(@files.head.slurp);
+  my $ris = ris-parse(read-downloads());
   my $bibtex = bibtex-of-ris($ris);
 
   ## HTML Meta
@@ -375,8 +390,7 @@ sub scrape-jstor {
   ## BibTeX
   await({ $web-driver.find_element_by_class_name( 'cite-this-item' ) }).click;
   await({ $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ) }).click;
-  my @files = 'downloads'.IO.dir;
-  my $bibtex = bibtex-parse(@files.head.slurp).items.head;
+  my $bibtex = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
   my $meta = html-meta-parse($web-driver);
@@ -417,9 +431,7 @@ sub scrape-oxford {
     # Make sure the drop-down was populated
     $button.get_attribute( 'class' ) !~~ / « 'disabled' » /
       and $button }).click;
-
-  my @files = 'downloads'.IO.dir;
-  my $bibtex = bibtex-parse(@files.head.slurp).items.head;
+  my $bibtex = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
   my $meta = html-meta-parse($web-driver);
@@ -454,8 +466,7 @@ sub scrape-science-direct(--> BibTeX::Entry) {
     $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
     True
   });
-  my @files = 'downloads'.IO.dir;
-  my $bibtex = bibtex-parse(@files.head.slurp).items.head;
+  my $bibtex = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
   my $meta = html-meta-parse($web-driver);
@@ -499,8 +510,7 @@ sub scrape-springer {
       # Click the actual link for BibTeX
       $web-driver.find_element_by_css_selector( '#Dropdown-citations-dropdown a[data-track-label="BIB"]' ).click;
       True });
-    my @files = 'downloads'.IO.dir;
-    $bibtex = bibtex-parse(@files.head.slurp).items.head;
+    $bibtex = bibtex-parse(read-downloads).items.head;
   }
 
   ## HTML Meta

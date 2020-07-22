@@ -1,6 +1,6 @@
 https://journals.cambridge.org/action/displayAbstract?aid=83371
 Bookreview
-@article{Paiva:2001:10.1017/S0956796801004130,
+@article{dePaiva:2001:10.1017/S0956796801004130,
   author = {de Paiva, Valeria},
   title = {\textit{Domains and Lambda-Calculi} by R. M. Amadio and P-L. Curien, Springer Verlag, 1999, {ISBN} 0521587751.},
   journal = {Journal of Functional Programming},
