@@ -39,6 +39,7 @@ def web_driver():
   profile.set_preference('browser.download.dir', os.getcwd() + '/downloads')
 
   opt = options.Options()
+  opt.headless = True
 
   return webdriver.Firefox(firefox_profile=profile, options = opt, service_log_path='/dev/null')
 
