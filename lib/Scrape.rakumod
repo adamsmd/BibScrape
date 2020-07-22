@@ -486,15 +486,18 @@ sub scrape-science-direct(--> BibTeX::Entry) {
 }
 
 sub scrape-springer {
-  ## Close the cookie/GDPR overlay
-  await({ $web-driver.find_element_by_class_name( 'optanon-alert-box-close' ).click; True });
-
   ## BibTeX
   my $bibtex = BibTeX::Entry.new();
-  my @elements = $web-driver.find_elements_by_id( 'button-Dropdown-citations-dropdown' );
-  if @elements { # Use the BibTeX download if it is available
-    @elements.head.click; # Scroll to the link.  (Otherwise WebDriver reports an error.)
-    await({ $web-driver.find_element_by_css_selector( '#Dropdown-citations-dropdown a[data-track-label="BIB"]' ) }).click;
+  # Use the BibTeX download if it is available
+  if $web-driver.find_elements_by_id( 'button-Dropdown-citations-dropdown' ) {
+    await({
+      # Close the cookie/GDPR overlay
+      try { $web-driver.find_element_by_class_name( 'optanon-alert-box-close' ).click; }
+      # Scroll to the link.  (Otherwise WebDriver reports an error.)
+      try { $web-driver.find_element_by_id( 'button-Dropdown-citations-dropdown' ).click; }
+      # Click the actual link for BibTeX
+      $web-driver.find_element_by_css_selector( '#Dropdown-citations-dropdown a[data-track-label="BIB"]' ).click;
+      True });
     my @files = 'downloads'.IO.dir;
     $bibtex = bibtex-parse(@files.head.slurp).items.head;
   }
