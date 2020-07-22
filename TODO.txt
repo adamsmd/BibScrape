@@ -81,11 +81,15 @@ XPath
 Tell user to always check the title and abstract as they are free form and
 there is little we can do to detect errors (let alone fix errors)
 
+https://github.com/zotero/bib-web
+https://github.com/zotero/bib
+https://github.com/zotero/translation-server
+
+https://github.com/SeleniumHQ/selenium/blob/selenium-3.141.59/py/selenium/webdriver/remote/webdriver.py
+
 # Unsorted
 
-test for doi:
 test for file:
-test for {label}doi:
 
 multiple $url
 
