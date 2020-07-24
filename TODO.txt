@@ -96,3 +96,9 @@ multiple $url
 whether to re-scrape bibtex
 
 url or howpubilshed that starts with http://[dx.]?doi.org/
+
+https://pypi.org/project/selenium/#files
+https://files.pythonhosted.org/packages/80/d6/4294f0b4bce4de0abf13e17190289f9d0613b0a44e5dd6a7f5ca98459853/selenium-3.141.0-py2.py3-none-any.whl
+
+https://pypi.org/project/urllib3/#files
+https://files.pythonhosted.org/packages/9f/f0/a391d1463ebb1b233795cabfc0ef38d3db4442339de68f847026199e69d7/urllib3-1.25.10-py2.py3-none-any.whl

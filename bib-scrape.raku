@@ -258,40 +258,40 @@ sub MAIN(
     omit-empty => @omit-empty,
   );
 
-  sub go(Str $url) {
+  sub go(Str $key is copy, Str $url) {
     my $driver-url = $url;
 
     # Support `{key}` before the url to specify the key
-    my $key = ($driver-url ~~ s/^ '{' (<-[}]>*) '}' \s* //)[0];
+    $driver-url ~~ s/^ '{' (<-[}]>*) '}' \s* //;
+    $key //= ($0 // '').Str;
 
     my $bibtex = scrape($driver-url);
     $bibtex.fields<bib_scrape_url> = BibTeX::Value.new($url);
 
     $bibtex = $fixer.fix($bibtex);
 
-    $bibtex.key = $key.Str if $key;
+    $bibtex.key = $key if $key;
 
-    say $bibtex.Str;
+    print $bibtex.Str ~ "\n";
   }
 
   for ($url) -> $url {
     if $url !~~ /^ 'file:' / {
-      go($url);
+      go(Str, $url);
     } else {
       my $bibtex = bibtex-parse($/.postmatch.IO.slurp);
       for $bibtex.items -> $item {
         if $item !~~ BibTeX::Entry {
-          say $item.Str;
+          print $item.Str;
         } else {
-          my $prefix = '{' ~ $item.key ~ '}';
           if $item.fields<bib_scrape_url> {
-            go( $prefix ~ $item.fields<bib_scrape_url>.simple-str);
+            go($item.key, $item.fields<bib_scrape_url>.simple-str);
           } elsif $item.fields<doi> {
             my $doi = $item.fields<doi>;
             $doi = "doi:$doi" unless $doi ~~ m:i/^ 'doi:' /;
-            go($prefix ~ $doi);
+            go($item.key, $doi);
           } else {
-            say $item.Str
+            print $item.Str
           }
         }
       }

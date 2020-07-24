@@ -1,6 +1,7 @@
 unit module BibTeX;
 
-# Based on https://github.com/aclements/biblib
+# Based on the grammar at https://github.com/aclements/biblib,
+# but with some modifications to better meet our needs
 
 use ArrayHash;
 
@@ -106,8 +107,12 @@ grammar Grammar {
 
   regex string-body { <ident> <ws> '=' <ws> <value> }
 
-  regex entry { <ident> <ws> [ '{' <ws> <key> <ws> <entry-body> <ws> '}'
-                            || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ]}
+  regex entry {
+    <ident> <ws>
+    [ '{' <ws> <key> <ws> <entry-body> <ws> '}'
+      || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ]
+    "\n"? # This newline is so we round trip cleanly
+  }
 
   # Technically spaces shouldn't be allowed, but some publishers have them anyway
   token key { <-[,\t}\n]>* }

@@ -29,7 +29,10 @@ if test $# -eq 0; then
 fi
 
 for i in "$@"; do
-  echo "$i"
+  echo "$i using its URL"
   URL=$(head -n 1 "$i")
   (head -n 2 "$i"; ./bib-scrape.raku "${FLAGS[@]}" "$URL") | diff -u "$i" - | wdiff -dt
+
+  echo "$i using its filename"
+  ./bib-scrape.raku "${FLAGS[@]}" "file:$i" | diff -u "$i" - | wdiff -dt
 done
