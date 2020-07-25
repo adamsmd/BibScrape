@@ -45,14 +45,10 @@ my Str %ris-types = <
     REP techreport
     UNPB unpublished>;
 
-# # last, first, suffix -> von Last, Jr, First
-# # (skip [,\.]*)
-# sub ris_author { join(" and ", map { s[(.*),(.*),(.*)][$1,$3,$2];
-#                                      m[[^, ]] ? $_ : (); } @_); }
 sub ris-author(Array $names --> Str) {
   $names
     .map({ # TODO: what is going on here?
-      s/ (.*) ',' (.*) ',' (.*) /$1,$3,$2/;
+      s/ (.*) ',' (.*) ',' (.*) /$1,$3,$2/; # Translate "last, first, suffix" to "von Last, Jr, First"
       / <-[, ]> / ?? $_ !! () })
     .join( ' and ' );
 }

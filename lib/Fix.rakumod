@@ -70,7 +70,7 @@ class Fix {
     $entry = $entry.clone;
 
     # Remove undefined fields
-    $entry.fields = multi-hash($entry.fields.map({ $_ // () }));
+    $entry.fields = array-hash($entry.fields.map({ $_ // () }));
 
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry.fields<doi> = $entry.fields<url> if (
@@ -235,7 +235,7 @@ class Fix {
       %fields{$field} = 1;
     }
     $entry.fields =
-      multi-hash(
+      array-hash(
         @.fields.flatmap(
           { $entry.fields{$_}:exists ?? ($_ => $entry.fields{$_}) !! () }));
 
