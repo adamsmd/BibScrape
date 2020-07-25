@@ -59,7 +59,7 @@ sub ris-author(Array $names --> Str) {
 
 sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   my $self = $ris.fields; # TODO: type
-  my BibTeX::Entry $entry = BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(multi-hash.new()));
+  my BibTeX::Entry $entry = BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(array-hash.new()));
 
   my Regex $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
 

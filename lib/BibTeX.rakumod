@@ -65,7 +65,7 @@ class String is Item {
 class Entry is Item {
   has Str $.type is rw;
   has Str $.key is rw;
-  has ArrayHash $.fields is rw = multi-hash(); # Maps Str to Value
+  has ArrayHash $.fields is rw = array-hash(); # Maps Str to Value
   method Str(--> Str:D) {
     "\@$.type\{$.key,\n" ~
     (map { "  {$_.key} = {$_.value},\n" }, $.fields.values(:array)).join ~
