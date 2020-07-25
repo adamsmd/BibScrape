@@ -120,7 +120,7 @@ sub await(&block) {
 
 ########
 
-sub scrape(Str $url is copy--> BibTeX::Entry) is export {
+sub scrape(Str $url is copy --> BibTeX::Entry) is export {
   # Support 'doi:' as a url type
   $url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
 
@@ -142,7 +142,7 @@ sub scrape(Str $url is copy--> BibTeX::Entry) is export {
       || m[ « 'elsevier.com'        $] { scrape-science-direct(); }
     when m[ « 'springer.com'        $] { scrape-springer(); }
     default { say "error: unknown domain: $domain"; }
-  }
+  };
 
   close();
 

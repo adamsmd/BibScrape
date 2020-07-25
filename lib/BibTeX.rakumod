@@ -111,7 +111,6 @@ grammar Grammar {
     <ident> <ws>
     [ '{' <ws> <key> <ws> <entry-body> <ws> '}'
       || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ]
-    "\n"? # This newline is so we round trip cleanly
   }
 
   # Technically spaces shouldn't be allowed, but some publishers have them anyway

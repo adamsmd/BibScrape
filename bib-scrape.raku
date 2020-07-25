@@ -258,28 +258,32 @@ sub MAIN(
     omit-empty => @omit-empty,
   );
 
-  sub go(Str $key is copy, Str $url) {
-    my $driver-url = $url;
+  my $url-rx = rx:i/^ \s* [ '{' (<-[}]>*) '}' ]? \s* (['http' 's'? | 'doi'] ':' .*) $/;
 
-    # Support `{key}` before the url to specify the key
-    $driver-url ~~ s/^ '{' (<-[}]>*) '}' \s* //;
-    $key //= ($0 // '').Str;
+  for ($url) -> $arg {
+    sub go(Str $key is copy, Str $url is copy) {
+      $url ~~ $url-rx;
+      $key = $0.Str if !$key.defined and $0.defined;
 
-    my $bibtex = scrape($driver-url);
-    $bibtex.fields<bib_scrape_url> = BibTeX::Value.new($url);
+      my $bibtex = scrape($1.Str);
+      $bibtex.fields<bib_scrape_url> = BibTeX::Value.new($url);
 
-    $bibtex = $fixer.fix($bibtex);
+      $bibtex = $fixer.fix($bibtex);
 
-    $bibtex.key = $key if $key;
+      $bibtex.key = $key if $key.defined;
 
-    print $bibtex.Str ~ "\n";
-  }
+      print $bibtex.Str;
+      sleep 1000;
+    }
 
-  for ($url) -> $url {
-    if $url !~~ /^ 'file:' / {
-      go(Str, $url);
+    # Look for 'http:', 'https:' or 'doi:' with an optional `{key}` before the url
+    if $arg ~~ $url-rx {
+      go(Str, $arg);
+
+      # BibTeX::Entry.Str doesn't have a newline at the end so we add one
+      print "\n";
     } else {
-      my $bibtex = bibtex-parse($/.postmatch.IO.slurp);
+      my $bibtex = bibtex-parse($arg.IO.slurp);
       for $bibtex.items -> $item {
         if $item !~~ BibTeX::Entry {
           print $item.Str;

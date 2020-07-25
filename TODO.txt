@@ -90,6 +90,7 @@ https://github.com/SeleniumHQ/selenium/blob/selenium-3.141.59/py/selenium/webdri
 # Unsorted
 
 test for file:
+read from a pipe or bare file (test if file exists? if not http[s?] or doi ?)
 
 multiple $url
 
