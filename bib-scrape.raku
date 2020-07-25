@@ -258,7 +258,7 @@ sub MAIN(
     omit-empty => @omit-empty,
   );
 
-  my $url-rx = rx:i/^ \s* [ '{' (<-[}]>*) '}' ]? \s* (['http' 's'? | 'doi'] ':' .*) $/;
+  my $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
 
   for ($url) -> $arg {
     sub go(Str $key is copy, Str $url is copy) {
@@ -273,15 +273,12 @@ sub MAIN(
       $bibtex.key = $key if $key.defined;
 
       print $bibtex.Str;
-      sleep 1000;
     }
 
     # Look for 'http:', 'https:' or 'doi:' with an optional `{key}` before the url
     if $arg ~~ $url-rx {
       go(Str, $arg);
-
-      # BibTeX::Entry.Str doesn't have a newline at the end so we add one
-      print "\n";
+      print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {
       my $bibtex = bibtex-parse($arg.IO.slurp);
       for $bibtex.items -> $item {
