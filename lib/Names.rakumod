@@ -52,7 +52,7 @@ sub split-names(Str $str --> Array[Str]) is export {
 # TODO: note that these are not exactly how BibTeX parses names, but they are good enough for us (because we avoid capitalization distinctions)
 # TODO: factor out common code
 sub flatten-name(Str $str --> Str) is export {
-  my @parts = split-name($str.trim);
+  my Str @parts = split-name($str.trim);
   do given @parts.elems {
     when 1 { "@parts[0]" }
     when 2 { "@parts[1] @parts[0]" }
@@ -63,10 +63,10 @@ sub flatten-name(Str $str --> Str) is export {
 
 # TODO: note that this may not include the 'von' (but only when in no-comma form)
 sub order-name(Str $str --> Str) is export {
-  my @parts = split-name($str.trim);
+  my Str @parts = split-name($str.trim);
   do given @parts.elems {
     when 1 {
-      my @words = depth-split(@parts[0], rx/ \s+ /);
+      my Str @words = depth-split(@parts[0], rx/ \s+ /);
       @words[*-1] ~ ', ' ~ @words[0..^*-1].join( ' ' )
     }
     when 2 { "@parts[0], @parts[1]" }
@@ -77,10 +77,10 @@ sub order-name(Str $str --> Str) is export {
 
 # TODO: note that this may include the 'von' (but not when in no-comma form)
 sub last-name(Str $str --> Str) is export {
- my @parts = split-name($str.trim);
+ my Str @parts = split-name($str.trim);
   do given @parts.elems {
     when 1 {
-      my @words = depth-split(@parts[0], rx/ \s+ /);
+      my Str @words = depth-split(@parts[0], rx/ \s+ /);
       @words[*-1]
     }
     when 2 { @parts[0] }

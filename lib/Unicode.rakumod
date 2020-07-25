@@ -1,21 +1,21 @@
 unit module Unicode;
 
-my Int %CCC;
-my Str %CODES;
+my Int:D %CCC;
+my Str:D %CODES;
 
-sub unicode2tex(Str $str) is export {
-  my @out;
-  for $str.ords -> $ord {
+sub unicode2tex(Str:D $str --> Str:D) is export {
+  my Str:D @out;
+  for $str.ords -> Int $ord {
     if %CODES{$ord}:exists {
       if not %CCC{$ord}:exists {
         push @out, "\{%CODES{$ord}\}";
       } else {
-        my $old = pop @out;
+        my Str:D $old = pop @out;
         if not $old.defined {
           $old = '{}';
           say sprintf( 'WARNING: Combining character at start of string:  %s (U+%04x)', chr($ord), $ord);
         }
-        my $new = %CODES{$_};
+        my Str:D $new = %CODES{$_};
         $new ~~ s/ '{}' /$old/;
         $new ~~ s:g/ '{' ( <[ij]> ) '}' /{$1}/
           if %CCC{$ord} == 230 || %CCC{$ord} == 234;

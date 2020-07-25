@@ -9,29 +9,29 @@ class Ris {
   has Array[Str] %.fields;
 }
 
-sub ris-parse(Str $text --> Ris) is export {
+sub ris-parse(Str:D $text --> Ris:D) is export {
 #   $text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
   my Array[Str] %fields;
-  my $last_key = "";
+  my Str:D $last_key = "";
   for $text.split(rx/ ["\n" | "\r"]+ /) -> $line is copy {
     $line ~~ s:g/ "\r" | "\n" //;
     if $line ~~ /^ (<[A..Z0..9]>+) ' '* '-' ' '* (.*?) ' '* $/ {
-      my ($key, $val) = ($0.Str, $1.Str);
+      my Str ($key, $val) = ($0.Str, $1.Str);
       push %fields{$key}, $val;
       $last_key = $key;
     } elsif !$line {
       # Do nothing
     } else {
       # TODO: Test this code
-      my $list = %fields{$last_key};
+      my Str $list = %fields{$last_key};
       $list[$list.end] ~= "\n" ~ $line;
     }
   }
   Ris.new(fields => %fields);
 }
 
-my %ris-types = <
+my Str %ris-types = <
     BOOK book
     CONF proceedings
     CHAP inbook
@@ -49,7 +49,7 @@ my %ris-types = <
 # # (skip [,\.]*)
 # sub ris_author { join(" and ", map { s[(.*),(.*),(.*)][$1,$3,$2];
 #                                      m[[^, ]] ? $_ : (); } @_); }
-sub ris-author(Array $names) {
+sub ris-author(Array $names --> Str) {
   $names
     .map({ # TODO: what is going on here?
       s/ (.*) ',' (.*) ',' (.*) /$1,$3,$2/;
@@ -58,10 +58,10 @@ sub ris-author(Array $names) {
 }
 
 sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
-  my $self = $ris.fields;
-  my $entry = BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(multi-hash.new()));
+  my $self = $ris.fields; # TODO: type
+  my BibTeX::Entry $entry = BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(multi-hash.new()));
 
-  my $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
+  my Regex $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
 
   sub set(Str $key, Str $value) {
     if $value.defined and $value {
@@ -75,7 +75,7 @@ sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   set( 'editor', ris-author($self<A2> // $self<ED> // []));
 
   my Str %self;
-  for $self.kv -> $key, $value {
+  for $self.kv -> Str $key, Array[Str] $value {
     %self{$key} = $value.join( '; ' );
   }
 
@@ -95,7 +95,7 @@ sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   # A3: author series
   # A[4-9]: author (undocumented)
   # Y1|PY: date primary
-  my ($year, $month, $day) = (%self<DA> // %self<PY> // %self<Y1> // '').split(rx/ "/" | "-" /);
+  my Str ($year, $month, $day) = (%self<DA> // %self<PY> // %self<Y1> // '').split(rx/ "/" | "-" /);
   set( 'year', $year);
   $entry.fields<month> = BibTeX::Value.new(num2month($month)) if $month;
   if (%self<C1>:exists) {

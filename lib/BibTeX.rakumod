@@ -15,7 +15,7 @@ class Piece {
   multi method newx(Piece $piece --> Piece:D) {
     $piece;
   }
-  multi method newx(Str $piece, Quotation $quotation = Braces) {
+  multi method newx(Str $piece, Quotation $quotation = Braces --> Piece:D) {
     self.bless(piece => $piece, quotation => $quotation);
   }
   multi method new(Int $piece --> Piece:D) {
@@ -24,10 +24,10 @@ class Piece {
   multi method new(Piece $piece --> Piece:D) {
     $piece;
   }
-  multi method new(Str $piece, Quotation $quotation = Braces) {
+  multi method new(Str $piece, Quotation $quotation = Braces --> Piece:D) {
     self.bless(piece => $piece, quotation => $quotation);
   }
-  method Str {
+  method Str(--> Str:D) {
     given $.quotation {
       when Bare { $.piece }
       when Braces { "\{$.piece\}" }
@@ -37,14 +37,14 @@ class Piece {
 }
 class Value {
   has Piece @.pieces;
-  multi method new(*@pieces) {
+  multi method new(*@pieces --> Value:D) {
     self.bless(pieces => map { Piece.newx($_) }, @pieces);
   }
-  multi method new(Value $value) { $value; }
-  method Str {
+  multi method new(Value $value --> Value) { $value; }
+  method Str(--> Str:D) {
     @.pieces».Str.join(" # ")
   }
-  method simple-str {
+  method simple-str(--> Str:D) {
     if (@.pieces.elems <= 1) {
       @.pieces».piece.join
     } else {
@@ -56,18 +56,18 @@ class Value {
 class Item {}
 class Ignored is Item is Str {}
 class Comment is Item {
-  method Str { '@comment' }
+  method Str(--> Str:D) { '@comment' }
 }
 class Preamble is Item {
   has Value $.value;
-  method Str {
+  method Str(--> Str:D) {
     "\@preamble\{$.value\}"
   }
 };
 class String is Item {
   has Str $.key;
   has Value $.value;
-  method Str {
+  method Str(--> Str:D) {
     "\@string\{$.key = $.value\}"
   }
 };
@@ -75,7 +75,7 @@ class Entry is Item {
   has Str $.type is rw;
   has Str $.key is rw;
   has ArrayHash $.fields is rw = multi-hash(); # Maps Str to Value
-  method Str {
+  method Str(--> Str:D) {
     "\@$.type\{$.key,\n" ~
     (map { "  {$_.key} = {$_.value},\n" }, $.fields.values(:array)).join ~
     "}"
@@ -83,7 +83,7 @@ class Entry is Item {
 }
 class Database {
   has Item @.items;
-  method Str { @.items».Str.join("\n\n"); }
+  method Str(--> Str:D) { @.items».Str.join("\n\n"); }
 }
 
 grammar Grammar {
@@ -107,11 +107,8 @@ grammar Grammar {
 
   regex string-body { <ident> <ws> '=' <ws> <value> }
 
-  regex entry {
-    <ident> <ws>
-    [ '{' <ws> <key> <ws> <entry-body> <ws> '}'
-      || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ]
-  }
+  regex entry { <ident> <ws> [ '{' <ws> <key> <ws> <entry-body> <ws> '}'
+                            || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ] }
 
   # Technically spaces shouldn't be allowed, but some publishers have them anyway
   token key { <-[,\t}\n]>* }
@@ -139,13 +136,11 @@ grammar Grammar {
     '"' ([<!["]> # Fix syntax highlighting: "]
     <balanced>]*) '"' }
 
-  regex balanced
-  { '{' <balanced>* '}'
-  || <-[{}]> }
+  regex balanced { '{' <balanced>* '}' || <-[{}]> }
 
   token ident {
     <![0..9]> [<![\ \t"#%'(),={}]>  # Fix syntax highlighting: "]
-    <[\x20..\x7f]>]+ } #"])}
+    <[\x20..\x7f]>]+ }
 }
 
 class Actions {
@@ -171,36 +166,20 @@ class Actions {
   method quotes($/) { make Piece.new(piece => $/[0].Str, quotation => Quotes); }
 }
 
-sub bibtex-parse(Str $str) is export {
+sub bibtex-parse(Str $str --> BibTeX::Database:D) is export {
   Grammar.parse($str, actions => Actions.new).made;
 }
 
 grammar Names {
   regex w { <[\ \t~-]> }
 
-  regex balanced
-  { '{' <balanced>* '}'
-  || <-[{}]> }
+  regex balanced  { '{' <balanced>* '}' || <-[{}]> }
+  regex balanced2 { '{' <balanced>* '}' || <-[{}\ ~,-]> }
 
-  regex balanced2
-  { '{' <balanced>* '}'
-  || <-[{}\ ~,-]> }
-
-  regex names { :i
-    [<.w>* $<name>=[<.balanced>+?] [<.w> | ","]*]* % [ \s+ 'and' <?before \s+> ]
-  }
-
-  regex name {
-    [ \s* <part> \s* ]+ % ','
-  }
-
-  regex part {
-    [ <tok> ]+ % [ <w> <.w>* ]
-  }
-
-  regex tok {
-    <.balanced2>*
-  }
+  regex names { :i [<.w>* $<name>=[<.balanced>+?] [<.w> | ","]*]* % [ \s+ 'and' <?before \s+> ] }
+  regex name { [ \s* <part> \s* ]+ % ',' }
+  regex part { [ <tok> ]+ % [ <w> <.w>* ] }
+  regex tok { <.balanced2>* }
 }
 
 class Name {
@@ -209,7 +188,7 @@ class Name {
   has Str $.last;
   has Str $.jr;
 
-  method Str {
+  method Str(--> Str:D) {
     ($.von.defined ?? "$.von " !! "") ~
     ($.last) ~
     ($.jr.defined ?? ", $.jr" !! "") ~

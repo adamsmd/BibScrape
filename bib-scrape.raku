@@ -225,7 +225,7 @@ sub MAIN(
   my Str $nouns = $*PROGRAM.dirname ~ </config/nouns.cfg>;
 
   ## FIELD OPTIONS
-  my @fields = <
+  my Str @fields = <
     author editor affiliation title
     howpublished booktitle journal volume number series jstor_issuetitle
     type jstor_articletype school institution location conference_date
@@ -258,14 +258,14 @@ sub MAIN(
     omit-empty => @omit-empty,
   );
 
-  my $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
+  my Regex $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
 
-  for ($url) -> $arg {
+  for ($url) -> Str $arg {
     sub go(Str $key is copy, Str $url is copy) {
       $url ~~ $url-rx;
       $key = $0.Str if !$key.defined and $0.defined;
 
-      my $entry = scrape($1.Str);
+      my BibTeX::Entry $entry = scrape($1.Str);
       $entry.fields<bib_scrape_url> = BibTeX::Value.new($url);
 
       $entry = $fixer.fix($entry);
@@ -280,15 +280,15 @@ sub MAIN(
       go(Str, $arg);
       print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {
-      my $bibtex = bibtex-parse($arg.IO.slurp);
-      for $bibtex.items -> $item {
+      my BibTeX::Database $bibtex = bibtex-parse($arg.IO.slurp);
+      for $bibtex.items -> BibTeX::Item $item {
         if $item !~~ BibTeX::Entry {
           print $item.Str;
         } else {
           if $item.fields<bib_scrape_url> {
             go($item.key, $item.fields<bib_scrape_url>.simple-str);
           } elsif $item.fields<doi> {
-            my $doi = $item.fields<doi>;
+            my Str $doi = $item.fields<doi>.simple-str;
             $doi = "doi:$doi" unless $doi ~~ m:i/^ 'doi:' /;
             go($item.key, $doi);
           } else {

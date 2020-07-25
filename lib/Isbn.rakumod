@@ -18,7 +18,7 @@ class Rule {
   has Int $.publisher;
 }
 
-sub rules {
+sub rules(--> Array:D[Rule:D]) {
   my $xml = from-xml-file('dep/RangeMessage.xml');
   my @groups = $xml.elements(:RECURSE(Inf), :TAG<Group>);
   do for @groups -> $group {
@@ -43,16 +43,16 @@ sub rules {
         group => $grp.chars,
         publisher => $length);
     }
-  }.flat
+  }.flat.Array
 }
 
-my @rules;
+my Rule:D @rules;
 
 CHECK {
   @rules = rules();
 }
 
-sub hyphenate(Str $isbn --> Str) {
+sub hyphenate(Str:D $isbn --> Str:D) {
   die "Bad ISBN: $isbn" unless $isbn ~~ /^ <[0..9]> ** 12 <[0..9Xx]> $/;
 
   for @rules -> $rule {
@@ -71,44 +71,44 @@ sub hyphenate(Str $isbn --> Str) {
   die "Cannot find ISBN: $isbn";
 }
 
-sub check-digit(Int $mod, @consts, Str $digits is copy) { # TODO: Int @consts
+sub check-digit(Int $mod, @consts, Str $digits is copy --> Str:D) { # TODO: Int @consts
   $digits ~~ s:g/ '-' //;
   $digits ~~ s/ . $//;
   my Int @digits = $digits.split("", :skip-empty)».Int;
   my Int $sum = 0;
-  for @consts.kv -> $i, $const {
+  for @consts.kv -> Int $i, Int $const {
     $sum += @digits[$i] * $const;
   }
   my Int $digit = ($mod - $sum % $mod) % $mod;
-  return $digit == 10 ?? 'X' !! $digit;
+  return $digit == 10 ?? 'X' !! $digit.Str;
 }
 
-sub check-digit10(Str $digits) { check-digit(11, (10,9,8,7,6,5,4,3,2), $digits); }
-sub check-digit13(Str $digits) { check-digit(10, (1,3,1,3,1,3,1,3,1,3,1,3), $digits); }
-sub check-digit-issn(Str $digits) { check-digit(11, (8,7,6,5,4,3,2), $digits); }
+sub check-digit10(Str $digits --> Str:D) { check-digit(11, (10,9,8,7,6,5,4,3,2), $digits); }
+sub check-digit13(Str $digits --> Str:D) { check-digit(10, (1,3,1,3,1,3,1,3,1,3,1,3), $digits); }
+sub check-digit-issn(Str $digits --> Str:D) { check-digit(11, (8,7,6,5,4,3,2), $digits); }
 
-sub canonical-issn(Str $issn, IsbnType $type, Str $sep) is export {
-  my $i = $issn;
+sub canonical-issn(Str $issn, IsbnType $type, Str $sep --> Str:D) is export {
+  my Str $i = $issn; # Copy so errors can use the original
   $i ~~ s:g/ <[- ]> //;
   $i ~~ m/^ (\d\d\d\d) (\d\d\d(\d|"X")) $/ or die "Invalid ISSN due to wrong number of digits: $issn";
   $i = "$0-$1";
-  my $check = check-digit-issn($issn);
+  my Str $check = check-digit-issn($issn);
   $i ~~ / $check $/ or die "Bad check digit in ISSN. Expecting $check in $issn";
   return $i;
 }
 
-sub canonical-isbn(Str $isbn, IsbnType $type, Str $sep) is export {
-  my Str $i = $isbn;
+sub canonical-isbn(Str $isbn, IsbnType $type, Str $sep --> Str:D) is export {
+  my Str $i = $isbn; # Copy so errors can use the original
   $i ~~ s:g/ <[- ]> //;
   my Bool $was-isbn13;
 
   if $i ~~ m/^ <[0..9]> ** 9 <[0..9Xx]> $/ {
-    my $check = check-digit10($i);
+    my Str $check = check-digit10($i);
     die "Bad check digit in ISBN-10. Expecting $check in $isbn" unless $i ~~ / $check $/;
     $i = '978' ~ $i;
     $was-isbn13 = False;
   } elsif $i ~~ m/^ <[0..9]> ** 12 <[0..9Xx]> $/ {
-    my $check = check-digit13($i);
+    my Str $check = check-digit13($i);
     die "Bad check digit in ISBN-13. Expecting $check in $isbn" unless $i ~~ / $check $/;
     $was-isbn13 = True;
   } else {
@@ -121,10 +121,10 @@ sub canonical-isbn(Str $isbn, IsbnType $type, Str $sep) is export {
   if ($type eqv Isbn13 
       or $type eqv Preserve and $was-isbn13
       or $i !~~ s/^ '978-' //) {
-    my $check = check-digit13($i);
+    my Str $check = check-digit13($i);
     $i ~~ s/ . $/$check/;
   } else {
-    my $check = check-digit10($i);
+    my Str $check = check-digit10($i);
     $i ~~ s/ . $/$check/;
   }
 

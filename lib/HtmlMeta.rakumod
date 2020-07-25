@@ -24,18 +24,18 @@ sub html-meta-parse($web-driver --> HtmlMeta:D) is export {
   return HtmlMeta.new(fields => %entries);
 }
 
-sub html-meta-type(HtmlMeta $html-meta) is export {
+sub html-meta-type(HtmlMeta $html-meta --> Str) is export {
   my %meta = $html-meta.fields;
 
   if %meta<citation_conference>:exists { return 'inproceedings'; }
   if %meta<citation_conference_title>:exists { return 'inproceedings'; }
-  if %meta<citation_dissertation_institution>:exists { return Nil; } # phd vs masters
+  if %meta<citation_dissertation_institution>:exists { return Str; } # phd vs masters
   if %meta<citation_inbook_title>:exists { return 'inbook'; }
   if %meta<citation_journal_title>:exists { return 'article'; }
   if %meta<citation_patent_number>:exists { return 'patent'; }
   if %meta<citation_technical_report_institution>:exists { return 'techreport'; }
   if %meta<citation_technical_report_number>:exists { return 'techreport'; }
-  return Nil;
+  return Str;
 }
 
 sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is export {
@@ -49,7 +49,7 @@ sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is exp
     }
   }
 
-  my %meta = $html-meta.fields;
+  my Array[Str] %meta = $html-meta.fields;
 
   # The meta-data is highly redundent and multiple fields contain
   # similar information.  In the following we choose fields that
@@ -98,17 +98,17 @@ sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is exp
   # 'dc.date', 'rft_date', 'citation_online_date' also contain date information
   if %meta<citation_publication_date>:exists {
     if (%meta<citation_publication_date>[0] ~~ /^ (\d\d\d\d) <[/-]> (\d\d) [ <[/-]> (\d\d) ]? $/) {
-      my ($year, $month) = ($0.Str, $1.Str);
+      my Str ($year, $month) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', num2month($month));
     }
   } elsif %meta<citation_date>:exists {
     if %meta<citation_date>[0] ~~ /^ (\d\d) <[/-]> \d\d <[/-]> (\d\d\d\d) $/ {
-      my ($month, $year) = ($0.Str, $1.Str);
+      my Str ($month, $year) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', num2month($month));
     } elsif %meta<citation_date>[0] ~~ /^ <[ 0..9-]>*? <wb> (\w+) <wb> <[ .0..9-]>*? <wb> (\d\d\d\d) <wb> / {
-      my ($month, $year) = ($0.Str, $1.Str);
+      my Str ($month, $year) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', str2month($month));
     }
@@ -149,8 +149,7 @@ sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is exp
     if %meta<citation_author_institution>:exists;
 
   for %values.kv -> $key, $value {
-    my Bool $set = %fields{$key}:exists ?? %fields{$key} !! not $entry.fields{$key}:exists;
-    if $set {
+    if %fields{$key}:exists ?? %fields{$key} !! not $entry.fields{$key}:exists {
       $entry.fields{$key} = BibTeX::Value.new($value);
     }
   }

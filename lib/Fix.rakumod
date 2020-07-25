@@ -40,11 +40,11 @@ class Fix {
   has Str @.omit;
   has Str @.omit-empty;
 
-  method new(*%args) {
+  method new(*%args --> Fix:D) {
     my Array[Str] @names;
     @names[0] = Array[Str].new;
     for %args<name-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
-      my $line = $l;
+      my Str $line = $l;
       $line.chomp;
       $line ~~ s/"#".*//; # Remove comments (which start with `#`)
       if $line ~~ /^\s*$/ { push @names, Array[Str].new; } # Start a new block
@@ -54,11 +54,11 @@ class Fix {
 
     my Str %nouns;
     for %args<noun-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
-      my $line = $l;
+      my Str $line = $l;
       $line.chomp;
       $line ~~ s/"#".*//; # Remove comments (which start with `#`)
       if $line !~~ /^\s*$/ {
-        my $key = do given $line { S:g/<[{}]>// };
+        my Str $key = do given $line { S:g/<[{}]>// };
         %nouns{$key} = $line;
       }
     }
@@ -66,7 +66,7 @@ class Fix {
     self.bless(names => @names, nouns => %nouns, |%args);
   }
 
-  method fix(BibTeX::Entry $entry is copy --> BibTeX::Entry) {
+  method fix(BibTeX::Entry:D $entry is copy --> BibTeX::Entry:D) {
     $entry = $entry.clone;
 
     # Remove undefined fields
@@ -82,7 +82,7 @@ class Fix {
     update($entry, 'pages', { s:i:g/"p" "p"? "." \s*//; });
 
     # rename fields
-    for ('issue' => 'number', 'keyword' => 'keywords') -> $i {
+    for ('issue' => 'number', 'keyword' => 'keywords') -> Pair $i {
       # Fix broken field names (SpringerLink and ACM violate this)
       if ($entry.fields{$i.key}:exists and
           (not $entry.fields{$i.value}:exists or
@@ -93,7 +93,7 @@ class Fix {
     }
 
     # Ranges: convert "-" to "--"
-    for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> $key {
+    for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> Str $key {
       update($entry, $key, { s:i:g/\s* ["-" | \c[EN DASH] | \c[EM DASH]]+ \s*/--/; });
       update($entry, $key, { s:i:g/"n/a--n/a"//; $_ = Nil if !$_ });
       update($entry, $key, { s:i:g/«(\w+) "--" $0»/$0/; });
@@ -102,7 +102,7 @@ class Fix {
     }
 
     check($entry, 'pages', 'suspect page number', {
-      my $page = rx[
+      my Regex $page = rx[
         # Simple digits
         \d+ |
         \d+ "--" \d+ |
@@ -144,7 +144,7 @@ class Fix {
     self.isbn($entry, 'issn', $.issn-media, &canonical-issn);
 
     # Change language codes (e.g., "en") to proper terms (e.g., "English")
-    update($entry, 'language', { $_ = code2language($_) if defined code2language($_) });
+    update($entry, 'language', { $_ = code2language($_) if code2language($_).defined });
 
     if ($entry.fields<author>:exists) { $entry.fields<author> = $.canonical-names($entry.fields<author>) }
     if ($entry.fields<editor>:exists) { $entry.fields<editor> = $.canonical-names($entry.fields<editor>) }
@@ -162,7 +162,7 @@ class Fix {
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', { $_ = Nil if $_ eq ($entry.fields<doi> // '') });
     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
-    for $entry.fields.keys -> $field {
+    for $entry.fields.keys -> Str $field {
       $entry.fields{$field} = BibTeX::Value.new(latex-encode($entry.fields{$field}.simple-str))
         unless $field ∈ @.no-encode;
     }
@@ -185,7 +185,7 @@ class Fix {
 
     # Keep proper nouns capitalized
     update($entry, 'title', {
-      for %.nouns.kv -> $k, $v {
+      for %.nouns.kv -> Str $k, Str $v {
         s:g/«$k»/$v/;
       }
     });
@@ -194,7 +194,7 @@ class Fix {
     # Must be after field encoding because we use macros
     update($entry, 'month', {
       s/ "." ($|"-")/$0/; # Remove dots due to abbriviations
-      my @x =
+      my BibTeX::Piece @x =
         .split(rx/<wb>/)
         .grep(rx/./)
         .map({
@@ -219,17 +219,17 @@ class Fix {
     check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
 
     # Generate an entry key
-    my $name = $entry.fields<author> // $entry.fields<editor>;
-    $name = $name.defined ?? last-name(split-names($name.simple-str).head) !! 'anon';
+    my BibTeX::Value $name-value = $entry.fields<author> // $entry.fields<editor> // BibTeX::Value;
+    my Str $name = $name-value.defined ?? last-name(split-names($name-value.simple-str).head) !! 'anon';
     $name ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
     $name ~~ s:g/ <-[A..Za..z0..9]> //; # Remove non-alphanum
-    my $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
-    my $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
+    my Str $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
+    my Str $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
     $entry.key = $name ~ $year ~ $doi;
 
     # Put fields in a standard order (also cleans out any fields we deleted)
-    my %fields = @.fields.map(* => 0);
-    for $entry.fields.keys -> $field {
+    my Int %fields = @.fields.map(* => 0);
+    for $entry.fields.keys -> Str $field {
       unless %fields{$field}:exists { die "Unknown field '$field'" }
       unless %fields{$field}.elems == 1 { die "Duplicate field '$field'" }
       %fields{$field} = 1;
@@ -267,15 +267,15 @@ class Fix {
     });
   }
 
-  method canonical-names(BibTeX::Value $value --> BibTeX::Value) {
+  method canonical-names(BibTeX::Value:D $value --> BibTeX::Value:D) {
     my Str @names = split-names($value.simple-str);
 
     my Str @new-names;
     NAME:
     for @names -> $name {
-      my $flattened-name = flatten-name($name);
-      for @.names -> @name-group {
-        for @name-group -> $n {
+      my Str $flattened-name = flatten-name($name);
+      for @.names -> Str @name-group {
+        for @name-group -> Str $n {
           if $flattened-name.fc eq flatten-name($n).fc {
             push @new-names, @name-group.head.Str;
             next NAME;
@@ -283,7 +283,7 @@ class Fix {
         }
       }
 
-      my $first = rx/
+      my Regex $first = rx/
           <upper><lower>+                     # Simple name
         | <upper><lower>+ '-' <upper><lower>+ # Hyphenated name with upper
         | <upper><lower>+ '-' <lower><lower>+ # Hyphenated name with lower
@@ -293,8 +293,8 @@ class Fix {
         # | <upper> '.'                       # Initial
         # | <upper> '.-' <upper> '.'          # Double initial
         /;
-      my $middle = rx/<upper>\./; # Allow for a middle initial
-      my $last = rx/
+      my Regex $middle = rx/<upper>\./; # Allow for a middle initial
+      my Regex $last = rx/
           <upper><lower>+                     # Simple name
         | <upper><lower>+ '-' <upper><lower>+ # Hyphenated name with upper
         | ["O'"|"Mc"|"Mac"] <upper><lower>+   # Name with prefix
@@ -307,7 +307,7 @@ class Fix {
     }
 
     # Warn about duplicate names
-    my %seen;
+    my Int %seen;
     %seen{$_}++ and say "WARNING: Duplicate name: $_" for @new-names;
 
     BibTeX::Value.new(@new-names.join( ' and ' ));
@@ -324,9 +324,9 @@ sub check(BibTeX::Entry $entry, Str $field, Str $msg, &check) {
   }
 }
 
-sub greek(Str $str is copy) {
+sub greek(Str $str is copy --> Str:D) {
   # Based on table 131 in Comprehensive Latex
-  my @mapping = <
+  my Str @mapping = <
 _ A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi O
 \Pi P _ \Sigma T \Upsilon \Phi X \Psi \Omega _ _ _ _ _ _
 _ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu \xi o
@@ -336,11 +336,11 @@ _ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu 
   return $str;
 }
 
-multi sub math(@nodes) {
-  @nodes.map({math($_)}).join
+sub math(@nodes --> Str:D) {
+  @nodes.map({math-node($_)}).join
 }
 
-multi sub math(XML::Node $node) {
+sub math-node(XML::Node $node --> Str:D) {
   given $node {
     when XML::CDATA { $node.data }
     when XML::Comment { '' } # Remove HTML Comments
@@ -362,9 +362,9 @@ multi sub math(XML::Node $node) {
         when 'msqrt' { '\sqrt{' ~ math($node.nodes) ~ '}' }
         when 'mrow' { '{' ~ math($node.nodes) ~ '}' }
         when 'mspace' { '\hspace{' ~ $node.attribs<width> ~ '}' }
-        when 'msubsup' { '{' ~ math($node.nodes[0]) ~ '}_{' ~ math($node.nodes[1]) ~ '}^{' ~ math($node.nodes[2]) ~ '}' }
-        when 'msub' { '{' ~ math($node.nodes[0]) ~ '}_{' ~ math($node.nodes[1]) ~ '}' }
-        when 'msup' { '{' ~ math($node.nodes[0]) ~ '}^{' ~ math($node.nodes[1]) ~ '}' }
+        when 'msubsup' { '{' ~ math-node($node.nodes[0]) ~ '}_{' ~ math-node($node.nodes[1]) ~ '}^{' ~ math-node($node.nodes[2]) ~ '}' }
+        when 'msub' { '{' ~ math-node($node.nodes[0]) ~ '}_{' ~ math-node($node.nodes[1]) ~ '}' }
+        when 'msup' { '{' ~ math-node($node.nodes[0]) ~ '}^{' ~ math-node($node.nodes[1]) ~ '}' }
         default { say "WARNING: unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
       }
     }
@@ -373,10 +373,10 @@ multi sub math(XML::Node $node) {
   }
 }
 
-multi sub rec(@nodes) {
-  @nodes.map({rec($_)}).join
+sub rec(@nodes --> Str:D) {
+  @nodes.map({rec-node($_)}).join
 }
-multi sub rec(XML::Node $node) {
+sub rec-node(XML::Node $node --> Str:D) {
   # # HTML -> LaTeX Codes
   # $str = decode-entities($str);
   # $str ~~ s:i:g/"<a " <-[>]>* "onclick=\"toggleTabs(" .*? ")>" .*? "</a>"//; # Fix for Science Direct
@@ -398,7 +398,7 @@ multi sub rec(XML::Node $node) {
     when XML::Text { decode-entities($node.text) }
 
     when XML::Element {
-      sub wrap($tag) {
+      sub wrap(Str:D $tag --> Str:D) {
         if $node.nodes {
           "\\$tag\{" ~ rec($node.nodes) ~ "\}"
         } else {
@@ -448,16 +448,16 @@ multi sub rec(XML::Node $node) {
   }
 }
 
-sub latex-encode(Str $str is copy) {
-  my $xml = from-xml("<root>{$str}</root>");
-  $str = rec($xml.root.nodes);
+sub latex-encode(Str:D $str is copy --> Str:D) {
+  my XML::Node $xml = from-xml("<root>{$str}</root>");
+  $str = rec(@($xml.root.nodes));
 
   # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
   $str ~~ s:g/" "* \xA0/\xA0/;
 
   # TODO: Remove
   # Encode unicode but skip any \, {, or } that we already encoded.
-  my @parts = $str.split(rx/ "\$" .*? "\$" | <[\\{}_^]> /, :v);
+  my Str:D @parts = $str.split(rx/ "\$" .*? "\$" | <[\\{}_^]> /, :v)».Str;
 
   return @parts.map({ /<[_^{}\\\$]>/ ?? $_ !! unicode2tex($_) }).join('');
 }

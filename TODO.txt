@@ -55,6 +55,9 @@ Code coverage
 non-multi arrays
 newx
 Add Types
+:D and :U
+Replace Nil
+Return void type for  html-meta-bibtex and Fix::check RIS::set and Scrape::{init,open,close,update, read-downloads}
 
 # WebDriver
 

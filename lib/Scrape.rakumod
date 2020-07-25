@@ -120,7 +120,7 @@ sub await(&block) {
 
 ########
 
-sub scrape(Str $url is copy --> BibTeX::Entry) is export {
+sub scrape(Str $url is copy --> BibTeX::Entry:D) is export {
   # Support 'doi:' as a url type
   $url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
 
@@ -129,8 +129,8 @@ sub scrape(Str $url is copy --> BibTeX::Entry) is export {
   $web-driver.get($url);
 
   # Get the domain after following any redirects
-  my $domain = $web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"];
-  my $entry = do given $domain {
+  my Str $domain = ($web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"]).Str;
+  my BibTeX::Entry $entry = do given $domain {
     when m[ « 'acm.org'             $] { scrape-acm(); }
     when m[ « 'cambridge.org'       $] { scrape-cambridge(); }
     when m[ « 'computer.org'        $] { scrape-ieee-computer(); }
@@ -154,15 +154,15 @@ sub scrape(Str $url is copy --> BibTeX::Entry) is export {
 sub scrape-acm(--> BibTeX::Entry) {
   ## BibTeX
   $web-driver.find_element_by_css_selector('a[data-title="Export Citation"]').click;
-  my @citation-text = await({ $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline") }).map({ $_ % <text> });
+  my Str @citation-text = await({ $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline") }).map({ $_ % <text> });
 
   # Avoid SIGPLAN Notices, SIGSOFT Software Eng Note, etc. by prefering
   # non-journal over journal
-  my %entry = @citation-text
+  my Array %entry = @citation-text
     .flatmap({ bibtex-parse($_).items })
     .grep({ $_ ~~ BibTeX::Entry })
     .classify({ .fields<journal>:exists });
-  my $entry = (%entry<False> // %entry<True>).head;
+  my BibTeX::Entry $entry = (%entry<False> // %entry<True>).head;
 
   # TODO: check SIGPLAN Notices
   ## HTML Meta
@@ -170,7 +170,7 @@ sub scrape-acm(--> BibTeX::Entry) {
   #html-meta-bibtex($entry, $meta);
 
   ## Abstract
-  my $abstract = $web-driver
+  my Str $abstract = $web-driver
     .find_elements_by_css_selector(".abstractSection.abstractInFull")
     .reverse.head
     .get_property('innerHTML');
@@ -180,11 +180,11 @@ sub scrape-acm(--> BibTeX::Entry) {
   }
 
   ## Author
-  my $author = $web-driver.find_elements_by_css_selector( '.citation .author-name' )».get_attribute( 'title' ).join( ' and ' );
+  my Str $author = $web-driver.find_elements_by_css_selector( '.citation .author-name' )».get_attribute( 'title' ).join( ' and ' );
   $entry.fields<author> = BibTeX::Value.new($author);
 
   ## Title
-  my $title = $web-driver.find_element_by_css_selector( '.citation__title' ).get_property( 'innerHTML' );
+  my Str $title = $web-driver.find_element_by_css_selector( '.citation__title' ).get_property( 'innerHTML' );
   $entry.fields<title> = BibTeX::Value.new($title);
 
   ## Month
@@ -192,12 +192,12 @@ sub scrape-acm(--> BibTeX::Entry) {
   # ACM publication months are often inconsistent within the same page.
   # This is a best effort at picking the right month among these inconsistent results.
   if $entry.fields<issue_date>:exists {
-    my $month = $entry.fields<issue_date>.simple-str.split(rx/\s+/).head;
+    my Str $month = $entry.fields<issue_date>.simple-str.split(rx/\s+/).head;
     if str2month($month) {
       $entry.fields<month> = BibTeX::Value.new($month);
     }
   } elsif not $entry.fields<month>:exists {
-    my $month = $web-driver.find_element_by_css_selector( '.book-meta + .cover-date' ).get_property( 'innerHTML' ).split(rx/\s+/).head;
+    my Str $month = $web-driver.find_element_by_css_selector( '.book-meta + .cover-date' ).get_property( 'innerHTML' ).split(rx/\s+/).head;
     $entry.fields<month> = BibTeX::Value.new($month);
   }
 
@@ -228,12 +228,12 @@ sub scrape-acm(--> BibTeX::Entry) {
 
 sub scrape-cambridge(--> BibTeX::Entry) {
   # This must be before BibTeX otherwise Cambridge sometimes hangs due to an alert box
-  my $meta = html-meta-parse($web-driver);
+  my HtmlMeta::HtmlMeta $meta = html-meta-parse($web-driver);
 
   ## BibTeX
   await({ $web-driver.find_element_by_class_name( 'export-citation-product' ) }).click;
   await({ $web-driver.find_element_by_css_selector( '[data-export-type="bibtex"]' ) }).click;
-  my $entry = bibtex-parse(read-downloads()).items.head;
+  my BibTeX::Entry $entry = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
   html-meta-bibtex($entry, $meta, title => True, abstract => False);
@@ -241,7 +241,7 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   ## Abstract
   my @abstract = $web-driver.find_elements_by_class_name( 'abstract' );
   if @abstract {
-    my $abstract = @abstract.head.get_property( 'innerHTML' );
+    my Str $abstract = @abstract.head.get_property( 'innerHTML' );
     #my $abstract = meta( 'citation_abstract' );
     $abstract ~~ s:g/ "\n      \n      " //;
     $abstract ~~ s/^ '<div ' <-[>]>* '>'//;
@@ -251,8 +251,8 @@ sub scrape-cambridge(--> BibTeX::Entry) {
   }
 
   ## ISSN
-  my $issn = $web-driver.find_element_by_name( 'productIssn' ).get_attribute( 'value' );
-  my $eissn = $web-driver.find_element_by_name( 'productEissn' ).get_attribute( 'value' );
+  my Str $issn = $web-driver.find_element_by_name( 'productIssn' ).get_attribute( 'value' );
+  my Str $eissn = $web-driver.find_element_by_name( 'productEissn' ).get_attribute( 'value' );
   $entry.fields<issn> = BibTeX::Value.new("$issn (Print) $eissn (Online)");
 
   $entry;
@@ -264,22 +264,22 @@ sub scrape-ieee-computer {
   my $bibtex-link = await({ $web-driver.find_element_by_link_text( 'BibTex' ) });
   $web-driver.execute_script( 'arguments[0].removeAttribute("target")', $bibtex-link);
   $web-driver.find_element_by_link_text( 'BibTex' ).click;
-  my $bibtex-text = await({ $web-driver.find_element_by_tag_name( 'pre' ) }).get_property( 'innerHTML' );
+  my Str $bibtex-text = await({ $web-driver.find_element_by_tag_name( 'pre' ) }).get_property( 'innerHTML' );
   $bibtex-text ~~ s/ "\{," /\{key,/;
   $bibtex-text = Blob.new($bibtex-text.ords).decode; # Fix UTF-8 encoding
-  my $entry = bibtex-parse($bibtex-text).items.head;
+  my BibTeX::Entry $entry = bibtex-parse($bibtex-text).items.head;
   $web-driver.back();
 
   ## HTML Meta
-  my $meta = html-meta-parse($web-driver);
+  my HtmlMeta::HtmlMeta $meta = html-meta-parse($web-driver);
   html-meta-bibtex($entry, $meta);
 
   ## Authors
-  my @authors = $web-driver.find_elements_by_css_selector( 'a[href^="https://www.computer.org/csdl/search/default?type=author&"]' ).map({ .get_property( 'innerHTML' ) });
+  my Str @authors = $web-driver.find_elements_by_css_selector( 'a[href^="https://www.computer.org/csdl/search/default?type=author&"]' ).map({ .get_property( 'innerHTML' ) });
   $entry.fields<author> = BibTeX::Value.new(@authors.join( ' and ' ));
 
   ## Affiliation
-  my @affiliations = $web-driver.find_elements_by_class_name( 'article-author-affiliations' ).map({ .get_property( 'innerHTML' ) });
+  my Str @affiliations = $web-driver.find_elements_by_class_name( 'article-author-affiliations' ).map({ .get_property( 'innerHTML' ) });
   $entry.fields<affiliation> = BibTeX::Value.new(@affiliations.join( ' and ' )) if @affiliations;
 
   ## Keywords
@@ -293,23 +293,23 @@ sub scrape-ieee-explore {
   await({ $web-driver.find_element_by_tag_name( 'xpl-cite-this-modal' ) }).click;
   await({ $web-driver.find_element_by_link_text( 'BibTeX' ) }).click;
   await({ $web-driver.find_element_by_css_selector( '.enable-abstract input' ) }).click;
-  my $text = await({ $web-driver.find_element_by_class_name( 'ris-text' ) }).get_property( 'innerHTML' );
-  my $entry = bibtex-parse($text).items.head;
+  my Str $text = await({ $web-driver.find_element_by_class_name( 'ris-text' ) }).get_property( 'innerHTML' );
+  my BibTeX::Entry $entry = bibtex-parse($text).items.head;
 
   ## HTML Meta
-  my $meta = html-meta-parse($web-driver);
+  my HtmlMeta::HtmlMeta $meta = html-meta-parse($web-driver);
   html-meta-bibtex($entry, $meta);
 
   ## HTML body text
-  my $body = $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' );
+  my Str $body = $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' );
 
   ## Keywords
-  my $keywords = $entry.fields<keywords>.simple-str;
+  my Str $keywords = $entry.fields<keywords>.simple-str;
   $keywords ~~ s:g/ ';' ' '* /; /;
   $entry.fields<keywords> = BibTeX::Value.new($keywords);
 
   ## Author
-  my $author = $entry.fields<author>.simple-str;
+  my Str $author = $entry.fields<author>.simple-str;
   $author ~~ s:g/ '{' (<-[}]>+) '}' /$0/;
   $entry.fields<author> = BibTeX::Value.new($author);
 
@@ -324,18 +324,18 @@ sub scrape-ieee-explore {
   }
 
   ## Publisher
-  my $publisher = $web-driver.find_element_by_class_name( 'publisher-info-label' ).get_property( 'innerHTML' );
+  my Str $publisher = $web-driver.find_element_by_class_name( 'publisher-info-label' ).get_property( 'innerHTML' );
   $publisher ~~ s/^ \s* 'Publisher: ' //;
   $entry.fields<publisher> = BibTeX::Value.new($publisher);
 
   ## Affiliation
-  my $affiliation =
+  my Str $affiliation =
     ($body ~~ m:g/ '"affiliation":"' (<-["]>+) '"' /)
     .map(sub ($k, $v) { $v[0].Str }).join( ' and ' );
   $entry.fields<affiliation> = BibTeX::Value.new($affiliation) if $affiliation;
 
   ## Location
-  my $location = ($body ~~ / '"confLoc":"' (<-["]>+) '"' /)[0];
+  my Str $location = (($body ~~ / '"confLoc":"' (<-["]>+) '"' /)[0] // '').Str;
   if $location {
     $location ~~ s/ ',' \s+ $//;
     $location ~~ s/ ', USA, USA' $/, USA/;
@@ -352,31 +352,31 @@ sub scrape-ieee-explore {
   $entry;
 }
 
-sub scrape-ios-press {
+sub scrape-ios-press(--> BibTeX::Entry) {
   ## RIS
   await({ $web-driver.find_element_by_class_name( 'p13n-cite' ) }).click;
   await({ $web-driver.find_element_by_class_name( 'btn-clear' ) }).click;
-  my $ris = ris-parse(read-downloads());
-  my $entry = bibtex-of-ris($ris);
+  my Ris::Ris $ris = ris-parse(read-downloads());
+  my BibTeX::Entry $entry = bibtex-of-ris($ris);
 
   ## HTML Meta
-  my $meta = html-meta-parse($web-driver);
+  my HtmlMeta::HtmlMeta $meta = html-meta-parse($web-driver);
   html-meta-bibtex($entry, $meta);
 
   ## Title
-  my $title = $web-driver.find_element_by_css_selector( '[data-p13n-title]' ).get_attribute( 'data-p13n-title' );
+  my Str $title = $web-driver.find_element_by_css_selector( '[data-p13n-title]' ).get_attribute( 'data-p13n-title' );
   $title ~~ s:g/ "\n" //; # Remove extra newlines
   $entry.fields<title> = BibTeX::Value.new($title);
 
   ## Abstract
-  my $abstract = $web-driver.find_element_by_css_selector( '[data-abstract]' ).get_attribute( 'data-abstract' );
+  my Str $abstract = $web-driver.find_element_by_css_selector( '[data-abstract]' ).get_attribute( 'data-abstract' );
   $abstract ~~ s:g/ (<[.!?]>) '  ' /$0\n\n/; # Insert missing paragraphs.  This is a heuristic solution.
   $entry.fields<abstract> = BibTeX::Value.new($abstract);
 
   ## ISSN
   if $ris.fields<SN>:exists {
-    my $eissn = $ris.fields<SN>;
-    my $pissn = meta( 'citation_issn' );
+    my Str $eissn = $ris.fields<SN>.head;
+    my Str $pissn = meta( 'citation_issn' ).head;
     $entry.fields<issn> = BibTeX::Value.new("$pissn (Print) $eissn (Online)");
   }
 
@@ -391,37 +391,37 @@ sub scrape-jstor {
   ## BibTeX
   await({ $web-driver.find_element_by_class_name( 'cite-this-item' ) }).click;
   await({ $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ) }).click;
-  my $entry = bibtex-parse(read-downloads()).items.head;
+  my BibTeX::Entry $entry = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
-  my $meta = html-meta-parse($web-driver);
+  my HtmlMeta::HtmlMeta $meta = html-meta-parse($web-driver);
   html-meta-bibtex($entry, $meta);
 
   ## Title
-  my $title = $web-driver.find_element_by_class_name( 'title' ).get_property( 'innerHTML' );
+  my Str $title = $web-driver.find_element_by_class_name( 'title' ).get_property( 'innerHTML' );
   $entry.fields<title> = BibTeX::Value.new($title);
 
   ## DOI
-  my $doi = $web-driver.find_element_by_css_selector( '[data-doi]' ).get_attribute( 'data-doi' );
+  my Str $doi = $web-driver.find_element_by_css_selector( '[data-doi]' ).get_attribute( 'data-doi' );
   $entry.fields<doi> = BibTeX::Value.new($doi);
 
   ## ISSN
   update($entry, 'issn', { s/^ (<[0..9Xx]>+) ', ' (<[0..9Xx]>+) $/$0 (Print) $1 (Online)/ });
 
   ## Month
-  my $month = $web-driver.find_element_by_class_name( 'src' ).get_property( 'innerHTML' );
+  my Str $month = $web-driver.find_element_by_class_name( 'src' ).get_property( 'innerHTML' );
   if $month ~~ / '(' (<alpha>+) / {
     $entry.fields<month> = BibTeX::Value.new($0.Str);
   }
 
   ## Publisher
-  my $publisher = $web-driver.find_element_by_class_name( 'publisher-link' ).get_property( 'innerHTML' );
+  my Str $publisher = $web-driver.find_element_by_class_name( 'publisher-link' ).get_property( 'innerHTML' );
   $entry.fields<publisher> = BibTeX::Value.new($publisher);
 
   $entry;
 }
 
-sub scrape-oxford {
+sub scrape-oxford(--> BibTeX::Entry) {
   # BibTeX
   await({ $web-driver.find_element_by_class_name( 'js-cite-button' ) }).click;
   my $select-element = await({ $web-driver.find_element_by_id( 'selectFormat' ) });
@@ -432,26 +432,26 @@ sub scrape-oxford {
     # Make sure the drop-down was populated
     $button.get_attribute( 'class' ) !~~ / « 'disabled' » /
       and $button }).click;
-  my $entry = bibtex-parse(read-downloads()).items.head;
+  my BibTeX::Entry $entry = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
-  my $meta = html-meta-parse($web-driver);
+  my HtmlMeta::HtmlMeta $meta = html-meta-parse($web-driver);
   html-meta-bibtex($entry, $meta, month => True, year => True);
 
   ## Title
-  my $title = $web-driver.find_element_by_class_name( 'article-title-main' ).get_property( 'innerHTML' );
+  my Str $title = $web-driver.find_element_by_class_name( 'article-title-main' ).get_property( 'innerHTML' );
   $entry.fields<title> = BibTeX::Value.new($title);
 
   ## Abstract
-  my $abstract = $web-driver.find_element_by_class_name( 'abstract' ).get_property( 'innerHTML' );
+  my Str $abstract = $web-driver.find_element_by_class_name( 'abstract' ).get_property( 'innerHTML' );
   $entry.fields<abstract> = BibTeX::Value.new($abstract);
 
   ## ISSN
-  my $issn = $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' );
+  my Str $issn = $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' );
   $issn ~~ / 'Print ISSN ' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)/;
-  my $pissn = $0.Str;
+  my Str $pissn = $0.Str;
   $issn ~~ / 'Online ISSN ' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)/;
-  my $eissn = $0.Str;
+  my Str $eissn = $0.Str;
   $entry.fields<issn> = BibTeX::Value.new("$pissn (Print) $eissn (Online)");
 
   ## Publisher
@@ -467,24 +467,24 @@ sub scrape-science-direct(--> BibTeX::Entry) {
     $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
     True
   });
-  my $entry = bibtex-parse(read-downloads()).items.head;
+  my BibTeX::Entry $entry = bibtex-parse(read-downloads()).items.head;
 
   ## HTML Meta
-  my $meta = html-meta-parse($web-driver);
+  my HtmlMeta::HtmlMeta $meta = html-meta-parse($web-driver);
   html-meta-bibtex($entry, $meta, number => True);
 
   ## Title
-  my $title = $web-driver.find_element_by_class_name( 'title-text' ).get_property( 'innerHTML' );
+  my Str $title = $web-driver.find_element_by_class_name( 'title-text' ).get_property( 'innerHTML' );
   $entry.fields<title> = BibTeX::Value.new($title);
 
   ## Keywords
-  my @keywords = $web-driver
+  my Str @keywords = $web-driver
     .find_elements_by_css_selector( '.keywords-section > .keyword > span' )
     .map({ .get_property( 'innerHTML' )});
   $entry.fields<keywords> = BibTeX::Value.new(@keywords.join( '; ' ));
 
   ## Abstract
-  my @abstract = $web-driver.find_elements_by_css_selector( '.abstract > div' ).map({.get_property( 'innerHTML' )});
+  my Str @abstract = $web-driver.find_elements_by_css_selector( '.abstract > div' ).map({.get_property( 'innerHTML' )});
   if @abstract {
     $entry.fields<abstract> = BibTeX::Value.new(@abstract.head);
   }
@@ -500,7 +500,7 @@ sub scrape-science-direct(--> BibTeX::Entry) {
 
 sub scrape-springer {
   ## BibTeX
-  my $entry = BibTeX::Entry.new();
+  my BibTeX::Entry $entry = BibTeX::Entry.new();
   # Use the BibTeX download if it is available
   if $web-driver.find_elements_by_id( 'button-Dropdown-citations-dropdown' ) {
     await({
@@ -515,21 +515,21 @@ sub scrape-springer {
   }
 
   ## HTML Meta
-  my $meta = html-meta-parse($web-driver);
+  my HtmlMeta::HtmlMeta $meta = html-meta-parse($web-driver);
   $entry.type = html-meta-type($meta);
   html-meta-bibtex($entry, $meta, author => True, publisher => True);
 
-  for 'author', 'editor' -> $key {
+  for 'author', 'editor' -> Str $key {
     if $entry.fields{$key}:exists {
-      my $names = $entry.fields{$key}.simple-str;
+      my Str $names = $entry.fields{$key}.simple-str;
       $names ~~ s:g/ ' '* "\n" / /;
       $entry.fields{$key} = BibTeX::Value.new($names);
     }
   }
 
   ## ISBN
-  my @pisbn = $web-driver.find_elements_by_id( 'print-isbn' ).map({.get_property( 'innerHTML' )});
-  my @eisbn = $web-driver.find_elements_by_id( 'electronic-isbn' ).map({.get_property( 'innerHTML' )});
+  my Str @pisbn = $web-driver.find_elements_by_id( 'print-isbn' ).map({.get_property( 'innerHTML' )});
+  my Str @eisbn = $web-driver.find_elements_by_id( 'electronic-isbn' ).map({.get_property( 'innerHTML' )});
   if @pisbn and @eisbn {
     $entry.fields<isbn> = BibTeX::Value.new("{@pisbn.head} (Print) {@eisbn.head} (Online)");
   }
@@ -537,7 +537,7 @@ sub scrape-springer {
   ## ISSN
   if $web-driver.find_element_by_tag_name( 'head' ).get_property( 'innerHTML' )
       ~~ / '{"eissn":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '","pissn":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '"}' / {
-    my $issn = "$1 (Print) $0 (Online)";
+    my Str $issn = "$1 (Print) $0 (Online)";
     $entry.fields<issn> = BibTeX::Value.new($issn);
   }
 
@@ -560,7 +560,7 @@ sub scrape-springer {
     ($web-driver.find_elements_by_class_name( 'Abstract' ),
     $web-driver.find_elements_by_id( 'Abs1-content' )).flat;
   if @abstract {
-    my $abstract = @abstract.head.get_property( 'innerHTML' );
+    my Str $abstract = @abstract.head.get_property( 'innerHTML' );
     $abstract ~~ s/^ '<h' <[23]> .*? '>Abstract</h' <[23]> '>' //;
     $entry.fields<abstract> = BibTeX::Value.new($abstract);
   }
