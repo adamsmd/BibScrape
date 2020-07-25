@@ -9,15 +9,6 @@ enum Quotation <Bare Braces Quotes>;
 class Piece {
   has Str $.piece;
   has Quotation $.quotation;
-  multi method newx(Int $piece --> Piece:D) {
-    self.bless(piece => $piece.Str, quotation => Bare);
-  }
-  multi method newx(Piece $piece --> Piece:D) {
-    $piece;
-  }
-  multi method newx(Str $piece, Quotation $quotation = Braces --> Piece:D) {
-    self.bless(piece => $piece, quotation => $quotation);
-  }
   multi method new(Int $piece --> Piece:D) {
     self.bless(piece => $piece.Str, quotation => Bare);
   }
@@ -38,7 +29,7 @@ class Piece {
 class Value {
   has Piece @.pieces;
   multi method new(*@pieces --> Value:D) {
-    self.bless(pieces => map { Piece.newx($_) }, @pieces);
+    self.bless(pieces => map { Piece.new($_) }, @pieces);
   }
   multi method new(Value $value --> Value) { $value; }
   method Str(--> Str:D) {

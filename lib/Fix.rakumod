@@ -198,10 +198,10 @@ class Fix {
         .split(rx/<wb>/)
         .grep(rx/./)
         .map({
-          $_ eq ( '/' | '-' | '--' ) and BibTeX::Piece.newx($_) or
+          $_ eq ( '/' | '-' | '--' ) and BibTeX::Piece.new($_) or
           str2month($_) or
           /^ \d+ $/ and num2month($_) or
-          print "WARNING: Suspect month: $_\n" and BibTeX::Piece.newx($_)});
+          print "WARNING: Suspect month: $_\n" and BibTeX::Piece.new($_)});
       $_ = BibTeX::Value.new(@x)});
 
     # Omit fields we don't want

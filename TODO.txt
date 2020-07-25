@@ -16,6 +16,7 @@ Case-insensitive nouns?
 Omit:class/type
 Include:class/type
 no issn, no isbn
+multiple $url
 
 debug?
 
@@ -45,18 +46,15 @@ a test that has 'others' in author names
 # Code
 
 Better cleanup of child processes
-Better way to put Inline::Python last (phasor?)
+Better way to put Inline::Python last (phaser?)
 remove all 'die' and warn instead
 mktemp
-Move downloads into own module? (or just a function in Scrape)
 Automate cleaning of Isbn file
 META6.json
 Code coverage
 non-multi arrays
-newx
-Add Types
+Inline::Python::PythonObject
 :D and :U
-Replace Nil
 Return void type for  html-meta-bibtex and Fix::check RIS::set and Scrape::{init,open,close,update, read-downloads}
 
 # WebDriver
@@ -89,8 +87,6 @@ https://github.com/zotero/translation-server
 https://github.com/SeleniumHQ/selenium/blob/selenium-3.141.59/py/selenium/webdriver/remote/webdriver.py
 
 # Unsorted
-
-multiple $url
 
 whether to re-scrape bibtex
 
