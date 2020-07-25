@@ -95,7 +95,7 @@ class Fix {
     # Ranges: convert "-" to "--"
     for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> Str $key {
       update($entry, $key, { s:i:g/\s* ["-" | \c[EN DASH] | \c[EM DASH]]+ \s*/--/; });
-      update($entry, $key, { s:i:g/"n/a--n/a"//; $_ = Nil if !$_ });
+      update($entry, $key, { s:i:g/"n/a--n/a"//; $_ = Str if !$_ });
       update($entry, $key, { s:i:g/«(\w+) "--" $0»/$0/; });
       update($entry, $key, { s:i:g/(^|" ") (\w+) "--" (\w+) "--" (\w+) "--" (\w+) ($|",")/$0$1-$2--$3-$4$5/ });
       update($entry, $key, { s:i:g/\s+ "," \s+/", "/; });
@@ -151,7 +151,7 @@ class Fix {
 
     # Don't include pointless URLs to publisher's page
     update($entry, 'url', {
-      $_ = Nil if m/^
+      $_ = Str if m/^
         [ 'http' 's'? '://doi.acm.org/'
         | 'http' 's'? '://doi.ieeecomputersociety.org/'
         | 'http' 's'? '://doi.org/'
@@ -160,7 +160,7 @@ class Fix {
         | 'http' 's'? '://www.jstor.org/stable/'
         | 'http' 's'? '://www.sciencedirect.com/science/article/' ]/; });
     # Fix Springer's use of 'note' to store 'doi'
-    update($entry, 'note', { $_ = Nil if $_ eq ($entry.fields<doi> // '') });
+    update($entry, 'note', { $_ = Str if $_ eq ($entry.fields<doi> // '') });
     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
     for $entry.fields.keys -> Str $field {
       $entry.fields{$field} = BibTeX::Value.new(latex-encode($entry.fields{$field}.simple-str))
@@ -260,7 +260,7 @@ class Fix {
       } elsif m:i/^ <[0..9x-]>+ $/ {
         $_ = &canonical($_, $.isbn-type, $.isbn-sep);
       } elsif m/^$/ {
-        $_ = Nil
+        $_ = Str
       } else {
         print "WARNING: Suspect $field: $_\n"
       }
