@@ -103,27 +103,27 @@ sub canonical-isbn(Str $isbn, IsbnType $type, Str $sep) is export {
   my Bool $was-isbn13;
 
   if $i ~~ m/^ <[0..9]> ** 9 <[0..9Xx]> $/ {
-      my $check = check-digit10($i);
-      die "Bad check digit in ISBN-10. Expecting $check in $isbn" unless $i ~~ / $check $/;
-      $i = '978' ~ $i;
-      $was-isbn13 = False;
+    my $check = check-digit10($i);
+    die "Bad check digit in ISBN-10. Expecting $check in $isbn" unless $i ~~ / $check $/;
+    $i = '978' ~ $i;
+    $was-isbn13 = False;
   } elsif $i ~~ m/^ <[0..9]> ** 12 <[0..9Xx]> $/ {
-      my $check = check-digit13($i);
-      die "Bad check digit in ISBN-13. Expecting $check in $isbn" unless $i ~~ / $check $/;
-      $was-isbn13 = True;
+    my $check = check-digit13($i);
+    die "Bad check digit in ISBN-13. Expecting $check in $isbn" unless $i ~~ / $check $/;
+    $was-isbn13 = True;
   } else {
-      die "Invalid digits or wrong number of digits in ISBN: $isbn";
+    die "Invalid digits or wrong number of digits in ISBN: $isbn";
   }
 
   # By this point we know it is a valid ISBN-13 w/o dashes but with a possibly wrong check digit
   $i = hyphenate($i);
 
   if ($type == Isbn13 or $type == Preserve and $was-isbn13 or $i !~~ s/^ '978-' //) {
-      my $check = check-digit13($i);
-      $i ~~ s/ . $/$check/;
+    my $check = check-digit13($i);
+    $i ~~ s/ . $/$check/;
   } else {
-      my $check = check-digit10($i);
-      $i ~~ s/ . $/$check/;
+    my $check = check-digit10($i);
+    $i ~~ s/ . $/$check/;
   }
 
   $i ~~ s:g/ '-' /$sep/;
