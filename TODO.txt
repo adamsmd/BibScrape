@@ -44,10 +44,8 @@ a test that has 'others' in author names
 
 # Code
 
-parse names in Raku instead of Python
 Better cleanup of child processes
 Better way to put Inline::Python last (phasor?)
-== vs eq
 remove all 'die' and warn instead
 mktemp
 Move downloads into own module? (or just a function in Scrape)
@@ -56,7 +54,6 @@ META6.json
 Code coverage
 non-multi arrays
 newx
-List => Array[Int]
 Add Types
 $bibtex vs $entry
 
@@ -81,6 +78,8 @@ XPath
 Tell user to always check the title and abstract as they are free form and
 there is little we can do to detect errors (let alone fix errors)
 
+# Links
+
 https://github.com/zotero/bib-web
 https://github.com/zotero/bib
 https://github.com/zotero/translation-server
@@ -88,9 +87,6 @@ https://github.com/zotero/translation-server
 https://github.com/SeleniumHQ/selenium/blob/selenium-3.141.59/py/selenium/webdriver/remote/webdriver.py
 
 # Unsorted
-
-test for file:
-read from a pipe or bare file (test if file exists? if not http[s?] or doi ?)
 
 multiple $url
 

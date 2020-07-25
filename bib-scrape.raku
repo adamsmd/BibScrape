@@ -265,14 +265,14 @@ sub MAIN(
       $url ~~ $url-rx;
       $key = $0.Str if !$key.defined and $0.defined;
 
-      my $bibtex = scrape($1.Str);
-      $bibtex.fields<bib_scrape_url> = BibTeX::Value.new($url);
+      my $entry = scrape($1.Str);
+      $entry.fields<bib_scrape_url> = BibTeX::Value.new($url);
 
-      $bibtex = $fixer.fix($bibtex);
+      $entry = $fixer.fix($entry);
 
-      $bibtex.key = $key if $key.defined;
+      $entry.key = $key if $key.defined;
 
-      print $bibtex.Str;
+      print $entry.Str;
     }
 
     # Look for 'http:', 'https:' or 'doi:' with an optional `{key}` before the url

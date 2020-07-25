@@ -20,7 +20,7 @@ sub ris-parse(Str $text --> Ris) is export {
       my ($key, $val) = ($0.Str, $1.Str);
       push %fields{$key}, $val;
       $last_key = $key;
-    } elsif $line eq '' {
+    } elsif !$line {
       # Do nothing
     } else {
       # TODO: Test this code
@@ -64,7 +64,7 @@ sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   my $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
 
   sub set(Str $key, Str $value) {
-    if $value.defined and $value ne '' {
+    if $value.defined and $value {
       $entry.fields{$key} = BibTeX::Value.new($value);
     }
   }
@@ -85,9 +85,8 @@ sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   $entry.key = %self<ID>;
   # T1|TI|CT: title primary
   # BT: title primary (books and unpub), title secondary (otherwise)
-  set( 'title', %self<T1> // %self<TI> // %self<CT> //
-    ((%self<TY> // '') eq 'BOOK' || (%self<TY> // '') eq 'UNPB') && %self<BT>);
-  set( 'booktitle', !((%self<TY> // '') eq 'BOOK' || (%self<TY> // '') eq 'UNPB') && %self<BT>);
+  set( 'title', %self<T1> // %self<TI> // %self<CT> // ((%self<TY> // '') eq ( 'BOOK' | 'UNPB' )) && %self<BT>);
+  set( 'booktitle', !((%self<TY> // '') eq ( 'BOOK' | 'UNPB' )) && %self<BT>);
   # T2: title secondary
   set( 'journal', %self<T2>);
   # T3: title series

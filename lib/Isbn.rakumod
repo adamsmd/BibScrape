@@ -118,7 +118,9 @@ sub canonical-isbn(Str $isbn, IsbnType $type, Str $sep) is export {
   # By this point we know it is a valid ISBN-13 w/o dashes but with a possibly wrong check digit
   $i = hyphenate($i);
 
-  if ($type == Isbn13 or $type == Preserve and $was-isbn13 or $i !~~ s/^ '978-' //) {
+  if ($type eqv Isbn13 
+      or $type eqv Preserve and $was-isbn13
+      or $i !~~ s/^ '978-' //) {
     my $check = check-digit13($i);
     $i ~~ s/ . $/$check/;
   } else {

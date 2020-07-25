@@ -332,7 +332,7 @@ sub scrape-ieee-explore {
   my $affiliation =
     ($body ~~ m:g/ '"affiliation":"' (<-["]>+) '"' /)
     .map(sub ($k, $v) { $v[0].Str }).join( ' and ' );
-  $bibtex.fields<affiliation> = BibTeX::Value.new($affiliation) if $affiliation ne '';
+  $bibtex.fields<affiliation> = BibTeX::Value.new($affiliation) if $affiliation;
 
   ## Location
   my $location = ($body ~~ / '"confLoc":"' (<-["]>+) '"' /)[0];
@@ -490,7 +490,7 @@ sub scrape-science-direct(--> BibTeX::Entry) {
   }
 
   ## Series
-  if ($bibtex.fields<note> // '') ne '' {
+  if $bibtex.fields<note> {
     $bibtex.fields<series> = $bibtex.fields<note>;
     $bibtex.fields<note>:delete;
   }

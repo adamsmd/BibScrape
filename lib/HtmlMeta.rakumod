@@ -9,17 +9,6 @@ class HtmlMeta {
 
 sub html-meta-parse($web-driver --> HtmlMeta:D) is export {
   my @metas = $web-driver.find_elements_by_css_selector( "meta[name]" );
-  my Array[Str] %entries =
-    @metas
-    .classify({ .get_attribute( 'name' ) }, :as{ .get_attribute( 'content' ) })
-    .pairs
-    .map({ $_.key => Array[Str](@($_.value)) });
-  return HtmlMeta.new(fields => %entries);
-}
-
-# sub Text::MetaBib::parse {
-#     my ($text) = @_;
-#     my $data = {};
 
 #     # Avoid SIGPLAN notices if possible
 #     $text =~ s/(?=<meta name="citation_journal_title")/\n/g;
@@ -27,15 +16,13 @@ sub html-meta-parse($web-driver --> HtmlMeta:D) is export {
 #     $text =~ s/<meta name="citation_journal_title" content="ACM SIGPLAN Notices">[^\n]*//
 #         if $text =~ m/<meta name="citation_conference"/;
 
-#     my $p = new HTML::Parser;
-#     $p->report_tags('meta');
-#     $p->handler(start => sub {
-#         my %a = %{$_[0]};
-#         push @{$data->{lc $a{'name'}}}, $a{'content'} if $a{'name'}; }, 'attr');
-#     $p->parse($text);
-
-#     return Text::MetaBib->new(data => $data);
-# }
+  my Array[Str] %entries =
+    @metas
+    .classify({ .get_attribute( 'name' ) }, :as{ .get_attribute( 'content' ) })
+    .pairs
+    .map({ $_.key => Array[Str](@($_.value)) });
+  return HtmlMeta.new(fields => %entries);
+}
 
 sub html-meta-type(HtmlMeta $html-meta) is export {
   my %meta = $html-meta.fields;
@@ -51,21 +38,10 @@ sub html-meta-type(HtmlMeta $html-meta) is export {
   return Nil;
 }
 
-# sub uniq {
-#     my @result;
-#     ITEM: for (@_) {
-#         for my $r (@result) {
-#             next ITEM if $r eq $_;
-#         }
-#         push @result, $_;
-#     }
-#     return @result;
-# }
-
 sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is export {
   my %values;
   sub set(Str $field, $value) {
-    if $value.defined and $value ne '' {
+    if $value.defined and $value {
       unless $value ~~ (Str | BibTeX::Piece) {
         say "BUG: non-Str and non-BibTeX::Piece for $field: $value"
       }
@@ -94,8 +70,8 @@ sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is exp
 
   # test/acm-17.t has the article number in 'citation_firstpage' but no 'citation_firstpage'
   # test/ieee-computer-1.t has 'pages' but empty 'citation_firstpage'
-  if %meta<citation_firstpage>:exists and %meta<citation_firstpage>[0] ne ''
-      and %meta<citation_lastpage>:exists and %meta<citation_lastpage>[0] ne '' {
+  if %meta<citation_firstpage>:exists and %meta<citation_firstpage>[0]
+      and %meta<citation_lastpage>:exists and %meta<citation_lastpage>[0] {
     set( 'pages',
       %meta<citation_firstpage>[0] ~
       (%meta<citation_firstpage>[0] ne %meta<citation_lastpage>[0]
@@ -166,7 +142,7 @@ sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is exp
 
   # 'dc.description' also contains abstract information
   for (%meta<description>, %meta<Description>).flat -> $d {
-    set( 'abstract', $d[0]) if $d.defined and $d ne '' and $d ne '****' and $d !~~ /^( 'IEEE Xplore' | 'IEEE Computer Society' )/;
+    set( 'abstract', $d[0]) if $d.defined and $d !~~ /^ [ '' $ | '****' | 'IEEE Xplore' | 'IEEE Computer Society' ] /;
   }
 
   set( 'affiliation', %meta<citation_author_institution>.join( ' and ' ))

@@ -95,7 +95,7 @@ class Fix {
     # Ranges: convert "-" to "--"
     for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> $key {
       update($entry, $key, { s:i:g/\s* ["-" | \c[EN DASH] | \c[EM DASH]]+ \s*/--/; });
-      update($entry, $key, { s:i:g/"n/a--n/a"//; $_ = Nil if $_ eq "" });
+      update($entry, $key, { s:i:g/"n/a--n/a"//; $_ = Nil if !$_ });
       update($entry, $key, { s:i:g/«(\w+) "--" $0»/$0/; });
       update($entry, $key, { s:i:g/(^|" ") (\w+) "--" (\w+) "--" (\w+) "--" (\w+) ($|",")/$0$1-$2--$3-$4$5/ });
       update($entry, $key, { s:i:g/\s+ "," \s+/", "/; });
@@ -198,7 +198,7 @@ class Fix {
         .split(rx/<wb>/)
         .grep(rx/./)
         .map({
-          ($_ eq '/' || $_ eq '-' || $_ eq '--') and BibTeX::Piece.newx($_) or
+          $_ eq ( '/' | '-' | '--' ) and BibTeX::Piece.newx($_) or
           str2month($_) or
           /^ \d+ $/ and num2month($_) or
           print "WARNING: Suspect month: $_\n" and BibTeX::Piece.newx($_)});
@@ -209,7 +209,7 @@ class Fix {
     for @.omit-empty {
       if $entry.fields{$_}:exists {
         my $str = $entry.fields{$_}.Str;
-        if $str eq '{}' or $str eq '""' or $str eq '' {
+        if $str eq ( '{}' | '""' | '' ) {
           $entry.fields{$_}:delete;
         }
       }
@@ -231,7 +231,7 @@ class Fix {
     my %fields = @.fields.map(* => 0);
     for $entry.fields.keys -> $field {
       unless %fields{$field}:exists { die "Unknown field '$field'" }
-      unless %fields{$field} == 0 { die "Duplicate field '$field'" }
+      unless %fields{$field}.elems == 1 { die "Duplicate field '$field'" }
       %fields{$field} = 1;
     }
     $entry.fields =
@@ -245,13 +245,13 @@ class Fix {
   method isbn(BibTeX::Entry $entry, Str $field, MediaType $print_or_online, &canonical) {
     update($entry, $field, {
       if m:i/^ (<[0..9x-]>+) " (Print) " (<[0..9x-]>+) " (Online)" $/ {
-        if $print_or_online == Print {
+        if $print_or_online eqv Print {
           $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep);
         }
-        if $print_or_online == Online {
+        if $print_or_online eqv Online {
           $_ = &canonical($1.Str, $.isbn-type, $.isbn-sep);
         }
-        if $print_or_online == Both {
+        if $print_or_online eqv Both {
           $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep)
             ~ ' (Print) '
             ~ &canonical($1.Str, $.isbn-type, $.isbn-sep)
