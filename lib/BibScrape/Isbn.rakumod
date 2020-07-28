@@ -1,4 +1,4 @@
-unit module Isbn;
+unit module BibScrape::Isbn;
 
 # http://www.isbn-international.org/page/ranges
 # https://www.isbn-international.org/range_file_generation

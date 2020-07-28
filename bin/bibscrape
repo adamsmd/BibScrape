@@ -1,10 +1,11 @@
 #!/usr/bin/env perl6
 
 use lib 'lib';
-use BibTeX;
-use Isbn;
-use Fix;
-use Scrape; # Must be last (See comment in Scrape.rakumod)
+use lib '/home/adamsmd/l/tex/bibscrape/Inline-Python.git/lib';
+use BibScrape::BibTeX;
+use BibScrape::Isbn;
+use BibScrape::Fix;
+use BibScrape::Scrape; # Must be last (See comment in Scrape.rakumod)
 
 sub MAIN(
 # =head1 SYNOPSIS
@@ -82,14 +83,14 @@ sub MAIN(
 # In titles, enclose sequences of two or more uppercase letters (i.e.,
 # an acronym) in braces to that BibTeX preserves their case.
 #
-  Fix::MediaType :$isbn-media = Fix::Both,
+  BibScrape::Fix::MediaType :$isbn-media = BibScrape::Fix::Both,
 # =item --isbn=<kind> [default=both]
 #
 # When both a print and an online ISBN are available, use only the print
 # ISBN if <kind> is 'print', only the online ISBN if <kind> is 'online',
 # or both if <kind> is 'both'.
 #
-  Isbn::IsbnType :$isbn-type = Isbn::Preserve,
+  BibScrape::Isbn::IsbnType :$isbn-type = BibScrape::Isbn::Preserve,
 # =item --isbn13=<mode> [default=0]
 #
 # If <mode> is a positive integer, then always use ISBN-13 in the output.
@@ -103,7 +104,7 @@ sub MAIN(
 # For example, a space is common.
 # Use an empty string to specify no separator.
 #
-  Fix::MediaType :$issn-media = Fix::Both,
+  BibScrape::Fix::MediaType :$issn-media = BibScrape::Fix::Both,
 # =item --issn=<kind> [default=both]
 #
 # When both a print and an online ISSN are available, use only the print
@@ -221,8 +222,8 @@ sub MAIN(
 # =cut
 ) {
   ## INPUTS
-  my Str $names = $*PROGRAM.dirname ~ </config/names.cfg>;
-  my Str $nouns = $*PROGRAM.dirname ~ </config/nouns.cfg>;
+  my Str $names = $*PROGRAM.dirname ~ </../config/names.cfg>;
+  my Str $nouns = $*PROGRAM.dirname ~ </../config/nouns.cfg>;
 
   ## FIELD OPTIONS
   my Str @fields = <
@@ -239,7 +240,7 @@ sub MAIN(
   my Str @omit = < >;
   my Str @omit-empty = <abstract issn doi keywords>;
 
-  my $fixer = Fix::Fix.new(
+  my $fixer = BibScrape::Fix::Fix.new(
     name-file => $names,
     noun-file => $nouns,
     debug => $debug,
@@ -265,8 +266,8 @@ sub MAIN(
       $url ~~ $url-rx;
       $key = $0.Str if !$key.defined and $0.defined;
 
-      my BibTeX::Entry $entry = scrape($1.Str);
-      $entry.fields<bib_scrape_url> = BibTeX::Value.new($url);
+      my BibScrape::BibTeX::Entry $entry = scrape($1.Str);
+      $entry.fields<bib_scrape_url> = BibScrape::BibTeX::Value.new($url);
 
       $entry = $fixer.fix($entry);
 
@@ -280,9 +281,9 @@ sub MAIN(
       go(Str, $arg);
       print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {
-      my BibTeX::Database $bibtex = bibtex-parse($arg.IO.slurp);
-      for $bibtex.items -> BibTeX::Item $item {
-        if $item !~~ BibTeX::Entry {
+      my BibScrape::BibTeX::Database $bibtex = bibtex-parse($arg.IO.slurp);
+      for $bibtex.items -> BibScrape::BibTeX::Item $item {
+        if $item !~~ BibScrape::BibTeX::Entry {
           print $item.Str;
         } else {
           if $item.fields<bib_scrape_url> {

@@ -1,4 +1,4 @@
-unit module BibTeX;
+unit module BibScrape::BibTeX;
 
 # Based on the grammar at https://github.com/aclements/biblib,
 # but with some modifications to better meet our needs
@@ -157,7 +157,7 @@ class Actions {
   method quotes($/) { make Piece.new(piece => $/[0].Str, quotation => Quotes); }
 }
 
-sub bibtex-parse(Str $str --> BibTeX::Database:D) is export {
+sub bibtex-parse(Str $str --> Database:D) is export {
   Grammar.parse($str, actions => Actions.new).made;
 }
 

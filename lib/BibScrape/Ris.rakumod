@@ -1,9 +1,9 @@
-unit module Ris;
+unit module BibScrape::Ris;
 
 use ArrayHash;
 
-use BibTeX;
-use Month;
+use BibScrape::BibTeX;
+use BibScrape::Month;
 
 class Ris {
   has Array[Str] %.fields;
@@ -53,15 +53,15 @@ sub ris-author(Array $names --> Str) {
     .join( ' and ' );
 }
 
-sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
+sub bibtex-of-ris(Ris $ris --> BibScrape::BibTeX::Entry) is export {
   my $self = $ris.fields; # TODO: type
-  my BibTeX::Entry $entry = BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(array-hash.new()));
+  my BibScrape::BibTeX::Entry $entry = BibScrape::BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(array-hash.new()));
 
   my Regex $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
 
   sub set(Str $key, Str $value) {
     if $value.defined and $value {
-      $entry.fields{$key} = BibTeX::Value.new($value);
+      $entry.fields{$key} = BibScrape::BibTeX::Value.new($value);
     }
   }
 
@@ -93,7 +93,7 @@ sub bibtex-of-ris(Ris $ris --> BibTeX::Entry) is export {
   # Y1|PY: date primary
   my Str ($year, $month, $day) = (%self<DA> // %self<PY> // %self<Y1> // '').split(rx/ "/" | "-" /);
   set( 'year', $year);
-  $entry.fields<month> = BibTeX::Value.new(num2month($month)) if $month;
+  $entry.fields<month> = BibScrape::BibTeX::Value.new(num2month($month)) if $month;
   if (%self<C1>:exists) {
     %self<C1> ~~ / 'Full publication date: ' (\w+) '.'? ( ' ' \d+)? ', ' (\d+)/;
     ($month, $day, $year) = ($0, $1, $2);

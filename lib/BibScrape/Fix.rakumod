@@ -1,17 +1,16 @@
-unit module Fix;
+unit module BibScrape::Fix;
 
 use ArrayHash;
 use HTML::Entity;
 use Locale::Language;
 use XML;
 
-use BibTeX;
-use Month;
-use Isbn;
-use Unicode;
-use Names;
-
-use Scrape;
+use BibScrape::BibTeX;
+use BibScrape::Month;
+use BibScrape::Isbn;
+use BibScrape::Unicode;
+use BibScrape::Names;
+use BibScrape::Scrape;
 
 enum MediaType <Print Online Both>;
 
@@ -29,7 +28,7 @@ class Fix {
   has Bool $.final-comma;
   has Bool $.escape-acronyms;
   has MediaType $.isbn-media;
-  has Isbn::IsbnType $.isbn-type;
+  has BibScrape::Isbn::IsbnType $.isbn-type;
   has Str $.isbn-sep;
   has MediaType $.issn-media;
 
@@ -66,7 +65,7 @@ class Fix {
     self.bless(names => @names, nouns => %nouns, |%args);
   }
 
-  method fix(BibTeX::Entry:D $entry is copy --> BibTeX::Entry:D) {
+  method fix(BibScrape::BibTeX::Entry:D $entry is copy --> BibScrape::BibTeX::Entry:D) {
     $entry = $entry.clone;
 
     # Remove undefined fields
@@ -163,7 +162,7 @@ class Fix {
     update($entry, 'note', { $_ = Str if $_ eq ($entry.fields<doi> // '') });
     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
     for $entry.fields.keys -> Str $field {
-      $entry.fields{$field} = BibTeX::Value.new(latex-encode($entry.fields{$field}.simple-str))
+      $entry.fields{$field} = BibScrape::BibTeX::Value.new(latex-encode($entry.fields{$field}.simple-str))
         unless $field ∈ @.no-encode;
     }
 
@@ -194,15 +193,15 @@ class Fix {
     # Must be after field encoding because we use macros
     update($entry, 'month', {
       s/ "." ($|"-")/$0/; # Remove dots due to abbriviations
-      my BibTeX::Piece @x =
+      my BibScrape::BibTeX::Piece @x =
         .split(rx/<wb>/)
         .grep(rx/./)
         .map({
-          $_ eq ( '/' | '-' | '--' ) and BibTeX::Piece.new($_) or
+          $_ eq ( '/' | '-' | '--' ) and BibScrape::BibTeX::Piece.new($_) or
           str2month($_) or
           /^ \d+ $/ and num2month($_) or
-          print "WARNING: Suspect month: $_\n" and BibTeX::Piece.new($_)});
-      $_ = BibTeX::Value.new(@x)});
+          print "WARNING: Suspect month: $_\n" and BibScrape::BibTeX::Piece.new($_)});
+      $_ = BibScrape::BibTeX::Value.new(@x)});
 
     # Omit fields we don't want
     $entry.fields{$_}:exists and $entry.fields{$_}:delete for @.omit;
@@ -219,7 +218,7 @@ class Fix {
     check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
 
     # Generate an entry key
-    my BibTeX::Value $name-value = $entry.fields<author> // $entry.fields<editor> // BibTeX::Value;
+    my BibScrape::BibTeX::Value $name-value = $entry.fields<author> // $entry.fields<editor> // BibScrape::BibTeX::Value;
     my Str $name = $name-value.defined ?? last-name(split-names($name-value.simple-str).head) !! 'anon';
     $name ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
     $name ~~ s:g/ <-[A..Za..z0..9]> //; # Remove non-alphanum
@@ -242,7 +241,7 @@ class Fix {
     $entry;
   }
 
-  method isbn(BibTeX::Entry $entry, Str $field, MediaType $print_or_online, &canonical) {
+  method isbn(BibScrape::BibTeX::Entry $entry, Str $field, MediaType $print_or_online, &canonical) {
     update($entry, $field, {
       if m:i/^ (<[0..9x-]>+) " (Print) " (<[0..9x-]>+) " (Online)" $/ {
         if $print_or_online eqv Print {
@@ -267,7 +266,7 @@ class Fix {
     });
   }
 
-  method canonical-names(BibTeX::Value:D $value --> BibTeX::Value:D) {
+  method canonical-names(BibScrape::BibTeX::Value:D $value --> BibScrape::BibTeX::Value:D) {
     my Str @names = split-names($value.simple-str);
 
     my Str @new-names;
@@ -310,12 +309,12 @@ class Fix {
     my Int %seen;
     %seen{$_}++ and say "WARNING: Duplicate name: $_" for @new-names;
 
-    BibTeX::Value.new(@new-names.join( ' and ' ));
+    BibScrape::BibTeX::Value.new(@new-names.join( ' and ' ));
   }
 
 }
 
-sub check(BibTeX::Entry $entry, Str $field, Str $msg, &check) {
+sub check(BibScrape::BibTeX::Entry $entry, Str $field, Str $msg, &check) {
   if ($entry.fields{$field}:exists) {
     my Str $value = $entry.fields{$field}.simple-str;
     unless (&check($value)) {

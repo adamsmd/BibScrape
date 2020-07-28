@@ -31,8 +31,8 @@ fi
 for i in "$@"; do
   echo "** Testing $i using a URL **"
   URL=$(head -n 1 "$i")
-  (head -n 2 "$i"; ./bib-scrape.raku "${FLAGS[@]}" "$URL") | diff -u "$i" - | wdiff -dt
+  (head -n 2 "$i"; ./bin/bibscrape "${FLAGS[@]}" "$URL") | diff -u "$i" - | wdiff -dt
 
   echo "** Testing $i using a filename **"
-  ./bib-scrape.raku "${FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") | diff -u "$i" - | wdiff -dt
+  ./bin/bibscrape "${FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") | diff -u "$i" - | wdiff -dt
 done

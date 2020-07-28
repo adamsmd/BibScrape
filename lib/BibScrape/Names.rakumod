@@ -1,4 +1,4 @@
-unit module Names;
+unit module BibScrape::Names;
 
 # See:
 # - https://github.com/aclements/biblib/blob/master/biblib/algo.py

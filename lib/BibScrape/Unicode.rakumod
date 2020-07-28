@@ -1,4 +1,4 @@
-unit module Unicode;
+unit module BibScrape::Unicode;
 
 my Int:D %CCC;
 my Str:D %CODES;

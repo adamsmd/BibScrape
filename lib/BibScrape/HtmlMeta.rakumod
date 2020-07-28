@@ -1,7 +1,7 @@
-unit module HtmlMeta;
+unit module BibScrape::HtmlMeta;
 
-use BibTeX;
-use Month;
+use BibScrape::BibTeX;
+use BibScrape::Month;
 
 class HtmlMeta {
   has Array[Str] %.fields;
@@ -38,13 +38,10 @@ sub html-meta-type(HtmlMeta $html-meta --> Str) is export {
   return Str;
 }
 
-sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is export {
+sub html-meta-bibtex(BibScrape::BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is export {
   my %values;
-  sub set(Str $field, $value) {
+  sub set(Str $field, $value where Any:U | Str | BibScrape::BibTeX::Piece) {
     if $value.defined and $value {
-      unless $value ~~ (Str | BibTeX::Piece) {
-        say "BUG: non-Str and non-BibTeX::Piece for $field: $value"
-      }
       %values{$field} = $value;
     }
   }
@@ -150,7 +147,7 @@ sub html-meta-bibtex(BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is exp
 
   for %values.kv -> $key, $value {
     if %fields{$key}:exists ?? %fields{$key} !! not $entry.fields{$key}:exists {
-      $entry.fields{$key} = BibTeX::Value.new($value);
+      $entry.fields{$key} = BibScrape::BibTeX::Value.new($value);
     }
   }
 }
