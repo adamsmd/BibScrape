@@ -1,14 +1,12 @@
 {
-  "perl" : "6.d",
+  "perl" : "6.*",
   "name" : "bib-scrape",
   "auth" : "github:adamsmd",
   "version" : "20.07.12",
   "description" : "Collect BibTeX information from publisher pages",
   "authors" : [ "Michael D. Adams" ],
   "license" : "MIT",
-  "provides" : {
-    "BibTeX" : "lib/BibTeX.rakumod"
-  },
+  "provides" : { },
   "depends" : [ ],
   "build-depends" : [ ],
   "test-depends" : [ ],
