@@ -1,22 +1,28 @@
 # bib-scrape
 
-Install `perl6` and `zef`.
-zef
-python2
+
 ## Setup
 
 ### Install `raku`
 
     $ sudo apt install perl6
 
+    TODO: install zef
+
 ### Development Tools for Python 2.7
+
     $ sudo apt install python2-dev
 
 Cannot locate native library '(null)': libpython2.7.so.1.0: cannot open shared object file: No such file or directory
 
+python3 and pip3 (comes with python3)
+
+pip3 install selenium
+
 ### Install Raku Modules
 
 Install `zef`
+
     $ zef install ArrayHash HTML::Entity Inline::Python Locale::Codes XML
 
 ### Install `geckodriver`
@@ -51,11 +57,6 @@ Install `zef`
 --headless
 
 Browser page load timeout
-
-## Notes
-
-We use python 2.7 because Inline::Python doesn't support python 3 yet.
-Once we have python 3, we can use the urllib3 that comes with python.
 
 ## FAQ
 

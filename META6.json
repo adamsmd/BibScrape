@@ -12,7 +12,9 @@
   "depends" : [ ],
   "build-depends" : [ ],
   "test-depends" : [ ],
-  "resources" : [ ],
+  "resources": [
+    "RangeMessage.xml"
+  ],
   "tags": [
     "BibTeX"
   ],

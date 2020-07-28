@@ -17,6 +17,7 @@ Omit:class/type
 Include:class/type
 no issn, no isbn
 multiple $url
+whether to re-scrape bibtex
 
 debug?
 
@@ -34,7 +35,7 @@ Titlecase After colon in title?
 follow jstor links to original publisher
 add abstract to jstor
 get PDF (eprint?)
-EISSN from side pill of ACM
+* EISSN from side pill of ACM
 Trim known field types
 warn if not exists bib_scrape_url when rescraping and fallback to doi
 
@@ -52,10 +53,17 @@ mktemp
 Automate cleaning of Isbn file
 META6.json
 Code coverage
-non-multi arrays
 Inline::Python::PythonObject
 :D and :U
-Return void type for  html-meta-bibtex and Fix::check RIS::set and Scrape::{init,open,close,update, read-downloads}
+Return void type (Any:U?) for html-meta-bibtex and Fix::check RIS::set and Scrape::{init,open,close,update, read-downloads}
+
+my enum E1 <A B>;
+my enum E2 <C D>;
+sub g(@a where { .all ~~ subset :: where E1|E2 } ) {
+    say @a
+}
+
+$?RESOURCES<RangeMessage.xml>
 
 # WebDriver
 
@@ -66,7 +74,7 @@ load browser as under-window
 # Publishers
 
 https://dblp.org/db/journals/publ/
-all ciated by papers in big four
+all cited by papers in big four
 arxiv
 
 # Other
@@ -86,14 +94,12 @@ https://github.com/zotero/translation-server
 
 https://github.com/SeleniumHQ/selenium/blob/selenium-3.141.59/py/selenium/webdriver/remote/webdriver.py
 
-# Unsorted
-
-whether to re-scrape bibtex
-
-url or howpubilshed that starts with http://[dx.]?doi.org/
-
 https://pypi.org/project/selenium/#files
 https://files.pythonhosted.org/packages/80/d6/4294f0b4bce4de0abf13e17190289f9d0613b0a44e5dd6a7f5ca98459853/selenium-3.141.0-py2.py3-none-any.whl
 
 https://pypi.org/project/urllib3/#files
 https://files.pythonhosted.org/packages/9f/f0/a391d1463ebb1b233795cabfc0ef38d3db4442339de68f847026199e69d7/urllib3-1.25.10-py2.py3-none-any.whl
+
+# Unsorted
+
+url or howpubilshed that starts with http://[dx.]?doi.org/

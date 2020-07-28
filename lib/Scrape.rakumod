@@ -7,7 +7,6 @@ use HtmlMeta;
 use Month;
 use Ris;
 
-use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
 sub infix:<%>($obj, Str $attr) { $obj.__getattribute__($attr); }
 
 ########
@@ -16,12 +15,12 @@ my $web-driver;
 my $python;
 
 sub init() {
+  use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
   unless $web-driver.defined {
     $python = Inline::Python.new;
     $python.run("
 import sys
 import os
-sys.path.append('dep/py')
 
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities

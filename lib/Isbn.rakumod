@@ -19,7 +19,7 @@ class Rule {
 }
 
 sub rules(--> Array:D[Rule:D]) {
-  my $xml = from-xml-file('dep/RangeMessage.xml');
+  my $xml = from-xml-file('resources/RangeMessage.xml');
   my @groups = $xml.elements(:RECURSE(Inf), :TAG<Group>);
   do for @groups -> $group {
     my Str $prefix = $group.elements(:TAG<Prefix>, :SINGLE)[0].string;
