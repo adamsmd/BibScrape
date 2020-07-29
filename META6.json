@@ -21,6 +21,7 @@
     "ArrayHash",
     "HTML::Entity",
     "Locale::Codes",
+    "Temp::Path",
     "XML"
   ],
   "resources": [

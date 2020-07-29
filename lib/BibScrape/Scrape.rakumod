@@ -1,6 +1,7 @@
 unit module BibScrape::Scrape;
 
 use HTML::Entity;
+use Temp::Path;
 
 use BibScrape::BibTeX;
 use BibScrape::HtmlMeta;
@@ -10,6 +11,17 @@ use BibScrape::Ris;
 sub infix:<%>($obj, Str $attr) { $obj.__getattribute__($attr); }
 
 ########
+
+my IO $downloads = make-temp-dir:prefix<BibScrape->;
+
+sub read-downloads {
+  for 0..10 {
+    my @files = $downloads.dir;
+    if @files { return @files.head.slurp }
+    sleep 0.1;
+  }
+  die "Could not find downloaded file";
+}
 
 my $web-driver;
 my $python;
@@ -35,7 +47,7 @@ def web_driver():
   profile.set_preference('browser.helperApps.neverAsk.saveToDisk',
     'text/plain,text/x-bibtex,application/x-bibtex,application/x-research-info-systems')
   profile.set_preference('browser.download.folderList', 2)
-  profile.set_preference('browser.download.dir', os.getcwd() + '/downloads')
+  profile.set_preference('browser.download.dir', '$downloads')
 
   opt = options.Options()
   # Run without showing a browser window
@@ -78,17 +90,6 @@ sub metas(Str $name --> Seq) {
 }
 
 ########
-
-my IO $downloads = 'downloads'.IO;
-
-sub read-downloads {
-  for 0..10 {
-    my @files = $downloads.dir;
-    if @files { return @files.head.slurp }
-    sleep 0.1;
-  }
-  die "Could not find downloaded file";
-}
 
 sub await(&block) {
   my constant $timeout = 30.0;
