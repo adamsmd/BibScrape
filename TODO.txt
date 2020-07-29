@@ -47,23 +47,12 @@ a test that has 'others' in author names
 # Code
 
 Better cleanup of child processes
-Better way to put Inline::Python last (phaser?)
 remove all 'die' and warn instead
-mktemp
 Automate cleaning of Isbn file
-META6.json
 Code coverage
 Inline::Python::PythonObject
 :D and :U
 Return void type (Any:U?) for html-meta-bibtex and Fix::check RIS::set and Scrape::{init,open,close,update, read-downloads}
-
-my enum E1 <A B>;
-my enum E2 <C D>;
-sub g(@a where { .all ~~ subset :: where E1|E2 } ) {
-    say @a
-}
-
-$?RESOURCES<RangeMessage.xml>
 
 # WebDriver
 
