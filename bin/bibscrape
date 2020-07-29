@@ -222,8 +222,8 @@ sub MAIN(
 # =cut
 ) {
   ## INPUTS
-  my Str $names = $*PROGRAM.dirname ~ </../config/names.cfg>;
-  my Str $nouns = $*PROGRAM.dirname ~ </../config/nouns.cfg>;
+  my Str $names = $*PROGRAM.dirname ~ </../resources/names.cfg>;
+  my Str $nouns = $*PROGRAM.dirname ~ </../resources/nouns.cfg>;
 
   ## FIELD OPTIONS
   my Str @fields = <

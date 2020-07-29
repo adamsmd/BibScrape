@@ -1,20 +1,35 @@
 {
   "perl" : "6.*",
-  "name" : "bib-scrape",
+  "name" : "BibScrape",
   "auth" : "github:adamsmd",
   "version" : "20.07.12",
   "description" : "Collect BibTeX information from publisher pages",
   "authors" : [ "Michael D. Adams" ],
   "license" : "MIT",
-  "provides" : { },
-  "depends" : [ ],
-  "build-depends" : [ ],
-  "test-depends" : [ ],
+  "provides" : {
+    "BibScrape::BibTeX":   "lib/BibScrape/BibTeX.rakumod",
+    "BibScrape::Fix":      "lib/BibScrape/Fix.rakumod",
+    "BibScrape::HtmlMeta": "lib/BibScrape/HtmlMeta.rakumod",
+    "BibScrape::Isbn":     "lib/BibScrape/Isbn.rakumod",
+    "BibScrape::Month":    "lib/BibScrape/Month.rakumod",
+    "BibScrape::Names":    "lib/BibScrape/Names.rakumod",
+    "BibScrape::Ris":      "lib/BibScrape/Ris.rakumod",
+    "BibScrape::Scrape":   "lib/BibScrape/Scrape.rakumod",
+    "BibScrape::Unicode":  "lib/BibScrape/Unicode.rakumod"
+  },
+  "depends" : [
+    "ArrayHash",
+    "HTML::Entity",
+    "Locale::Codes",
+    "XML"
+  ],
   "resources": [
-    "RangeMessage.xml"
+    "RangeMessage.xml",
+    "names.cfg",
+    "nouns.cfg"
   ],
   "tags": [
     "BibTeX"
   ],
-  "source-url" : "git://github.com/adamsmd/bib-scrape.git"
+  "source-url" : "git://github.com/adamsmd/BibScrape.git"
 }
