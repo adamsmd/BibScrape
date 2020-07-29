@@ -161,6 +161,16 @@ sub bibtex-parse(Str $str --> Database:D) is export {
   Grammar.parse($str, actions => Actions.new).made;
 }
 
+sub update(BibScrape::BibTeX::Entry $entry, Str $field, &fun) is export {
+  if $entry.fields{$field}:exists {
+    # Have to put this in a variable so s/// can modify it
+    my $value = $entry.fields{$field}.simple-str;
+    &fun($value); # $value will be $_ in the block
+    if $value.defined { $entry.fields{$field} = BibScrape::BibTeX::Value.new($value); }
+    else { $entry.fields{$field}:delete; }
+  }
+}
+
 grammar Names {
   regex w { <[\ \t~-]> }
 

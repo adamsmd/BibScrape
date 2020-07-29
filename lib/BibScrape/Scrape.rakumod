@@ -77,16 +77,6 @@ sub metas(Str $name --> Seq) {
   $web-driver.find_elements_by_css_selector( "meta[name=\"$name\"]" ).map({ .get_attribute( 'content' ) });
 }
 
-sub update(BibScrape::BibTeX::Entry $entry, Str $field, &fun) is export {
-  if $entry.fields{$field}:exists {
-    # Have to put this in a variable so s/// can modify it
-    my $value = $entry.fields{$field}.simple-str;
-    &fun($value); # $value will be $_ in the block
-    if $value.defined { $entry.fields{$field} = BibScrape::BibTeX::Value.new($value); }
-    else { $entry.fields{$field}:delete; }
-  }
-}
-
 ########
 
 my IO $downloads = 'downloads'.IO;

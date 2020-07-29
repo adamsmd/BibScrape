@@ -10,7 +10,6 @@ use BibScrape::Month;
 use BibScrape::Isbn;
 use BibScrape::Unicode;
 use BibScrape::Names;
-use BibScrape::Scrape;
 
 enum MediaType <Print Online Both>;
 
