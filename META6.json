@@ -15,7 +15,8 @@
     "BibScrape::Names":    "lib/BibScrape/Names.rakumod",
     "BibScrape::Ris":      "lib/BibScrape/Ris.rakumod",
     "BibScrape::Scrape":   "lib/BibScrape/Scrape.rakumod",
-    "BibScrape::Unicode":  "lib/BibScrape/Unicode.rakumod"
+    "BibScrape::Unicode":  "lib/BibScrape/Unicode.rakumod",
+    "BibScrape::WebDriver":"lib/BibScrape/WebDriver.rakumod"
   },
   "depends" : [
     "ArrayHash",
