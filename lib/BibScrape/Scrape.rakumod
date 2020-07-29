@@ -7,105 +7,7 @@ use BibScrape::BibTeX;
 use BibScrape::HtmlMeta;
 use BibScrape::Month;
 use BibScrape::Ris;
-
-sub infix:<%>($obj, Str $attr) { $obj.__getattribute__($attr); }
-
-########
-
-my IO $downloads = make-temp-dir:prefix<BibScrape->;
-
-sub read-downloads {
-  for 0..10 {
-    my @files = $downloads.dir;
-    if @files { return @files.head.slurp }
-    sleep 0.1;
-  }
-  die "Could not find downloaded file";
-}
-
-my $web-driver;
-my $python;
-
-sub init() {
-  use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
-  unless $web-driver.defined {
-    $python = Inline::Python.new;
-    $python.run("
-import os
-
-from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.firefox import firefox_profile
-from selenium.webdriver.firefox import options
-from selenium.webdriver.support import ui
-
-def web_driver():
-  profile = firefox_profile.FirefoxProfile()
-  #profile.set_preference('browser.download.panel.shown', False)
-  #profile.set_preference('browser.helperApps.neverAsk.openFile',
-  #  'text/plain,text/x-bibtex,application/x-bibtex,application/x-research-info-systems')
-  profile.set_preference('browser.helperApps.neverAsk.saveToDisk',
-    'text/plain,text/x-bibtex,application/x-bibtex,application/x-research-info-systems')
-  profile.set_preference('browser.download.folderList', 2)
-  profile.set_preference('browser.download.dir', '$downloads')
-
-  opt = options.Options()
-  # Run without showing a browser window
-  opt.headless = True
-
-  return webdriver.Firefox(
-    firefox_profile = profile,
-    options = opt,
-    service_log_path = '/dev/null')
-
-def select(element):
-  return ui.Select(element)
-");
-  }
-}
-
-sub open() {
-  init();
-  close();
-  $web-driver = $python.call('__main__', 'web_driver');
-}
-
-sub close() {
-  if $web-driver.defined {
-    $web-driver.quit();
-    $web-driver = Any;
-  }
-}
-
-END {
-  close();
-}
-
-sub meta(Str $name --> Str) {
-  $web-driver.find_element_by_css_selector( "meta[name=\"$name\"]" ).get_attribute( 'content' );
-}
-
-sub metas(Str $name --> Seq) {
-  $web-driver.find_elements_by_css_selector( "meta[name=\"$name\"]" ).map({ .get_attribute( 'content' ) });
-}
-
-########
-
-sub await(&block) {
-  my constant $timeout = 30.0;
-  my constant $sleep = 0.5;
-  my $result;
-  my $start = now.Num;
-  while True {
-    $result = &block();
-    if $result { return $result }
-    if now - $start > $timeout {
-      die "Timeout while waiting for the browser"
-    }
-    sleep $sleep;
-    CATCH { default { sleep $sleep; } }
-  }
-}
+use BibScrape::WebDriver;
 
 ########
 
@@ -113,8 +15,7 @@ sub scrape(Str $url is copy --> BibScrape::BibTeX::Entry:D) is export {
   # Support 'doi:' as a url type
   $url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
 
-  $downloads.dir».unlink;
-  open();
+  web-driver-open();
   $web-driver.get($url);
 
   # Get the domain after following any redirects
@@ -133,7 +34,7 @@ sub scrape(Str $url is copy --> BibScrape::BibTeX::Entry:D) is export {
     default { say "error: unknown domain: $domain"; }
   };
 
-  close();
+  web-driver-close();
 
   $entry;
 }
@@ -414,7 +315,7 @@ sub scrape-oxford(--> BibScrape::BibTeX::Entry) {
   # BibTeX
   await({ $web-driver.find_element_by_class_name( 'js-cite-button' ) }).click;
   my $select-element = await({ $web-driver.find_element_by_id( 'selectFormat' ) });
-  my $select = $python.call( '__main__', 'select', $select-element);
+  my $select = select($select-element);
   await({
     $select.select_by_visible_text( '.bibtex (BibTex)' );
     my $button = $web-driver.find_element_by_class_name( 'citation-download-link' );
