@@ -216,7 +216,7 @@ class Fix {
     check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
 
     # Generate an entry key
-    my BibScrape::BibTeX::Value:D $name-value =
+    my BibScrape::BibTeX::Value $name-value =
       $entry.fields<author> // $entry.fields<editor> // BibScrape::BibTeX::Value;
     my Str:D $name = $name-value.defined ?? last-name(split-names($name-value.simple-str).head) !! 'anon';
     $name ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
@@ -334,7 +334,7 @@ _ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu 
   return $str;
 }
 
-sub math(XML::Node:D @nodes --> Str:D) { @nodes.map({math-node($_)}).join }
+sub math(@nodes where { $_.all ~~ XML::Node:D } --> Str:D) { @nodes.map({math-node($_)}).join }
 
 sub math-node(XML::Node:D $node --> Str:D) {
   given $node {

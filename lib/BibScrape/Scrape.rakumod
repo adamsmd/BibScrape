@@ -11,11 +11,14 @@ use BibScrape::WebDriver;
 
 ########
 
+my BibScrape::WebDriver::WebDriver $web-driver;
+
 sub scrape(Str:D $url is copy --> BibScrape::BibTeX::Entry:D) is export {
   # Support 'doi:' as a url type
   $url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
 
-  web-driver-open();
+  $web-driver = BibScrape::WebDriver::WebDriver.new();
+  LEAVE { $web-driver.close(); }
   $web-driver.get($url);
 
   # Get the domain after following any redirects
@@ -33,8 +36,6 @@ sub scrape(Str:D $url is copy --> BibScrape::BibTeX::Entry:D) is export {
     when m[ « 'springer.com'        $] { scrape-springer(); }
     default { say "error: unknown domain: $domain"; }
   };
-
-  web-driver-close();
 
   $entry;
 }
@@ -63,11 +64,11 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
   #html-meta-bibtex($entry, $meta);
 
   ## Abstract
-  my Str:D $abstract = $web-driver
+  my Str $abstract = $web-driver
     .find_elements_by_css_selector(".abstractSection.abstractInFull")
     .reverse.head
     .get_property( 'innerHTML' );
-  if $abstract ne '<p>No abstract available.</p>' {
+  if $abstract.defined and $abstract ne '<p>No abstract available.</p>' {
     $entry.fields<abstract> = BibScrape::BibTeX::Value.new($abstract);
   }
 
@@ -107,8 +108,9 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
 
   ## Journal
   if $entry.type eq 'article' {
-    my Str:D @journal = metas( 'citation_journal_title' );
-    if @journal { $entry.fields<journal> = BibScrape::BibTeX::Value.new(@journal.head); }
+    my Str:D @journal = $web-driver.metas( 'citation_journal_title' );
+    $entry.fields<journal> = BibScrape::BibTeX::Value.new(@journal.head)
+      if @journal;
   }
 
   ## Pages
@@ -130,7 +132,7 @@ sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {
   ## BibTeX
   await({ $web-driver.find_element_by_class_name( 'export-citation-product' ) }).click;
   await({ $web-driver.find_element_by_css_selector( '[data-export-type="bibtex"]' ) }).click;
-  my BibScrape::BibTeX::Entry:D $entry = bibtex-parse(read-downloads()).items.head;
+  my BibScrape::BibTeX::Entry:D $entry = bibtex-parse($web-driver.read-downloads()).items.head;
 
   ## HTML Meta
   html-meta-bibtex($entry, $meta, title => True, abstract => False);
@@ -263,7 +265,7 @@ sub scrape-ios-press(--> BibScrape::BibTeX::Entry:D) {
   ## RIS
   await({ $web-driver.find_element_by_class_name( 'p13n-cite' ) }).click;
   await({ $web-driver.find_element_by_class_name( 'btn-clear' ) }).click;
-  my BibScrape::Ris::Ris:D $ris = ris-parse(read-downloads());
+  my BibScrape::Ris::Ris:D $ris = ris-parse($web-driver.read-downloads());
   my BibScrape::BibTeX::Entry:D $entry = bibtex-of-ris($ris);
 
   ## HTML Meta
@@ -285,7 +287,7 @@ sub scrape-ios-press(--> BibScrape::BibTeX::Entry:D) {
   ## ISSN
   if $ris.fields<SN>:exists {
     my Str:D $eissn = $ris.fields<SN>.head;
-    my Str:D $pissn = meta( 'citation_issn' ).head;
+    my Str:D $pissn = $web-driver.meta( 'citation_issn' ).head;
     $entry.fields<issn> = BibScrape::BibTeX::Value.new("$pissn (Print) $eissn (Online)");
   }
 
@@ -300,7 +302,7 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
   ## BibTeX
   await({ $web-driver.find_element_by_class_name( 'cite-this-item' ) }).click;
   await({ $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ) }).click;
-  my BibScrape::BibTeX::Entry:D $entry = bibtex-parse(read-downloads()).items.head;
+  my BibScrape::BibTeX::Entry:D $entry = bibtex-parse($web-driver.read-downloads()).items.head;
 
   ## HTML Meta
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
@@ -334,7 +336,7 @@ sub scrape-oxford(--> BibScrape::BibTeX::Entry:D) {
   # BibTeX
   await({ $web-driver.find_element_by_class_name( 'js-cite-button' ) }).click;
   my Any:D $select-element = await({ $web-driver.find_element_by_id( 'selectFormat' ) });
-  my Any:D $select = select($select-element);
+  my Any:D $select = $web-driver.select($select-element);
   await({
     $select.select_by_visible_text( '.bibtex (BibTex)' );
     my Any:D $button = $web-driver.find_element_by_class_name( 'citation-download-link' );
@@ -342,7 +344,7 @@ sub scrape-oxford(--> BibScrape::BibTeX::Entry:D) {
     $button.get_attribute( 'class' ) !~~ / « 'disabled' » /
       and $button }
   ).click;
-  my BibScrape::BibTeX::Entry:D $entry = bibtex-parse(read-downloads()).items.head;
+  my BibScrape::BibTeX::Entry:D $entry = bibtex-parse($web-driver.read-downloads()).items.head;
 
   ## HTML Meta
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
@@ -377,7 +379,7 @@ sub scrape-science-direct(--> BibScrape::BibTeX::Entry:D) {
     $web-driver.find_element_by_css_selector( 'button[aria-label="bibtex"]' ).click;
     True
   });
-  my BibScrape::BibTeX::Entry:D $entry = bibtex-parse(read-downloads()).items.head;
+  my BibScrape::BibTeX::Entry:D $entry = bibtex-parse($web-driver.read-downloads()).items.head;
 
   ## HTML Meta
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
@@ -424,7 +426,7 @@ sub scrape-springer(--> BibScrape::BibTeX::Entry:D) {
       # Click the actual link for BibTeX
       $web-driver.find_element_by_css_selector( '#Dropdown-citations-dropdown a[data-track-label="BIB"]' ).click;
       True });
-    $entry = bibtex-parse(read-downloads).items.head;
+    $entry = bibtex-parse($web-driver.read-downloads).items.head;
   }
 
   ## HTML Meta
