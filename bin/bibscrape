@@ -16,7 +16,7 @@ sub MAIN(
 
 # =head2 INPUTS
 #
-  Str:D $url is copy,
+  *@url,
 # =item <url>
 #
 # The url of the publisher's page for the paper to be scraped.
@@ -261,7 +261,7 @@ sub MAIN(
 
   my Regex:D $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
 
-  for ($url) -> Str:D $arg {
+  for @url -> Str:D $arg {
     sub go(Str $key is copy, Str:D $url is copy) {
       $url ~~ $url-rx;
       $key = $0.Str
