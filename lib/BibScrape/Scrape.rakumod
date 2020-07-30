@@ -228,14 +228,16 @@ sub scrape-ieee-explore(--> BibScrape::BibTeX::Entry:D) {
   }
 
   ## Publisher
-  my Str:D $publisher = $web-driver.find_element_by_class_name( 'publisher-info-label' ).get_property( 'innerHTML' );
-  $publisher ~~ s/^ \s* 'Publisher: ' //;
+  my Str:D $publisher =
+    $web-driver
+    .find_element_by_css_selector( '.publisher-info-container > span > span > span + span' )
+    .get_property( 'innerHTML' );
   $entry.fields<publisher> = BibScrape::BibTeX::Value.new($publisher);
 
   ## Affiliation
   my Str:D $affiliation =
-    ($body ~~ m:g/ '"affiliation":"' (<-["]>+) '"' /)
-    .map(sub (Str:D $k, Str:D $v --> Str:D) { $v[0].Str }).join( ' and ' );
+    ($body ~~ m:g/ '"affiliation":["' (<-["]>+) '"]' /)
+    .map(sub (Match:D $match --> Str:D) { $match[0].Str }).join( ' and ' );
   $entry.fields<affiliation> = BibScrape::BibTeX::Value.new($affiliation)
     if $affiliation;
 
