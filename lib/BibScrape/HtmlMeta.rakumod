@@ -4,28 +4,27 @@ use BibScrape::BibTeX;
 use BibScrape::Month;
 
 class HtmlMeta {
-  has Array[Str] %.fields;
+  has Array[Str:D] %.fields;
 }
 
-sub html-meta-parse($web-driver --> HtmlMeta:D) is export {
-  my @metas = $web-driver.find_elements_by_css_selector( "meta[name]" );
-
+sub html-meta-parse(Any:D $web-driver --> HtmlMeta:D) is export {
 #     # Avoid SIGPLAN notices if possible
 #     $text =~ s/(?=<meta name="citation_journal_title")/\n/g;
 #     $text =~ s/(?=<meta name="citation_conference")/\n/g;
 #     $text =~ s/<meta name="citation_journal_title" content="ACM SIGPLAN Notices">[^\n]*//
 #         if $text =~ m/<meta name="citation_conference"/;
 
-  my Array[Str] %entries =
-    @metas
+  my Array[Str:D] %entries =
+    $web-driver
+    .find_elements_by_css_selector( 'meta[name]' )
     .classify({ .get_attribute( 'name' ) }, :as{ .get_attribute( 'content' ) })
     .pairs
-    .map({ $_.key => Array[Str](@($_.value)) });
+    .map({ $_.key => Array[Str:D](@($_.value)) });
   return HtmlMeta.new(fields => %entries);
 }
 
-sub html-meta-type(HtmlMeta $html-meta --> Str) is export {
-  my %meta = $html-meta.fields;
+sub html-meta-type(HtmlMeta:D $html-meta --> Str) is export {
+  my Array[Str:D] %meta = $html-meta.fields;
 
   if %meta<citation_conference>:exists { return 'inproceedings'; }
   if %meta<citation_conference_title>:exists { return 'inproceedings'; }
@@ -38,15 +37,20 @@ sub html-meta-type(HtmlMeta $html-meta --> Str) is export {
   return Str;
 }
 
-sub html-meta-bibtex(BibScrape::BibTeX::Entry $entry, HtmlMeta $html-meta, *%fields) is export {
-  my %values;
-  sub set(Str $field, $value where Any:U | Str | BibScrape::BibTeX::Piece) {
-    if $value.defined and $value {
-      %values{$field} = $value;
+sub html-meta-bibtex(
+    BibScrape::BibTeX::Entry:D $entry,
+    HtmlMeta:D $html-meta,
+    *%fields where { $_.values.all ~~ Bool }
+    --> HtmlMeta:D) is export {
+  my BibScrape::BibTeX::Value:D %values;
+  sub set(Str $field, $value where Any:U | Str | BibScrape::BibTeX::Piece --> Any:U) {
+    if $value {
+      %values{$field} = BibScrape::BibTeX::Value.new($value);
     }
+    return;
   }
 
-  my Array[Str] %meta = $html-meta.fields;
+  my Array:D[Str:D] %meta = $html-meta.fields;
 
   # The meta-data is highly redundent and multiple fields contain
   # similar information.  In the following we choose fields that
@@ -55,12 +59,11 @@ sub html-meta-bibtex(BibScrape::BibTeX::Entry $entry, HtmlMeta $html-meta, *%fie
 
   # 'author', 'dc.contributor', 'dc.creator', 'rft_aufirst', 'rft_aulast', and 'rft_au'
   # also contain authorship information
-  my Str @authors;
+  my Str:D @authors;
   if %meta<citation_author>:exists { @authors = @(%meta<citation_author>) }
   elsif %meta<citation_authors> { @authors = %meta<citation_authors>[0].split(';') }
-  if (@authors) {
-    set( 'author', @authors.map({ s:g/^ ' '+//; s:g/ ' '+ $//; $_ }).join( ' and ' ));
-  }
+  set( 'author', @authors.map({ s:g/^ ' '+//; s:g/ ' '+ $//; $_ }).join( ' and ' ))
+    if @authors;
 
   # 'title', 'rft_title', 'dc.title', 'twitter:title' also contain title information
   set( 'title', %meta<citation_title>[0]);
@@ -89,23 +92,22 @@ sub html-meta-bibtex(BibScrape::BibTeX::Entry $entry, HtmlMeta $html-meta, *%fie
     if %meta<citation_keywords>:exists;
 
   # 'rft_pub' also contains publisher information
-  set( 'publisher',
-    %meta<citation_publisher>[0] // %meta<dc.publisher>[0] // %meta<st.publisher>[0]);
+  set( 'publisher', %meta<citation_publisher>[0] // %meta<dc.publisher>[0] // %meta<st.publisher>[0]);
 
   # 'dc.date', 'rft_date', 'citation_online_date' also contain date information
   if %meta<citation_publication_date>:exists {
     if (%meta<citation_publication_date>[0] ~~ /^ (\d\d\d\d) <[/-]> (\d\d) [ <[/-]> (\d\d) ]? $/) {
-      my Str ($year, $month) = ($0.Str, $1.Str);
+      my Str:D ($year, $month) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', num2month($month));
     }
   } elsif %meta<citation_date>:exists {
     if %meta<citation_date>[0] ~~ /^ (\d\d) <[/-]> \d\d <[/-]> (\d\d\d\d) $/ {
-      my Str ($month, $year) = ($0.Str, $1.Str);
+      my Str:D ($month, $year) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', num2month($month));
     } elsif %meta<citation_date>[0] ~~ /^ <[ 0..9-]>*? <wb> (\w+) <wb> <[ .0..9-]>*? <wb> (\d\d\d\d) <wb> / {
-      my Str ($month, $year) = ($0.Str, $1.Str);
+      my Str:D ($month, $year) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', str2month($month));
     }
@@ -147,7 +149,7 @@ sub html-meta-bibtex(BibScrape::BibTeX::Entry $entry, HtmlMeta $html-meta, *%fie
 
   for %values.kv -> $key, $value {
     if %fields{$key}:exists ?? %fields{$key} !! not $entry.fields{$key}:exists {
-      $entry.fields{$key} = BibScrape::BibTeX::Value.new($value);
+      $entry.fields{$key} = $value;
     }
   }
 }

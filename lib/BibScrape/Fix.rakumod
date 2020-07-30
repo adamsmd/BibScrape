@@ -15,48 +15,46 @@ enum MediaType <Print Online Both>;
 
 class Fix {
   ## INPUTS
-  has Array[Str] @.names;
-  has Str %.nouns; # Maps strings to their replacements
+  has Array:D[Str:D] @.names is required;
+  has Str:D %.nouns is required; # Maps strings to their replacements
 
   ## OPERATING MODES
-  has Bool $.debug;
-  has Bool $.scrape;
-  has Bool $.fix;
+  has Bool:D $.debug is required;
+  has Bool:D $.scrape is required;
+  has Bool:D $.fix is required;
 
   ## GENERAL OPTIONS
-  has Bool $.final-comma;
-  has Bool $.escape-acronyms;
-  has MediaType $.isbn-media;
-  has BibScrape::Isbn::IsbnType $.isbn-type;
-  has Str $.isbn-sep;
-  has MediaType $.issn-media;
+  has Bool:D $.final-comma is required;
+  has Bool:D $.escape-acronyms is required;
+  has MediaType:D $.isbn-media is required;
+  has BibScrape::Isbn::IsbnType:D $.isbn-type is required;
+  has Str:D $.isbn-sep is required;
+  has MediaType:D $.issn-media is required;
 
   ## FIELD OPTIONS
-  has Str @.fields;
-  has Str @.no-encode;
-  has Str @.no-collapse;
-  has Str @.omit;
-  has Str @.omit-empty;
+  has Str:D @.fields is required;
+  has Str:D @.no-encode is required;
+  has Str:D @.no-collapse is required;
+  has Str:D @.omit is required;
+  has Str:D @.omit-empty is required;
 
   method new(*%args --> Fix:D) {
-    my Array[Str] @names;
+    my Array:D[Str:D] @names;
     @names[0] = Array[Str].new;
-    for %args<name-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
-      my Str $line = $l;
+    for %args<name-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
       $line.chomp;
       $line ~~ s/"#".*//; # Remove comments (which start with `#`)
-      if $line ~~ /^\s*$/ { push @names, Array[Str].new; } # Start a new block
+      if $line ~~ /^\s*$/ { push @names, Array[Str:D].new; } # Start a new block
       else { push @names[@names.end], $line; } # Add to existing block
     }
     @names = @names.grep({ .elems > 0 });
 
-    my Str %nouns;
-    for %args<noun-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> $l {
-      my Str $line = $l;
+    my Str:D %nouns;
+    for %args<noun-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
       $line.chomp;
       $line ~~ s/"#".*//; # Remove comments (which start with `#`)
       if $line !~~ /^\s*$/ {
-        my Str $key = do given $line { S:g/<[{}]>// };
+        my Str:D $key = do given $line { S:g/<[{}]>// };
         %nouns{$key} = $line;
       }
     }
@@ -71,27 +69,27 @@ class Fix {
     $entry.fields = array-hash($entry.fields.map({ $_ // () }));
 
     # Doi field: remove "http://hostname/" or "DOI: "
-    $entry.fields<doi> = $entry.fields<url> if (
-        not $entry.fields<doi>:exists and
-        ($entry.fields<url> // "") ~~ /^ "http" "s"? "://" "dx."? "doi.org/"/ );
+    $entry.fields<doi> = $entry.fields<url>
+      if not $entry.fields<doi>:exists
+          and ($entry.fields<url> // "") ~~ /^ "http" "s"? "://" "dx."? "doi.org/"/;
     update($entry, 'doi', { s:i:g/"http" "s"? "://" <-[/]>+ "/"//; s:i:g/"DOI:"\s*//; });
 
     # Page numbers: no "pp." or "p."
     update($entry, 'pages', { s:i:g/"p" "p"? "." \s*//; });
 
     # rename fields
-    for ('issue' => 'number', 'keyword' => 'keywords') -> Pair $i {
+    for ('issue', 'number', 'keyword', 'keywords') -> Str:D $key, Str:D $value {
       # Fix broken field names (SpringerLink and ACM violate this)
-      if ($entry.fields{$i.key}:exists and
-          (not $entry.fields{$i.value}:exists or
-            $entry.fields{$i.key} eq $entry.fields{$i.value})) {
-        $entry.fields{$i.value} = $entry.fields{$i.key};
-        $entry.fields{$i.key}:delete;
+      if $entry.fields{$key}:exists and
+          (not $entry.fields{$value}:exists or
+            $entry.fields{$key} eq $entry.fields{$value}) {
+        $entry.fields{$value} = $entry.fields{$key};
+        $entry.fields{$key}:delete;
       }
     }
 
     # Ranges: convert "-" to "--"
-    for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> Str $key {
+    for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> Str:D $key {
       update($entry, $key, { s:i:g/\s* ["-" | \c[EN DASH] | \c[EM DASH]]+ \s*/--/; });
       update($entry, $key, { s:i:g/"n/a--n/a"//; $_ = Str if !$_ });
       update($entry, $key, { s:i:g/«(\w+) "--" $0»/$0/; });
@@ -100,7 +98,7 @@ class Fix {
     }
 
     check($entry, 'pages', 'suspect page number', {
-      my Regex $page = rx[
+      my Regex:D $page = rx[
         # Simple digits
         \d+ |
         \d+ "--" \d+ |
@@ -160,7 +158,7 @@ class Fix {
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', { $_ = Str if $_ eq ($entry.fields<doi> // '') });
     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
-    for $entry.fields.keys -> Str $field {
+    for $entry.fields.keys -> Str:D $field {
       $entry.fields{$field} = BibScrape::BibTeX::Value.new(latex-encode($entry.fields{$field}.simple-str))
         unless $field ∈ @.no-encode;
     }
@@ -179,11 +177,12 @@ class Fix {
     }) for $entry.fields.pairs;
 
     # Keep acronyms capitalized
-    update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) /\{$0\}/; }) if $.escape-acronyms;
+    update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) /\{$0\}/; })
+      if $.escape-acronyms;
 
     # Keep proper nouns capitalized
     update($entry, 'title', {
-      for %.nouns.kv -> Str $k, Str $v {
+      for %.nouns.kv -> Str:D $k, Str:D $v {
         s:g/«$k»/$v/;
       }
     });
@@ -191,8 +190,8 @@ class Fix {
     # Use bibtex month macros
     # Must be after field encoding because we use macros
     update($entry, 'month', {
-      s/ "." ($|"-")/$0/; # Remove dots due to abbriviations
-      my BibScrape::BibTeX::Piece @x =
+      s/ "." ($|"-") /$0/; # Remove dots due to abbriviations
+      my BibScrape::BibTeX::Piece:D @x =
         .split(rx/<wb>/)
         .grep(rx/./)
         .map({
@@ -206,7 +205,7 @@ class Fix {
     $entry.fields{$_}:exists and $entry.fields{$_}:delete for @.omit;
     for @.omit-empty {
       if $entry.fields{$_}:exists {
-        my $str = $entry.fields{$_}.Str;
+        my Str:D $str = $entry.fields{$_}.Str;
         if $str eq ( '{}' | '""' | '' ) {
           $entry.fields{$_}:delete;
         }
@@ -217,17 +216,18 @@ class Fix {
     check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
 
     # Generate an entry key
-    my BibScrape::BibTeX::Value $name-value = $entry.fields<author> // $entry.fields<editor> // BibScrape::BibTeX::Value;
-    my Str $name = $name-value.defined ?? last-name(split-names($name-value.simple-str).head) !! 'anon';
+    my BibScrape::BibTeX::Value:D $name-value =
+      $entry.fields<author> // $entry.fields<editor> // BibScrape::BibTeX::Value;
+    my Str:D $name = $name-value.defined ?? last-name(split-names($name-value.simple-str).head) !! 'anon';
     $name ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
     $name ~~ s:g/ <-[A..Za..z0..9]> //; # Remove non-alphanum
-    my Str $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
-    my Str $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
+    my Str:D $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
+    my Str:D $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
     $entry.key = $name ~ $year ~ $doi;
 
     # Put fields in a standard order (also cleans out any fields we deleted)
-    my Int %fields = @.fields.map(* => 0);
-    for $entry.fields.keys -> Str $field {
+    my Int:D %fields = @.fields.map(* => 0);
+    for $entry.fields.keys -> Str:D $field {
       unless %fields{$field}:exists { die "Unknown field '$field'" }
       unless %fields{$field}.elems == 1 { die "Duplicate field '$field'" }
       %fields{$field} = 1;
@@ -240,7 +240,7 @@ class Fix {
     $entry;
   }
 
-  method isbn(BibScrape::BibTeX::Entry $entry, Str $field, MediaType $print_or_online, &canonical) {
+  method isbn(BibScrape::BibTeX::Entry:D $entry, Str:D $field, MediaType:D $print_or_online, &canonical --> Any:U) {
     update($entry, $field, {
       if m:i/^ (<[0..9x-]>+) " (Print) " (<[0..9x-]>+) " (Online)" $/ {
         if $print_or_online eqv Print {
@@ -266,14 +266,14 @@ class Fix {
   }
 
   method canonical-names(BibScrape::BibTeX::Value:D $value --> BibScrape::BibTeX::Value:D) {
-    my Str @names = split-names($value.simple-str);
+    my Str:D @names = split-names($value.simple-str);
 
-    my Str @new-names;
+    my Str:D @new-names;
     NAME:
     for @names -> $name {
-      my Str $flattened-name = flatten-name($name);
-      for @.names -> Str @name-group {
-        for @name-group -> Str $n {
+      my Str:D $flattened-name = flatten-name($name);
+      for @.names -> Str:D @name-group {
+        for @name-group -> Str:D $n {
           if $flattened-name.fc eq flatten-name($n).fc {
             push @new-names, @name-group.head.Str;
             next NAME;
@@ -281,7 +281,7 @@ class Fix {
         }
       }
 
-      my Regex $first = rx/
+      my Regex:D $first = rx/
           <upper><lower>+                     # Simple name
         | <upper><lower>+ '-' <upper><lower>+ # Hyphenated name with upper
         | <upper><lower>+ '-' <lower><lower>+ # Hyphenated name with lower
@@ -291,8 +291,8 @@ class Fix {
         # | <upper> '.'                       # Initial
         # | <upper> '.-' <upper> '.'          # Double initial
         /;
-      my Regex $middle = rx/<upper>\./; # Allow for a middle initial
-      my Regex $last = rx/
+      my Regex:D $middle = rx/<upper>\./; # Allow for a middle initial
+      my Regex:D $last = rx/
           <upper><lower>+                     # Simple name
         | <upper><lower>+ '-' <upper><lower>+ # Hyphenated name with upper
         | ["O'"|"Mc"|"Mac"] <upper><lower>+   # Name with prefix
@@ -305,7 +305,7 @@ class Fix {
     }
 
     # Warn about duplicate names
-    my Int %seen;
+    my Int:D %seen;
     %seen{$_}++ and say "WARNING: Duplicate name: $_" for @new-names;
 
     BibScrape::BibTeX::Value.new(@new-names.join( ' and ' ));
@@ -313,32 +313,30 @@ class Fix {
 
 }
 
-sub check(BibScrape::BibTeX::Entry $entry, Str $field, Str $msg, &check) {
+sub check(BibScrape::BibTeX::Entry:D $entry, Str:D $field, Str:D $msg, &check --> Any:U) {
   if ($entry.fields{$field}:exists) {
-    my Str $value = $entry.fields{$field}.simple-str;
+    my Str:D $value = $entry.fields{$field}.simple-str;
     unless (&check($value)) {
       say "WARNING: $msg: ", $value;
     }
   }
+  return;
 }
 
-sub greek(Str $str is copy --> Str:D) {
+sub greek(Str:D $str is copy --> Str:D) {
   # Based on table 131 in Comprehensive Latex
-  my Str @mapping = <
+  my Str:D @mapping = <
 _ A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi O
 \Pi P _ \Sigma T \Upsilon \Phi X \Psi \Omega _ _ _ _ _ _
 _ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu \xi o
 \pi \rho \varsigma \sigma \tau \upsilon \varphi \xi \psi \omega _ _ _ _ _ _>;
-  $str ~~ s:g/ (<[\x[0390]..\x[03cf]]>)
-             /{ @mapping[ord($0)-0x0390] ne '_' ?? @mapping[ord($0)-0x0390] !! $0}/;
+  $str ~~ s:g/ (<[\x[0390]..\x[03cf]]>) /{ @mapping[ord($0)-0x0390] ne '_' ?? @mapping[ord($0)-0x0390] !! $0}/;
   return $str;
 }
 
-sub math(@nodes --> Str:D) {
-  @nodes.map({math-node($_)}).join
-}
+sub math(XML::Node:D @nodes --> Str:D) { @nodes.map({math-node($_)}).join }
 
-sub math-node(XML::Node $node --> Str:D) {
+sub math-node(XML::Node:D $node --> Str:D) {
   given $node {
     when XML::CDATA { $node.data }
     when XML::Comment { '' } # Remove HTML Comments
@@ -349,11 +347,9 @@ sub math-node(XML::Node $node --> Str:D) {
       given $node.name {
         when 'mtext' { math($node.nodes) }
         when 'mi' {
-          if ($node.attribs<mathvariant> // '') eq 'normal' {
-            '\mathrm{' ~ math($node.nodes) ~ '}'
-          } else {
-            math($node.nodes)
-          }
+          ($node.attribs<mathvariant> // '') eq 'normal'
+            ?? '\mathrm{' ~ math($node.nodes) ~ '}'
+            !! math($node.nodes)
         }
         when 'mo' { math($node.nodes) }
         when 'mn' { math($node.nodes) }
@@ -371,23 +367,10 @@ sub math-node(XML::Node $node --> Str:D) {
   }
 }
 
-sub rec(@nodes --> Str:D) {
+sub rec(@nodes where { $_.all ~~ XML::Node:D } --> Str:D) {
   @nodes.map({rec-node($_)}).join
 }
-sub rec-node(XML::Node $node --> Str:D) {
-  # # HTML -> LaTeX Codes
-  # $str = decode-entities($str);
-  # $str ~~ s:i:g/"<a " <-[>]>* "onclick=\"toggleTabs(" .*? ")>" .*? "</a>"//; # Fix for Science Direct
-
-  # # HTML formatting
-  # $str ~~ s:i:g/"<" (<-[>]>*) <wb> "class=\"a-plus-plus\"" (<-[>]>*) ">"/<$0$1>/; # Remove class annotation
-  # $str ~~ s:i:g/"<" (\w+) \s* ">"/<$0>/; # Removed extra space around simple tags
-
-  # $str ~~ s:i:g/"<i" (" " <-[>]>*?)? ">" "</i>"//; # Remove empty <i>
-
-  # $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
-  # $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
-
+sub rec-node(XML::Node:D $node --> Str:D) {
   given $node {
     when XML::CDATA { $node.data }
     when XML::Comment { '' } # Remove HTML Comments
@@ -416,7 +399,9 @@ sub rec-node(XML::Node $node --> Str:D) {
         when 'script' { '' }
         when 'math' { $node.nodes ?? '\ensuremath{' ~ math($node.nodes) ~ '}' !! '' }
         #when 'img' { '\{' ~ rec($node.nodes) ~ '}' }
+          # $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
         #when 'email' { '\{' ~ rec($node.nodes) ~ '}' }
+          # $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
         when 'span' {
           if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
             wrap( 'texttt' )
@@ -447,8 +432,8 @@ sub rec-node(XML::Node $node --> Str:D) {
 }
 
 sub latex-encode(Str:D $str is copy --> Str:D) {
-  my XML::Node $xml = from-xml("<root>{$str}</root>");
-  $str = rec(@($xml.root.nodes));
+  my XML::Node:D $xml = from-xml("<root>{$str}</root>");
+  $str = rec($xml.root.nodes);
 
   # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
   $str ~~ s:g/" "* \xA0/\xA0/;

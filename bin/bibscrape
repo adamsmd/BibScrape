@@ -16,7 +16,7 @@ sub MAIN(
 
 # =head2 INPUTS
 #
-  Str $url is copy,
+  Str:D $url is copy,
 # =item <url>
 #
 # The url of the publisher's page for the paper to be scraped.
@@ -53,17 +53,17 @@ sub MAIN(
 
 # =head2 OPERATING MODES
 #
-  Bool :$debug = False,
+  Bool:D :$debug = False,
 # =item --debug, --no-debug [default=no]
 #
 # Print debug data
 #
-  Bool :$scrape = True,
+  Bool:D :$scrape = True,
 # =item --scrape, --no-scrape [default=yes]
 #
 # Scrape BibTeX entry from the publisher's page
 #
-  Bool :$fix = True,
+  Bool:D :$fix = True,
 # =item --fix, --no-fix [default=yes]
 #
 # Fix common mistakes in the BibTeX
@@ -72,39 +72,39 @@ sub MAIN(
 
 # =head2 GENERAL OPTIONS
 #
-  Bool :$final-comma = True,
+  Bool:D :$final-comma = True,
 # =item --comma, --no-comma [default=yes]
 #
 # Place a comma after the final field of a BibTeX entry.
 #
-  Bool :$escape-acronyms = True,
+  Bool:D :$escape-acronyms = True,
 # =item --escape-acronyms, --no-escape-acronyms [default=yes]
 #
 # In titles, enclose sequences of two or more uppercase letters (i.e.,
 # an acronym) in braces to that BibTeX preserves their case.
 #
-  BibScrape::Fix::MediaType :$isbn-media = BibScrape::Fix::Both,
+  BibScrape::Fix::MediaType:D :$isbn-media = BibScrape::Fix::Both,
 # =item --isbn=<kind> [default=both]
 #
 # When both a print and an online ISBN are available, use only the print
 # ISBN if <kind> is 'print', only the online ISBN if <kind> is 'online',
 # or both if <kind> is 'both'.
 #
-  BibScrape::Isbn::IsbnType :$isbn-type = BibScrape::Isbn::Preserve,
+  BibScrape::Isbn::IsbnType:D :$isbn-type = BibScrape::Isbn::Preserve,
 # =item --isbn13=<mode> [default=0]
 #
 # If <mode> is a positive integer, then always use ISBN-13 in the output.
 # If negative, then use ISBN-10 when possible.
 # If zero, then preserve the original format of an ISBN.
 #
-  Str :$isbn-sep = '-',
+  Str:D :$isbn-sep = '-',
 # =item --isbn-sep=<sep> [default=-]
 #
 # Use <sep> to separate parts of an ISBN.
 # For example, a space is common.
 # Use an empty string to specify no separator.
 #
-  BibScrape::Fix::MediaType :$issn-media = BibScrape::Fix::Both,
+  BibScrape::Fix::MediaType:D :$issn-media = BibScrape::Fix::Both,
 # =item --issn=<kind> [default=both]
 #
 # When both a print and an online ISSN are available, use only the print
@@ -222,11 +222,11 @@ sub MAIN(
 # =cut
 ) {
   ## INPUTS
-  my Str $names = $*PROGRAM.dirname ~ </../resources/names.cfg>;
-  my Str $nouns = $*PROGRAM.dirname ~ </../resources/nouns.cfg>;
+  my Str:D $names = $*PROGRAM.dirname ~ </../resources/names.cfg>;
+  my Str:D $nouns = $*PROGRAM.dirname ~ </../resources/nouns.cfg>;
 
   ## FIELD OPTIONS
-  my Str @fields = <
+  my Str:D @fields = <
     author editor affiliation title
     howpublished booktitle journal volume number series jstor_issuetitle
     type jstor_articletype school institution location conference_date
@@ -235,12 +235,12 @@ sub MAIN(
     organization publisher address
     language isbn issn doi eid acmid url eprint bib_scrape_url
     note annote keywords abstract copyright>;
-  my Str @no-encode = <doi url eprint bib_scrape_url>;
-  my Str @no-collapse = < >;
-  my Str @omit = < >;
-  my Str @omit-empty = <abstract issn doi keywords>;
+  my Str:D @no-encode = <doi url eprint bib_scrape_url>;
+  my Str:D @no-collapse = < >;
+  my Str:D @omit = < >;
+  my Str:D @omit-empty = <abstract issn doi keywords>;
 
-  my $fixer = BibScrape::Fix::Fix.new(
+  my BibScrape::Fix::Fix:D $fixer = BibScrape::Fix::Fix.new(
     name-file => $names,
     noun-file => $nouns,
     debug => $debug,
@@ -259,19 +259,21 @@ sub MAIN(
     omit-empty => @omit-empty,
   );
 
-  my Regex $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
+  my Regex:D $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
 
-  for ($url) -> Str $arg {
-    sub go(Str $key is copy, Str $url is copy) {
+  for ($url) -> Str:D $arg {
+    sub go(Str $key is copy, Str:D $url is copy) {
       $url ~~ $url-rx;
-      $key = $0.Str if !$key.defined and $0.defined;
+      $key = $0.Str
+        if !$key.defined and $0.defined;
 
-      my BibScrape::BibTeX::Entry $entry = scrape($1.Str);
+      my BibScrape::BibTeX::Entry:D $entry = scrape($1.Str);
       $entry.fields<bib_scrape_url> = BibScrape::BibTeX::Value.new($url);
 
       $entry = $fixer.fix($entry);
 
-      $entry.key = $key if $key.defined;
+      $entry.key = $key
+        if $key.defined;
 
       print $entry.Str;
     }
@@ -281,16 +283,17 @@ sub MAIN(
       go(Str, $arg);
       print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {
-      my BibScrape::BibTeX::Database $bibtex = bibtex-parse($arg.IO.slurp);
-      for $bibtex.items -> BibScrape::BibTeX::Item $item {
-        if $item !~~ BibScrape::BibTeX::Entry {
+      my BibScrape::BibTeX::Database:D $bibtex = bibtex-parse($arg.IO.slurp);
+      for $bibtex.items -> BibScrape::BibTeX::Item:D $item {
+        if $item !~~ BibScrape::BibTeX::Entry:D {
           print $item.Str;
         } else {
           if $item.fields<bib_scrape_url> {
             go($item.key, $item.fields<bib_scrape_url>.simple-str);
           } elsif $item.fields<doi> {
-            my Str $doi = $item.fields<doi>.simple-str;
-            $doi = "doi:$doi" unless $doi ~~ m:i/^ 'doi:' /;
+            my Str:D $doi = $item.fields<doi>.simple-str;
+            $doi = "doi:$doi"
+              unless $doi ~~ m:i/^ 'doi:' /;
             go($item.key, $doi);
           } else {
             print $item.Str

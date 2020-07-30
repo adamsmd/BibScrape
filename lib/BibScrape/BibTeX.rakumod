@@ -7,16 +7,16 @@ use ArrayHash;
 
 enum Quotation <Bare Braces Quotes>;
 class Piece {
-  has Str $.piece;
-  has Quotation $.quotation;
-  multi method new(Int $piece --> Piece:D) {
-    self.bless(piece => $piece.Str, quotation => Bare);
+  has Str:D $.piece is required;
+  has Quotation:D $.quotation is required;
+  multi method new(Str:D $piece, Quotation:D $quotation = Braces --> Piece:D) {
+    self.bless(piece => $piece, quotation => $quotation);
   }
-  multi method new(Piece $piece --> Piece:D) {
+  multi method new(Piece:D $piece --> Piece:D) {
     $piece;
   }
-  multi method new(Str $piece, Quotation $quotation = Braces --> Piece:D) {
-    self.bless(piece => $piece, quotation => $quotation);
+  multi method new(Int:D $piece --> Piece:D) {
+    self.bless(piece => $piece.Str, quotation => Bare);
   }
   method Str(--> Str:D) {
     given $.quotation {
@@ -27,20 +27,19 @@ class Piece {
   }
 }
 class Value {
-  has Piece @.pieces;
-  multi method new(*@pieces --> Value:D) {
+  has Piece:D @.pieces is required;
+  multi method new(Piece:D @pieces --> Value:D) {
     self.bless(pieces => map { Piece.new($_) }, @pieces);
   }
-  multi method new(Value $value --> Value) { $value; }
+  multi method new($value where Value --> Value) { $value; }
+  multi method new($piece where Piece:D | Int:D | Str:D --> Value:D) {
+    Value.new(Array[Piece].new(Piece.new($piece)));
+  }
   method Str(--> Str:D) {
     @.pieces».Str.join(" # ")
   }
   method simple-str(--> Str:D) {
-    if (@.pieces.elems <= 1) {
-      @.pieces».piece.join
-    } else {
-      .Str;
-    }
+    @.pieces.elems <= 1 ?? @.pieces».piece.join !! .Str
   }
 };
 
@@ -50,14 +49,14 @@ class Comment is Item {
   method Str(--> Str:D) { '@comment' }
 }
 class Preamble is Item {
-  has Value $.value;
+  has Value:D $.value is required;
   method Str(--> Str:D) {
     "\@preamble\{$.value\}"
   }
 };
 class String is Item {
-  has Str $.key;
-  has Value $.value;
+  has Str:D $.key is required;
+  has Value:D $.value is required;
   method Str(--> Str:D) {
     "\@string\{$.key = $.value\}"
   }
@@ -65,7 +64,7 @@ class String is Item {
 class Entry is Item {
   has Str $.type is rw;
   has Str $.key is rw;
-  has ArrayHash $.fields is rw = array-hash(); # Maps Str to Value
+  has ArrayHash:D #`(of Value) $.fields is rw = array-hash();
   method Str(--> Str:D) {
     "\@$.type\{$.key,\n" ~
     (map { "  {$_.key} = {$_.value},\n" }, $.fields.values(:array)).join ~
@@ -73,7 +72,7 @@ class Entry is Item {
   }
 }
 class Database {
-  has Item @.items;
+  has Item:D @.items is required;
   method Str(--> Str:D) { @.items».Str.join("\n\n"); }
 }
 
@@ -82,7 +81,8 @@ grammar Grammar {
   regex bib-db { <clause>* }
   regex clause {
     <ignored> ||
-    [ '@' <ws> [ <comment> || <preamble> || <string> || <entry> ]] }
+    '@' <ws> [ <comment> || <preamble> || <string> || <entry> ]
+  }
 
   token ws { <[\ \t\n]>* }
 
@@ -90,16 +90,25 @@ grammar Grammar {
 
   regex comment { :i 'comment' }
 
-  regex preamble { :i 'preamble' <ws> [ '{' <ws> <value> <ws> '}'
-                                     || '(' <ws> <value> <ws> ')' ] }
+  regex preamble {
+    :i 'preamble' <ws>
+    [  '{' <ws> <value> <ws> '}'
+    || '(' <ws> <value> <ws> ')' ]
+  }
 
-  regex string { :i 'string' <ws> [ '{' <ws> <string-body> <ws> '}'
-                                 || '(' <ws> <string-body> <ws> ')' ] }
+  regex string {
+    :i 'string' <ws>
+    [  '{' <ws> <string-body> <ws> '}'
+    || '(' <ws> <string-body> <ws> ')' ]
+  }
 
   regex string-body { <ident> <ws> '=' <ws> <value> }
 
-  regex entry { <ident> <ws> [ '{' <ws> <key> <ws> <entry-body> <ws> '}'
-                            || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ] }
+  regex entry {
+    <ident> <ws>
+    [  '{' <ws> <key> <ws> <entry-body> <ws> '}'
+    || '(' <ws> $<key>=<key-paren> <ws> <entry-body> <ws> ')' ]
+  }
 
   # Technically spaces shouldn't be allowed, but some publishers have them anyway
   token key { <-[,\t}\n]>* }
@@ -114,10 +123,7 @@ grammar Grammar {
 
   regex value { <piece>* % [<ws> '#' <ws> ] }
 
-  regex piece
-  { <bare>
-  || <braces>
-  || <quotes> }
+  regex piece { <bare> || <braces> || <quotes> }
 
   regex bare { <[0..9]>+ || <ident> }
 
@@ -125,13 +131,15 @@ grammar Grammar {
 
   regex quotes {
     '"' ([<!["]> # Fix syntax highlighting: "]
-    <balanced>]*) '"' }
+    <balanced>]*) '"'
+  }
 
   regex balanced { '{' <balanced>* '}' || <-[{}]> }
 
   token ident {
     <![0..9]> [<![\ \t"#%'(),={}]>  # Fix syntax highlighting: "]
-    <[\x20..\x7f]>]+ }
+    <[\x20..\x7f]>]+
+  }
 }
 
 class Actions {
@@ -150,25 +158,26 @@ class Actions {
   method entry-body($/) { make $/<key-value>».made; }
   method key-value($/) { make ((&.entry-field-key-filter)($/<ident>.Str) => $/<value>.made); }
 
-  method value($/) { make Value.new(@($<piece>».made)); }
+  method value($/) { make Value.new(Array[Piece].new($<piece>».made)); }
   method piece($/) { make ($<bare> // $<braces> // $<quotes>).made; }
   method bare($/) { make Piece.new(piece => $/.Str, quotation => Bare); }
   method braces($/) { make Piece.new(piece => $/[0].Str, quotation => Braces); }
   method quotes($/) { make Piece.new(piece => $/[0].Str, quotation => Quotes); }
 }
 
-sub bibtex-parse(Str $str --> Database:D) is export {
+sub bibtex-parse(Str:D $str --> Database:D) is export {
   Grammar.parse($str, actions => Actions.new).made;
 }
 
-sub update(BibScrape::BibTeX::Entry $entry, Str $field, &fun) is export {
+sub update(BibScrape::BibTeX::Entry:D $entry, Str:D $field, &fun --> Any:U) is export {
   if $entry.fields{$field}:exists {
     # Have to put this in a variable so s/// can modify it
-    my $value = $entry.fields{$field}.simple-str;
+    my $value where Value | Str | Int = $entry.fields{$field}.simple-str;
     &fun($value); # $value will be $_ in the block
     if $value.defined { $entry.fields{$field} = BibScrape::BibTeX::Value.new($value); }
     else { $entry.fields{$field}:delete; }
   }
+  return;
 }
 
 grammar Names {
@@ -186,7 +195,7 @@ grammar Names {
 class Name {
   has Str $.first;
   has Str $.von;
-  has Str $.last;
+  has Str:D $.last is required;
   has Str $.jr;
 
   method Str(--> Str:D) {

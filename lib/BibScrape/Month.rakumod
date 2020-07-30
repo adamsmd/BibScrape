@@ -11,14 +11,20 @@ my Str:D %months;
 %months{@long-names[$_]} = @macro-names[$_] for @long-names.keys;
 %months{'sept'} = 'sep';
 
-sub macro(Str $macro --> BibScrape::BibTeX::Piece) {
-  $macro.defined ?? BibScrape::BibTeX::Piece.new($macro, BibScrape::BibTeX::Bare) !! BibScrape::BibTeX::Piece
+sub macro(Str:D $macro --> BibScrape::BibTeX::Piece:D) {
+  $macro.defined
+    ?? BibScrape::BibTeX::Piece.new($macro, BibScrape::BibTeX::Bare)
+    !! BibScrape::BibTeX::Piece
 }
 
-sub num2month(Str $num --> BibScrape::BibTeX::Piece) is export {
-  $num ~~ m/^ \d+ $/ ?? macro(@macro-names[$num-1]) !! die "Invalid month number: $num"
+sub num2month(Str:D $num --> BibScrape::BibTeX::Piece:D) is export {
+  $num ~~ m/^ \d+ $/
+    ?? macro(@macro-names[$num-1])
+    !! die "Invalid month number: $num"
 }
 
-sub str2month(Str $str --> BibScrape::BibTeX::Piece) is export {
-  %months{$str.fc} ?? macro(%months{$str.fc}) !! BibScrape::BibTeX::Piece
+sub str2month(Str:D $str --> BibScrape::BibTeX::Piece:D) is export {
+  %months{$str.fc}
+    ?? macro(%months{$str.fc})
+    !! BibScrape::BibTeX::Piece
 }

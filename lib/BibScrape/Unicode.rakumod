@@ -5,7 +5,7 @@ my Str:D %CODES;
 
 sub unicode2tex(Str:D $str --> Str:D) is export {
   my Str:D @out;
-  for $str.ords -> Int $ord {
+  for $str.ords -> Int:D $ord {
     if %CODES{$ord}:exists {
       if not %CCC{$ord}:exists {
         push @out, "\{%CODES{$ord}\}";

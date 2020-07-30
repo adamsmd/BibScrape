@@ -6,25 +6,25 @@ use BibScrape::BibTeX;
 use BibScrape::Month;
 
 class Ris {
-  has Array[Str] %.fields;
+  has Array:D[Str:D] %.fields;
 }
 
 sub ris-parse(Str:D $text --> Ris:D) is export {
 #   $text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
-  my Array[Str] %fields;
+  my Array:D[Str:D] %fields;
   my Str:D $last_key = "";
-  for $text.split(rx/ ["\n" | "\r"]+ /) -> $line is copy {
+  for $text.split(rx/ ["\n" | "\r"]+ /) -> Str:D $line is copy {
     $line ~~ s:g/ "\r" | "\n" //;
     if $line ~~ /^ (<[A..Z0..9]>+) ' '* '-' ' '* (.*?) ' '* $/ {
-      my Str ($key, $val) = ($0.Str, $1.Str);
+      my Str:D ($key, $val) = ($0.Str, $1.Str);
       push %fields{$key}, $val;
       $last_key = $key;
     } elsif !$line {
       # Do nothing
     } else {
       # TODO: Test this code
-      my Str $list = %fields{$last_key};
+      my Str:D $list = %fields{$last_key};
       $list[$list.end] ~= "\n" ~ $line;
     }
   }
@@ -45,38 +45,41 @@ my Str %ris-types = <
     REP techreport
     UNPB unpublished>;
 
-sub ris-author(Array $names --> Str) {
+sub ris-author(Array:D[Str:D] $names --> Str:D) {
   $names
-    .map({ # TODO: what is going on here?
-      s/ (.*) ',' (.*) ',' (.*) /$1,$3,$2/; # Translate "last, first, suffix" to "von Last, Jr, First"
+    .map({ # Translate "last, first, suffix" to "von Last, Jr, First"
+      s/ (.*) ',' (.*) ',' (.*) /$1,$3,$2/;
       / <-[, ]> / ?? $_ !! () })
     .join( ' and ' );
 }
 
-sub bibtex-of-ris(Ris $ris --> BibScrape::BibTeX::Entry) is export {
-  my $self = $ris.fields; # TODO: type
-  my BibScrape::BibTeX::Entry $entry = BibScrape::BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(array-hash.new()));
+sub bibtex-of-ris(Ris:D $ris --> BibScrape::BibTeX::Entry:D) is export {
+  my Array:D[Str:D] %ris = $ris.fields;
+  my BibScrape::BibTeX::Entry:D $entry =
+    BibScrape::BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(array-hash.new()));
 
-  my Regex $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
+  my Regex:D $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
 
-  sub set(Str $key, Str $value) {
-    if $value.defined and $value {
-      $entry.fields{$key} = BibScrape::BibTeX::Value.new($value);
-    }
+  sub set(Str:D $key, Str $value --> Any:U) {
+    $entry.fields{$key} = BibScrape::BibTeX::Value.new($value)
+      if $value;
+    return;
   }
 
   # A1|AU: author primary
-  set( 'author', ris-author($self<A1> // $self<AU> // []));
+  set( 'author', ris-author(%ris<A1> // %ris<AU> // []));
   # A2|ED: author secondary
-  set( 'editor', ris-author($self<A2> // $self<ED> // []));
+  set( 'editor', ris-author(%ris<A2> // %ris<ED> // []));
 
-  my Str %self;
-  for $self.kv -> Str $key, Array[Str] $value {
+  my Str:D %self;
+  for %ris.kv -> Str:D $key, Array:D[Str:D] $value {
     %self{$key} = $value.join( '; ' );
   }
 
   # TY: ref type (INCOL|CHAPTER -> CHAP, REP -> RPRT)
-  $entry.type = %ris-types{%self<TY> // ''} // ((!%self<TY>.defined or say "Unknown RIS TY: {%self<TY>}. Using misc.") and 'misc');
+  $entry.type =
+    %ris-types{%self<TY> // ''}
+    // ((!%self<TY>.defined or say "Unknown RIS TY: {%self<TY>}. Using misc.") and 'misc');
   # ID: reference id
   $entry.key = %self<ID>;
   # T1|TI|CT: title primary
@@ -93,21 +96,25 @@ sub bibtex-of-ris(Ris $ris --> BibScrape::BibTeX::Entry) is export {
   # Y1|PY: date primary
   my Str ($year, $month, $day) = (%self<DA> // %self<PY> // %self<Y1> // '').split(rx/ "/" | "-" /);
   set( 'year', $year);
-  $entry.fields<month> = BibScrape::BibTeX::Value.new(num2month($month)) if $month;
+  $entry.fields<month> = BibScrape::BibTeX::Value.new(num2month($month))
+    if $month;
   if (%self<C1>:exists) {
     %self<C1> ~~ / 'Full publication date: ' (\w+) '.'? ( ' ' \d+)? ', ' (\d+)/;
     ($month, $day, $year) = ($0, $1, $2);
     set( 'month', $month);
   }
-  set( 'day', $day) if $day.defined;
+  set( 'day', $day)
+    if $day.defined;
   # Y2: date secondary
 
   # N1|AB: notes (skip leading doi)
   # N2: abstract (skip leading doi)
   (%self<N1> // %self<AB> // %self<N2> // '') ~~ $doi;
-  set( 'abstract', $1.Str) if $1.Str.chars > 0;
+  set( 'abstract', $1.Str)
+    if $1.Str.chars > 0;
   # KW: keyword. multiple
-  set( 'keywords', %self<KW>) if %self<KW>:exists;
+  set( 'keywords', %self<KW>)
+    if %self<KW>:exists;
   # RP: reprint status (too complex for what we need)
   # JF|JO: periodical name, full
   # JA: periodical name, abbriviated
@@ -125,14 +132,17 @@ sub bibtex-of-ris(Ris $ris --> BibScrape::BibTeX::Entry) is export {
   # PB: publisher
   set( 'publisher', %self<PB>);
   # SN: isbn or issn
-  set( 'issn', %self<SN>) if %self<SN> and %self<SN> ~~ / « \d ** 4 '-' \d ** 4 » /;
-  set( 'isbn', %self<SN>) if %self<SN> and %self<SN> ~~ / « ([\d | 'X'] <[- ]>*) ** 10..13 » /;
+  set( 'issn', %self<SN>)
+    if %self<SN> and %self<SN> ~~ / « \d ** 4 '-' \d ** 4 » /;
+  set( 'isbn', %self<SN>)
+    if %self<SN> and %self<SN> ~~ / « ([\d | 'X'] <[- ]>*) ** 10..13 » /;
   #AD: address
   #AV: (unneeded)
   #M[1-3]: misc
   #U[1-5]: user
   # UR: multiple lines or separated by semi, may try for doi
-  set( 'url', %self<UR>) if %self<UR>:exists;
+  set( 'url', %self<UR>)
+    if %self<UR>:exists;
   #L1: link to pdf, multiple lines or separated by semi
   #L2: link to text, multiple lines or separated by semi
   #L3: link to records

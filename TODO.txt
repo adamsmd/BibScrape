@@ -52,6 +52,10 @@ Automate cleaning of Isbn file
 Code coverage
 Inline::Python::PythonObject
 :D and :U
+&foo
+map
+Any:D
+use Inline::Python
 Return void type (Any:U?) for html-meta-bibtex and Fix::check RIS::set and Scrape::{init,open,close,update, read-downloads}
 
 # WebDriver
