@@ -76,7 +76,7 @@ class WebDriver {
     $!web-driver.find_elements_by_css_selector( "meta[name=\"$name\"]" )».get_attribute( 'content' );
   }
 
-  method select(Any:D $element --> Any:D) is export {
+  method select(Inline::Python::PythonObject:D $element --> Inline::Python::PythonObject:D) is export {
     $!python.call( '__main__', 'select', $element);
   }
 
@@ -92,7 +92,7 @@ class WebDriver {
 }
 ########
 
-sub infix:<%>(Any:D $obj, Str:D $attr --> Str:D) is export { $obj.__getattribute__($attr); }
+sub infix:<%>($obj where WebDriver:D | Inline::Python::PythonObject:D, Str:D $attr --> Str:D) is export { $obj.__getattribute__($attr); }
 
 sub await(&block --> Any:D) is export {
   my Rat:D constant $timeout = 30.0;

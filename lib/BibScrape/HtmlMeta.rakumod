@@ -2,12 +2,13 @@ unit module BibScrape::HtmlMeta;
 
 use BibScrape::BibTeX;
 use BibScrape::Month;
+use BibScrape::WebDriver;
 
 class HtmlMeta {
   has Array[Str:D] %.fields;
 }
 
-sub html-meta-parse(Any:D $web-driver --> HtmlMeta:D) is export {
+sub html-meta-parse(BibScrape::WebDriver::WebDriver:D $web-driver --> HtmlMeta:D) is export {
 #     # Avoid SIGPLAN notices if possible
 #     $text =~ s/(?=<meta name="citation_journal_title")/\n/g;
 #     $text =~ s/(?=<meta name="citation_conference")/\n/g;

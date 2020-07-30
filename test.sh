@@ -28,11 +28,19 @@ if test $# -eq 0; then
   exit 1
 fi
 
+ERR_COUNT=0
+
 for i in "$@"; do
   echo "** Testing $i using a URL **"
   URL=$(head -n 1 "$i")
-  (head -n 2 "$i"; ./bin/bibscrape "${FLAGS[@]}" "$URL") | diff -u "$i" - | wdiff -dt
+  if !(head -n 2 "$i"; ./bin/bibscrape "${FLAGS[@]}" "$URL") | diff -u "$i" - | wdiff -dt; then
+    true $((ERR_COUNT++))
+  fi
 
   echo "** Testing $i using a filename **"
-  ./bin/bibscrape "${FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") | diff -u "$i" - | wdiff -dt
+  if ! ./bin/bibscrape "${FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") | diff -u "$i" - | wdiff -dt; then
+    true $((ERR_COUNT++))
+  fi
 done
+
+exit "$ERR_COUNT"
