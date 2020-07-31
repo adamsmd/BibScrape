@@ -50,6 +50,9 @@ remove all 'die' and warn instead
 Automate cleaning of Isbn file
 Code coverage
 &foo
+:_
+-
+.
 
 # WebDriver
 

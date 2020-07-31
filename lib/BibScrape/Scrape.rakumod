@@ -15,11 +15,11 @@ use Inline::Python; # Must be the last import (otherwise we get: Cannot find met
 
 my BibScrape::WebDriver::WebDriver $web-driver;
 
-sub scrape(Str:D $url is copy --> BibScrape::BibTeX::Entry:D) is export {
+sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTeX::Entry:D) is export {
   # Support 'doi:' as a url type
   $url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
 
-  $web-driver = BibScrape::WebDriver::WebDriver.new();
+  $web-driver = BibScrape::WebDriver::WebDriver.new(show-window => $show-window);
   LEAVE { $web-driver.close(); }
   $web-driver.get($url);
 

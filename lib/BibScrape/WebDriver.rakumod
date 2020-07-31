@@ -15,12 +15,7 @@ class WebDriver {
       $!web-driver.get($url);
   }
 
-  method new(--> WebDriver:D) {
-    my $self = self.bless();
-    $self;
-  }
-
-  submethod BUILD(--> Any:U) {
+  submethod BUILD(Bool:D :$show-window = False --> Any:U) {
     $!downloads = make-temp-dir:prefix<BibScrape->;
     $!python = Inline::Python.new;
     $!python.run(qq:to/END/);
@@ -42,7 +37,7 @@ class WebDriver {
 
         opt = options.Options()
         # Run without showing a browser window
-        opt.headless = True
+        opt.headless = not $show-window
 
         return webdriver.Firefox(
           firefox_profile = profile,

@@ -24,7 +24,6 @@ class Fix {
   has Bool:D $.fix is required;
 
   ## GENERAL OPTIONS
-  has Bool:D $.final-comma is required;
   has Bool:D $.escape-acronyms is required;
   has MediaType:D $.isbn-media is required;
   has BibScrape::Isbn::IsbnType:D $.isbn-type is required;
@@ -32,7 +31,7 @@ class Fix {
   has MediaType:D $.issn-media is required;
 
   ## FIELD OPTIONS
-  has Str:D @.fields is required;
+  has Str:D @.field is required;
   has Str:D @.no-encode is required;
   has Str:D @.no-collapse is required;
   has Str:D @.omit is required;
@@ -41,21 +40,25 @@ class Fix {
   method new(*%args --> Fix:D) {
     my Array:D[Str:D] @names;
     @names[0] = Array[Str].new;
-    for %args<name-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
-      $line.chomp;
-      $line ~~ s/"#".*//; # Remove comments (which start with `#`)
-      if $line ~~ /^\s*$/ { push @names, Array[Str:D].new; } # Start a new block
-      else { push @names[@names.end], $line; } # Add to existing block
+    for %args<names-files> -> IO::Path:D $names-file {
+      for $names-file.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
+        $line.chomp;
+        $line ~~ s/"#".*//; # Remove comments (which start with `#`)
+        if $line ~~ /^\s*$/ { push @names, Array[Str:D].new; } # Start a new block
+        else { push @names[@names.end], $line; } # Add to existing block
+      }
     }
     @names = @names.grep({ .elems > 0 });
 
     my Str:D %nouns;
-    for %args<noun-file>.IO.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
-      $line.chomp;
-      $line ~~ s/"#".*//; # Remove comments (which start with `#`)
-      if $line !~~ /^\s*$/ {
-        my Str:D $key = do given $line { S:g/<[{}]>// };
-        %nouns{$key} = $line;
+    for %args<nouns-files> -> IO::Path:D $nouns-file {
+      for $nouns-file.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
+        $line.chomp;
+        $line ~~ s/"#".*//; # Remove comments (which start with `#`)
+        if $line !~~ /^\s*$/ {
+          my Str:D $key = do given $line { S:g/<[{}]>// };
+          %nouns{$key} = $line;
+        }
       }
     }
 
@@ -226,7 +229,7 @@ class Fix {
     $entry.key = $name ~ $year ~ $doi;
 
     # Put fields in a standard order (also cleans out any fields we deleted)
-    my Int:D %fields = @.fields.map(* => 0);
+    my Int:D %fields = @.field.map(* => 0);
     for $entry.fields.keys -> Str:D $field {
       unless %fields{$field}:exists { die "Unknown field '$field'" }
       unless %fields{$field}.elems == 1 { die "Duplicate field '$field'" }
@@ -234,7 +237,7 @@ class Fix {
     }
     $entry.fields =
       array-hash(
-        @.fields.flatmap(
+        @.field.flatmap(
           { $entry.fields{$_}:exists ?? ($_ => $entry.fields{$_}) !! () }));
 
     $entry;
