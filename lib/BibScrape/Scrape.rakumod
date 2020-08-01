@@ -13,7 +13,7 @@ use Inline::Python; # Must be the last import (otherwise we get: Cannot find met
 
 ########
 
-my BibScrape::WebDriver::WebDriver $web-driver;
+my BibScrape::WebDriver::WebDriver:_ $web-driver;
 
 sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTeX::Entry:D) is export {
   # Support 'doi:' as a url type
@@ -66,7 +66,7 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
   #html-meta-bibtex($entry, $meta);
 
   ## Abstract
-  my Str $abstract = $web-driver
+  my Str:_ $abstract = $web-driver
     .find_elements_by_css_selector(".abstractSection.abstractInFull")
     .reverse.head
     .get_property( 'innerHTML' );

@@ -53,12 +53,11 @@ Code coverage
 :_
 -
 .
+|capture
+Nil
 README from old
 diff old
-CommandLine ParseArgs module;
 --timeout flag
-Any:U -> Nil?
-%RESOURCES (use lib);
 may take up to 60 seconds
 
 # WebDriver

@@ -37,7 +37,7 @@ class Fix {
   has Str:D @.omit is required;
   has Str:D @.omit-empty is required;
 
-  method new(*%args --> Fix:D) {
+  method new(#`(Any:D) *%args --> Fix:D) {
     my Array:D[Str:D] @names;
     @names[0] = Array[Str].new;
     for %args<names-files> -> IO::Path:D $names-file {
@@ -219,7 +219,7 @@ class Fix {
     check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
 
     # Generate an entry key
-    my BibScrape::BibTeX::Value $name-value =
+    my BibScrape::BibTeX::Value:_ $name-value =
       $entry.fields<author> // $entry.fields<editor> // BibScrape::BibTeX::Value;
     my Str:D $name = $name-value.defined ?? last-name(split-names($name-value.simple-str).head) !! 'anon';
     $name ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
@@ -273,7 +273,7 @@ class Fix {
 
     my Str:D @new-names;
     NAME:
-    for @names -> $name {
+    for @names -> Str:D $name {
       my Str:D $flattened-name = flatten-name($name);
       for @.names -> Str:D @name-group {
         for @name-group -> Str:D $n {

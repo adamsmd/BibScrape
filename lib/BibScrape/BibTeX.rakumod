@@ -31,7 +31,7 @@ class Value {
   multi method new(Piece:D @pieces --> Value:D) {
     self.bless(pieces => map { Piece.new($_) }, @pieces);
   }
-  multi method new($value where Value --> Value) { $value; }
+  multi method new($value where Value:D --> Value:D) { $value; }
   multi method new($piece where Piece:D | Int:D | Str:D --> Value:D) {
     Value.new(Array[Piece].new(Piece.new($piece)));
   }
@@ -62,8 +62,8 @@ class String is Item {
   }
 };
 class Entry is Item {
-  has Str $.type is rw;
-  has Str $.key is rw;
+  has Str:_ $.type is rw;
+  has Str:_ $.key is rw;
   has ArrayHash:D #`(of Value) $.fields is rw = array-hash();
   method Str(--> Str:D) {
     "\@$.type\{$.key,\n" ~
@@ -193,10 +193,10 @@ grammar Names {
 }
 
 class Name {
-  has Str $.first;
-  has Str $.von;
+  has Str:_ $.first;
+  has Str:_ $.von;
   has Str:D $.last is required;
-  has Str $.jr;
+  has Str:_ $.jr;
 
   method Str(--> Str:D) {
     ($.von.defined ?? "$.von " !! "") ~

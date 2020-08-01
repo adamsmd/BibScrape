@@ -7,12 +7,13 @@ use File::Directory::Tree;
 ########
 
 class WebDriver {
-  has Inline::Python::PythonObject $!web-driver handles *;
-  has Inline::Python $!python;
-  has IO::Path $downloads;
+  has Inline::Python::PythonObject:D $!web-driver handles * = Nil;
+  has Inline::Python:D $!python = Nil;
+  has IO::Path:D $downloads = Nil;
 
-  method get($url) {
-      $!web-driver.get($url);
+  method get(Str:D $url --> Any:U) {
+    $!web-driver.get($url);
+    return;
   }
 
   submethod BUILD(Bool:D :$show-window = False --> Any:U) {
@@ -92,7 +93,7 @@ sub infix:<%>($obj where WebDriver:D | Inline::Python::PythonObject:D, Str:D $at
 sub await(&block --> Any:D) is export {
   my Rat:D constant $timeout = 30.0;
   my Rat:D constant $sleep = 0.5;
-  my Any $result;
+  my Any:_ $result;
   my Num:D $start = now.Num;
   while True {
     $result = &block();

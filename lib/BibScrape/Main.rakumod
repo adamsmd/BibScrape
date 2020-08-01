@@ -226,6 +226,7 @@ practices.
   Str:D :@omit-empty = Array[Str:D](<abstract issn doi keywords>),
 #={Fields that should be omitted from the output if they are empty}
 
+--> Any:U
 ) is export {
   my IO::Path:D $config-dir =
     ($*DISTRO.is-win
@@ -241,8 +242,8 @@ practices.
     %?RESOURCES<nouns.cfg>.copy($default-nouns);
   }
 
-  sub default-file(Str:D $type, IO::Path:D $file) {
-    sub (IO::Path:D $x) {
+  sub default-file(Str:D $type, IO::Path:D $file) { # TODO: return type
+    sub (IO::Path:D $x --> IO::Path:D) {
       if $x ne '.' {
         $x
       } else {
@@ -275,7 +276,7 @@ practices.
   my Regex:D $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
 
   for @url -> Str:D $arg {
-    sub go(Str $key is copy, Str:D $url is copy) {
+    sub go(Str $key is copy, Str:D $url is copy --> Any:U) {
       $url ~~ $url-rx;
       $key = $0.Str
         if !$key.defined and $0.defined;
@@ -289,6 +290,8 @@ practices.
         if $key.defined;
 
       print $entry.Str;
+
+      return;
     }
 
     # Look for 'http:', 'https:' or 'doi:' with an optional `{key}` before the url
@@ -315,4 +318,5 @@ practices.
       }
     }
   }
+  return;
 }

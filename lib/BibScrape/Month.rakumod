@@ -11,7 +11,7 @@ my Str:D %months;
 %months{@long-names[$_]} = @macro-names[$_] for @long-names.keys;
 %months{'sept'} = 'sep';
 
-sub wrap(Str:D $macro --> BibScrape::BibTeX::Piece) {
+sub wrap(Str:D $macro --> BibScrape::BibTeX::Piece:_) {
   $macro.defined
     ?? BibScrape::BibTeX::Piece.new($macro, BibScrape::BibTeX::Bare)
     !! BibScrape::BibTeX::Piece
@@ -23,7 +23,7 @@ sub num2month(Str:D $num --> BibScrape::BibTeX::Piece:D) is export {
     !! die "Invalid month number: $num"
 }
 
-sub str2month(Str:D $str --> BibScrape::BibTeX::Piece) is export {
+sub str2month(Str:D $str --> BibScrape::BibTeX::Piece:_) is export {
   %months{$str.fc}
     ?? wrap(%months{$str.fc})
     !! BibScrape::BibTeX::Piece

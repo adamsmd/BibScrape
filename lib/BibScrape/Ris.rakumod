@@ -31,7 +31,7 @@ sub ris-parse(Str:D $text --> Ris:D) is export {
   Ris.new(fields => %fields);
 }
 
-my Str %ris-types = <
+my Str:D %ris-types = <
     BOOK book
     CONF proceedings
     CHAP inbook
@@ -60,7 +60,7 @@ sub bibtex-of-ris(Ris:D $ris --> BibScrape::BibTeX::Entry:D) is export {
 
   my Regex:D $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
 
-  sub set(Str:D $key, Str $value --> Any:U) {
+  sub set(Str:D $key, Str:_ $value --> Any:U) {
     $entry.fields{$key} = BibScrape::BibTeX::Value.new($value)
       if $value;
     return;
@@ -94,7 +94,7 @@ sub bibtex-of-ris(Ris:D $ris --> BibScrape::BibTeX::Entry:D) is export {
   # A3: author series
   # A[4-9]: author (undocumented)
   # Y1|PY: date primary
-  my Str ($year, $month, $day) = (%self<DA> // %self<PY> // %self<Y1> // '').split(rx/ "/" | "-" /);
+  my Str:_ ($year, $month, $day) = (%self<DA> // %self<PY> // %self<Y1> // '').split(rx/ "/" | "-" /);
   set( 'year', $year);
   $entry.fields<month> = BibScrape::BibTeX::Value.new(num2month($month))
     if $month;

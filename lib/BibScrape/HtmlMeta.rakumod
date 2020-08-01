@@ -15,7 +15,7 @@ sub html-meta-parse(BibScrape::WebDriver::WebDriver:D $web-driver --> HtmlMeta:D
 #     $text =~ s/<meta name="citation_journal_title" content="ACM SIGPLAN Notices">[^\n]*//
 #         if $text =~ m/<meta name="citation_conference"/;
 
-  my Array[Str:D] %entries =
+  my Array:D[Str:D] %entries =
     $web-driver
     .find_elements_by_css_selector( 'meta[name]' )
     .classify({ .get_attribute( 'name' ) }, :as{ .get_attribute( 'content' ) })
@@ -24,8 +24,8 @@ sub html-meta-parse(BibScrape::WebDriver::WebDriver:D $web-driver --> HtmlMeta:D
   return HtmlMeta.new(fields => %entries);
 }
 
-sub html-meta-type(HtmlMeta:D $html-meta --> Str) is export {
-  my Array[Str:D] %meta = $html-meta.fields;
+sub html-meta-type(HtmlMeta:D $html-meta --> Str:_) is export {
+  my Array:D[Str:D] %meta = $html-meta.fields;
 
   if %meta<citation_conference>:exists { return 'inproceedings'; }
   if %meta<citation_conference_title>:exists { return 'inproceedings'; }
@@ -141,14 +141,14 @@ sub html-meta-bibtex(
   set( 'language', %meta<citation_language>[0] // %meta<dc.language>[0]);
 
   # 'dc.description' also contains abstract information
-  for (%meta<description>, %meta<Description>).flat -> $d {
+  for (%meta<description>, %meta<Description>).flat -> Str:D $d {
     set( 'abstract', $d[0]) if $d.defined and $d !~~ /^ [ '' $ | '****' | 'IEEE Xplore' | 'IEEE Computer Society' ] /;
   }
 
   set( 'affiliation', %meta<citation_author_institution>.join( ' and ' ))
     if %meta<citation_author_institution>:exists;
 
-  for %values.kv -> $key, $value {
+  for %values.kv -> Str:D $key, BibScrape::BibTeX::Value:D $value {
     if %fields{$key}:exists ?? %fields{$key} !! not $entry.fields{$key}:exists {
       $entry.fields{$key} = $value;
     }

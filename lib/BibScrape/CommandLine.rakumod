@@ -44,7 +44,7 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
   my ParamInfo:D @param-info = $infos[0];
   my ParamInfo:D %param-info = $infos[1];
   my Int:D constant $end-col = 80;
-  my $out = '';
+  my Str:D $out = '';
   sub col(Int:D $col --> Any:U) {
     my Int:D $old-col = $out.split("\n")[*-1].chars;
     if $old-col > $col { $out ~= "\n"; $old-col = 0; }
@@ -52,12 +52,12 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
     return;
   }
   sub wrap(Int:D $start, Str:D $str is copy --> Any:U) {
-    for $str.split( / ' ' * ';' ' '* / ) -> $paragraph is copy {
+    for $str.split( / ' ' * ';' ' '* / ) -> Str:D $paragraph is copy {
       $paragraph ~~ s:g/ ' '+ $//;
       if $paragraph eq '' {
         $out ~= "\n";
       } else {
-        for $paragraph ~~ m:g/ (. ** {0..($end-col - $start)}) [ ' '+ | $ ] / -> $line {
+        for $paragraph ~~ m:g/ (. ** {0..($end-col - $start)}) [ ' '+ | $ ] / -> Str:D $line {
           col($start);
           $out ~= $line;
         }
@@ -76,7 +76,7 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
   wrap(0, $main.WHY.leading);
 
   for $main.signature.params -> Parameter:D $param {
-    my $param-info = param-info($param);
+    my ParamInfo:D $param-info = param-info($param);
     with $param-info.doc and $param-info.doc.leading {
       wrap(0, $_);
     }
@@ -129,7 +129,7 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
     given $arg {
       # Positionals
       when $no-parse | !/^ '--' / {
-        my $param = @param-info[$positionals];
+        my ParamInfo:D $param = @param-info[$positionals];
         given $param.type {
           when Positional {
             @param-value[$positionals] = Array[$param.type.of].new()
@@ -148,39 +148,38 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
       # Keyword
       when /^ '--help' | '-h' | '-?' $/ { %param-value<help> = True; }
       when /^ '--' ('/'?) (<-[=]>+) (['=' (.*)]?) $/ {
-        my $polarity = ($0.chars == 0);
-        say "==", $polarity;
-        my $name = $1.Str;
+        my Bool:D $polarity = ($0.chars == 0);
+        my Str:D $name = $1.Str;
         # TODO: when $name eq ''
-        my $param = %param-info{$name}; # TODO: Missing param name
-        my $info = %param-info{$name};
-        given $info.type {
+        my ParamInfo:D $param-info = %param-info{$name}; # TODO: Missing param name
+        given $param-info.type {
           when Positional {
             my Str:D $value-str = $2.[0].Str;
             if $value-str eq '' {
               if $polarity {
-                %param-value{$info.name} = Array[$info.type.of].new();
+                %param-value{$param-info.name} = Array[$param-info.type.of].new();
               } else {
-                %param-value{$info.name} = $info.default;
+                %param-value{$param-info.name} = $param-info.default;
               }
             } else {
               # TODO: comma in field options
-              my Any:D $value = ($info.type.of)($value-str);
+              my Any:D $value = ($param-info.type.of)($value-str);
               if $polarity {
-                push %param-value{$info.name}, $value;
+                push %param-value{$param-info.name}, $value;
               } else {
-                %param-value{$info.name} =
-                  Array[$info.type.of](%param-value{$info.name}.grep({ not ($_ eqv $value) }));
+                %param-value{$param-info.name} =
+                  Array[$param-info.type.of](
+                    %param-value{$param-info.name}.grep({ not ($_ eqv $value) }));
               }
             }
           }
           default {
-            my $value =
+            my Str:D $value =
               $2.chars > 0 ?? $2.[0] !!
-                $param.type ~~ Bool ?? $polarity.Str !! # TODO: yes, no
+                $param-info.type ~~ Bool ?? $polarity.Str !! # TODO: yes, no
                 @args.shift; # TODO: missing arg
-            my $value2 = ($info.type)($value);
-            %param-value{$info.name} = $value2;
+            my Any:D $value2 = ($param-info.type)($value);
+            %param-value{$param-info.name} = $value2;
           }
         }
       }
@@ -189,6 +188,6 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
       }
     }
   }
-  my $capture = Capture.new(list => @param-value, hash => %param-value);
+  my Capture:D $capture = Capture.new(list => @param-value, hash => %param-value);
   $capture;
 }
