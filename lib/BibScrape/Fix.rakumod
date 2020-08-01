@@ -231,9 +231,7 @@ class Fix {
       unless %fields{$field}.elems == 1 { die "Duplicate field '$field'" }
       %fields{$field} = 1;
     }
-    $entry.set-fields(
-      @.field.flatmap(
-        { $entry.fields{$_}:exists ?? ($_ => $entry.fields{$_}) !! () }));
+    $entry.set-fields(@.field.flatmap({ $entry.fields{$_}:exists ?? ($_ => $entry.fields{$_}) !! () }));
 
     $entry;
   }
@@ -322,7 +320,7 @@ sub check(BibScrape::BibTeX::Entry:D $entry, Str:D $field, Str:D $msg, &check --
 }
 
 sub greek(Str:D $str is copy --> Str:D) {
-  # Based on table 131 in Comprehensive Latex
+  # Based on table 131 in the Comprehensive Latex Symbol List
   my Str:D @mapping = <
 _ A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi O
 \Pi P _ \Sigma T \Upsilon \Phi X \Psi \Omega _ _ _ _ _ _
@@ -365,9 +363,8 @@ sub math-node(XML::Node:D $node --> Str:D) {
   }
 }
 
-sub rec(@nodes where { $_.all ~~ XML::Node:D } --> Str:D) {
-  @nodes.map({rec-node($_)}).join
-}
+sub rec(@nodes where { $_.all ~~ XML::Node:D } --> Str:D) { @nodes.map({rec-node($_)}).join }
+
 sub rec-node(XML::Node:D $node --> Str:D) {
   given $node {
     when XML::CDATA { $node.data }
@@ -377,13 +374,7 @@ sub rec-node(XML::Node:D $node --> Str:D) {
     when XML::Text { decode-entities($node.text) }
 
     when XML::Element {
-      sub wrap(Str:D $tag --> Str:D) {
-        if $node.nodes {
-          "\\$tag\{" ~ rec($node.nodes) ~ "\}"
-        } else {
-          ''
-        }
-      }
+      sub wrap(Str:D $tag --> Str:D) { $node.nodes ?? "\\$tag\{" ~ rec($node.nodes) ~ "\}" !! '' }
       given $node.name {
         when 'a' { rec($node.nodes) } # Remove <a> links
         when 'p' | 'par' { rec($node.nodes) ~ "\n\n" } # Replace <p> with \n\n

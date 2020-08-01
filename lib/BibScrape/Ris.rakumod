@@ -8,8 +8,6 @@ class Ris {
 }
 
 sub ris-parse(Str:D $text --> Ris:D) is export {
-#   $text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
-
   my Array:D[Str:D] %fields;
   my Str:D $last_key = "";
   for $text.split(rx/ ["\n" | "\r"]+ /) -> Str:D $line is copy {
@@ -30,18 +28,18 @@ sub ris-parse(Str:D $text --> Ris:D) is export {
 }
 
 my Str:D %ris-types = <
-    BOOK book
-    CONF proceedings
-    CHAP inbook
-    CHAPTER inbook
-    INCOL incollection
-    JFULL journal
-    JOUR article
-    MGZN article
-    PAMP booklet
-    RPRT techreport
-    REP techreport
-    UNPB unpublished>;
+  BOOK book
+  CONF proceedings
+  CHAP inbook
+  CHAPTER inbook
+  INCOL incollection
+  JFULL journal
+  JOUR article
+  MGZN article
+  PAMP booklet
+  RPRT techreport
+  REP techreport
+  UNPB unpublished>;
 
 sub ris-author(Array:D[Str:D] $names --> Str:D) {
   $names

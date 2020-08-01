@@ -17,10 +17,7 @@ class Rule {
 }
 
 sub rules(--> Array:D[Rule:D]) {
-
-  my Str:D $xml-str =
-    (%?RESOURCES<export_rangemessage.xml> // $*PROGRAM.add( '../resources/export_rangemessage.xml' ))
-    .slurp;
+  my Str:D $xml-str = %?RESOURCES<export_rangemessage.xml>.slurp;
   # NOTE: due to a bug in the XML module, must strip tags containing '.'
   $xml-str ~~ s/ '<EAN.UCCPrefixes>' [.|\r]* '</EAN.UCCPrefixes>' //;
   my XML::Document:D $xml = from-xml($xml-str);
@@ -52,7 +49,7 @@ sub rules(--> Array:D[Rule:D]) {
 
 my Rule:D @rules;
 
-CHECK {
+CHECK { # TODO: just directly assign instead of CHECK?
   @rules = rules();
 }
 

@@ -63,7 +63,7 @@ class WebDriver {
     $!downloads = IO::Path;
   }
 
-  method DESTROY(--> Any:U) { say "destroy"; self.close(); }
+  method DESTROY(--> Any:U) { self.close(); }
 
   method meta(Str:D $name --> Str:D) is export {
     $!web-driver.find_element_by_css_selector( "meta[name=\"$name\"]" ).get_attribute( 'content' );
@@ -89,7 +89,12 @@ class WebDriver {
 }
 ########
 
-sub infix:<%>($obj where WebDriver:D | Any:D #`(Inline::Python::PythonObject:D), Str:D $attr --> Str:D) is export { $obj.__getattribute__($attr); }
+sub infix:<%>(
+    $obj where WebDriver:D | Any:D #`(Inline::Python::PythonObject:D),
+    Str:D $attr
+    --> Str:D) is export {
+  $obj.__getattribute__($attr);
+}
 
 sub await(&block --> Any:D) is export {
   my Rat:D constant $timeout = 30.0;

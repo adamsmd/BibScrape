@@ -203,8 +203,8 @@ practices.
 ;----------------
 ;}
 
-  Str:D :@field = Array[Str:D](
-    <author editor affiliation title
+  Str:D :@field = Array[Str:D](<
+    author editor affiliation title
     howpublished booktitle journal volume number series jstor_issuetitle
     type jstor_articletype school institution location conference_date
     chapter pages articleno numpages
@@ -276,7 +276,7 @@ practices.
   my Regex:D $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
 
   for @url -> Str:D $arg {
-    sub go(Str $key is copy, Str:D $url is copy --> Any:U) {
+    sub go(Str:_ $key is copy, Str:D $url is copy --> Any:U) {
       $url ~~ $url-rx;
       $key = $0.Str
         if !$key.defined and $0.defined;

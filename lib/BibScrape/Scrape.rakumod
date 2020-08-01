@@ -96,13 +96,10 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
   }
 
   ## Keywords
-  my Str:D @keywords =
-    ($web-driver
-      .find_elements_by_css_selector( '.tags-widget__content a' )
-    )».get_property( 'innerHTML' )
-    # ACM is inconsistent about the order in which these are returned.
-    # We sort them so that we are deterministic.
-    .sort;
+  my Str:D @keywords = $web-driver.find_elements_by_css_selector( '.tags-widget__content a' )».get_property( 'innerHTML' );
+  # ACM is inconsistent about the order in which these are returned.
+  # We sort them so that we are deterministic.
+  @keywords .= sort;
   $entry.fields<keywords> = BibScrape::BibTeX::Value.new(@keywords.join( '; ' ))
     if @keywords;
 
@@ -175,16 +172,13 @@ sub scrape-ieee-computer(--> BibScrape::BibTeX::Entry:D) {
 
   ## Authors
   my Str:D @authors =
-    ($web-driver
-      .find_elements_by_css_selector( 'a[href^="https://www.computer.org/csdl/search/default?type=author&"]' )
+    ($web-driver.find_elements_by_css_selector( 'a[href^="https://www.computer.org/csdl/search/default?type=author&"]' )
     )».get_property( 'innerHTML' );
   $entry.fields<author> = BibScrape::BibTeX::Value.new(@authors.join( ' and ' ));
 
   ## Affiliation
   my Str:D @affiliations =
-    ($web-driver
-      .find_elements_by_class_name( 'article-author-affiliations' )
-    )».get_property( 'innerHTML' );
+    ($web-driver.find_elements_by_class_name( 'article-author-affiliations' ))».get_property( 'innerHTML' );
   $entry.fields<affiliation> = BibScrape::BibTeX::Value.new(@affiliations.join( ' and ' ))
     if @affiliations;
 
@@ -220,12 +214,16 @@ sub scrape-ieee-explore(--> BibScrape::BibTeX::Entry:D) {
   $entry.fields<author> = BibScrape::BibTeX::Value.new($author);
 
   ## ISSN
-  if $body ~~ / '"issn":[{"format":"Print ISSN","value":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '"},{"format":"Electronic ISSN","value":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '"}]' / {
+  if $body ~~ /
+      '"issn":[{"format":"Print ISSN","value":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)
+      '"},{"format":"Electronic ISSN","value":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '"}]' / {
     $entry.fields<issn> = BibScrape::BibTeX::Value.new("$0 (Print) $1 (Online)");
   }
 
   ## ISBN
-  if $body ~~ / '"isbn":[{"format":"Print ISBN","value":"' (<[-0..9Xx]>+) '","isbnType":""},{"format":"CD","value":"' (<[-0..9Xx]>+) '","isbnType":""}]' / {
+  if $body ~~ /
+      '"isbn":[{"format":"Print ISBN","value":"' (<[-0..9Xx]>+)
+      '","isbnType":""},{"format":"CD","value":"' (<[-0..9Xx]>+) '","isbnType":""}]' / {
     $entry.fields<isbn> = BibScrape::BibTeX::Value.new("$0 (Print) $1 (Online)");
   }
 
@@ -391,16 +389,12 @@ sub scrape-science-direct(--> BibScrape::BibTeX::Entry:D) {
 
   ## Keywords
   my Str:D @keywords =
-    ($web-driver
-      .find_elements_by_css_selector( '.keywords-section > .keyword > span' )
-    )».get_property( 'innerHTML' );
+    ($web-driver.find_elements_by_css_selector( '.keywords-section > .keyword > span' ))».get_property( 'innerHTML' );
   $entry.fields<keywords> = BibScrape::BibTeX::Value.new(@keywords.join( '; ' ));
 
   ## Abstract
   my Str:D @abstract =
-    ($web-driver
-      .find_elements_by_css_selector( '.abstract > div' )
-    )».get_property( 'innerHTML' );
+    ($web-driver.find_elements_by_css_selector( '.abstract > div' ))».get_property( 'innerHTML' );
   $entry.fields<abstract> = BibScrape::BibTeX::Value.new(@abstract.head)
     if @abstract;
 

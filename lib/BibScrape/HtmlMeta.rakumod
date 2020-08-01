@@ -5,7 +5,7 @@ use BibScrape::Month;
 use BibScrape::WebDriver;
 
 class HtmlMeta {
-  has Array[Str:D] %.fields;
+  has Array:D[Str:D] %.fields is required;
 }
 
 sub html-meta-parse(BibScrape::WebDriver::WebDriver:D $web-driver --> HtmlMeta:D) is export {
@@ -41,10 +41,10 @@ sub html-meta-type(HtmlMeta:D $html-meta --> Str:_) is export {
 sub html-meta-bibtex(
     BibScrape::BibTeX::Entry:D $entry,
     HtmlMeta:D $html-meta,
-    *%fields where { $_.values.all ~~ Bool }
+    *%fields where { $_.values.all ~~ Bool:D }
     --> HtmlMeta:D) is export {
   my BibScrape::BibTeX::Value:D %values;
-  sub set(Str $field, $value where Any:U | Str | BibScrape::BibTeX::Piece --> Any:U) {
+  sub set(Str:D $field, $value where Any:U | Str:_ | BibScrape::BibTeX::Piece:_ --> Any:U) {
     if $value {
       %values{$field} = BibScrape::BibTeX::Value.new($value);
     }
@@ -141,7 +141,7 @@ sub html-meta-bibtex(
   set( 'language', %meta<citation_language>[0] // %meta<dc.language>[0]);
 
   # 'dc.description' also contains abstract information
-  for (%meta<description>, %meta<Description>).flat -> Str:D $d {
+  for (%meta<description>, %meta<Description>).flat -> Array:_[Str:D] $d {
     set( 'abstract', $d[0]) if $d.defined and $d !~~ /^ [ '' $ | '****' | 'IEEE Xplore' | 'IEEE Computer Society' ] /;
   }
 

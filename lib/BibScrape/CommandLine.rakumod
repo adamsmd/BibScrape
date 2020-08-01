@@ -89,12 +89,8 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
       }
     } else {
       given $param-info.type {
-        when Positional {
-          $out ~= " <{$param-info.name}> ...";
-        }
-        default {
-          $out ~= " <{$param-info.name}>";
-        }
+        when Positional { $out ~= " <{$param-info.name}> ..."; }
+        default { $out ~= " <{$param-info.name}>"; }
       }
     }
     # TODO: comma in list keyword flags
@@ -143,10 +139,11 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
           }
         }
       }
-      # --
+      # Bare '--'
       when /^ '--' $/ { $no-parse = True; }
-      # Keyword
+      # Help
       when /^ '--help' | '-h' | '-?' $/ { %param-value<help> = True; }
+      # Keyword
       when /^ '--' ('/'?) (<-[=]>+) (['=' (.*)]?) $/ {
         my Bool:D $polarity = ($0.chars == 0);
         my Str:D $name = $1.Str;

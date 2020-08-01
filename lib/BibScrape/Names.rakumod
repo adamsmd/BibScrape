@@ -26,7 +26,8 @@ sub depth-split(Str:D $str, Regex:D $regex --> Array:D[Str:D]) {
         .grep({ !@depths[$_.from] })
         .map({ (.from - 1, .to) }).flat,
       $str.chars).flat;
-  my Str:D @parts = @positions.map(sub (Int:D $from, Int:D $to --> Str:D) { $str.substr($from..$to) });
+  my Str:D @parts = @positions.map(
+    sub (Int:D $from, Int:D $to --> Str:D) { $str.substr($from..$to) });
   @parts;
 }
 
@@ -66,7 +67,7 @@ sub order-name(Str:D $str --> Str:D) is export {
 
 # TODO: note that this may include the 'von' (but not when in no-comma form)
 sub last-name(Str:D $str --> Str:D) is export {
- my Str:D @parts = split-name($str.trim);
+  my Str:D @parts = split-name($str.trim);
   do given @parts.elems {
     when 1 {
       my Str:D @words = depth-split(@parts[0], rx/ \s+ /);

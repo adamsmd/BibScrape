@@ -59,6 +59,7 @@ README from old
 diff old
 --timeout flag
 may take up to 60 seconds
+Trim known fields
 
 # WebDriver
 
