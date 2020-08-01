@@ -1,15 +1,14 @@
 unit module BibScrape::Fix;
 
-use ArrayHash;
 use HTML::Entity;
 use Locale::Language;
 use XML;
 
 use BibScrape::BibTeX;
-use BibScrape::Month;
 use BibScrape::Isbn;
-use BibScrape::Unicode;
+use BibScrape::Month;
 use BibScrape::Names;
+use BibScrape::Unicode;
 
 enum MediaType <Print Online Both>;
 
@@ -67,9 +66,6 @@ class Fix {
 
   method fix(BibScrape::BibTeX::Entry:D $entry is copy --> BibScrape::BibTeX::Entry:D) {
     $entry = $entry.clone;
-
-    # Remove undefined fields
-    $entry.fields = array-hash($entry.fields.map({ $_ // () }));
 
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry.fields<doi> = $entry.fields<url>
@@ -235,10 +231,9 @@ class Fix {
       unless %fields{$field}.elems == 1 { die "Duplicate field '$field'" }
       %fields{$field} = 1;
     }
-    $entry.fields =
-      array-hash(
-        @.field.flatmap(
-          { $entry.fields{$_}:exists ?? ($_ => $entry.fields{$_}) !! () }));
+    $entry.set-fields(
+      @.field.flatmap(
+        { $entry.fields{$_}:exists ?? ($_ => $entry.fields{$_}) !! () }));
 
     $entry;
   }

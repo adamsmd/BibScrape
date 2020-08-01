@@ -2,9 +2,9 @@ unit module BibScrape::Main;
 
 use BibScrape::BibTeX;
 use BibScrape::CommandLine;
-use BibScrape::Isbn;
 use BibScrape::Fix;
-use BibScrape::Scrape; # Must be last (See comment in Scrape.rakumod)
+use BibScrape::Isbn;
+use BibScrape::Scrape;
 
 #|{;;
 Collect BibTeX entries from the websites of academic publishers.

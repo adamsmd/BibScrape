@@ -1,8 +1,5 @@
 unit module BibScrape::Scrape;
 
-use HTML::Entity;
-use Temp::Path;
-
 use BibScrape::BibTeX;
 use BibScrape::HtmlMeta;
 use BibScrape::Month;
@@ -36,6 +33,9 @@ sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTe
     when m[ « 'springer.com'        $] { scrape-springer(); }
     default { say "error: unknown domain: $domain"; }
   };
+
+  # Remove undefined fields
+  $entry.set-fields($entry.fields.map({ $_ // () }));
 
   $entry;
 }

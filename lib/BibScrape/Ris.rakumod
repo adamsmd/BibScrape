@@ -1,7 +1,5 @@
 unit module BibScrape::Ris;
 
-use ArrayHash;
-
 use BibScrape::BibTeX;
 use BibScrape::Month;
 
@@ -55,8 +53,7 @@ sub ris-author(Array:D[Str:D] $names --> Str:D) {
 
 sub bibtex-of-ris(Ris:D $ris --> BibScrape::BibTeX::Entry:D) is export {
   my Array:D[Str:D] %ris = $ris.fields;
-  my BibScrape::BibTeX::Entry:D $entry =
-    BibScrape::BibTeX::Entry.new(:type<misc>, :key<ris>, :fields(array-hash.new()));
+  my BibScrape::BibTeX::Entry:D $entry = BibScrape::BibTeX::Entry.new();
 
   my Regex:D $doi = rx/^ (\s* 'doi:' \s* \w+ \s+)? (.*) $/;
 

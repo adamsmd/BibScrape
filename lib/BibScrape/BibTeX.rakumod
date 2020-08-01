@@ -70,6 +70,10 @@ class Entry is Item {
     (map { "  {$_.key} = {$_.value},\n" }, $.fields.values(:array)).join ~
     "}"
   }
+  method set-fields(@fields where { $_.all.value ~~ Value:D } --> Any:U) {
+    $.fields = array-hash(@fields);
+    return;
+  }
 }
 class Database {
   has Item:D @.items is required;
