@@ -35,7 +35,7 @@ sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTe
   };
 
   # Remove undefined fields
-  $entry.set-fields($entry.fields.map({ $_ // () }));
+  $entry.set-fields($entry.fields.grep({ $_ }));
 
   $entry;
 }
