@@ -17,7 +17,6 @@ my IO::Path:D $default-nouns = $config-dir.add('nouns.cfg');
 
 class ParamInfo {
   has Bool:D $.named is required;
-  has Str:D $.sigil is required;
   has Str:D $.name is required;
   has Any:U $.type is required;
   has Any:_ $.default is required;
@@ -28,7 +27,7 @@ sub param-info(Parameter:D $param --> ParamInfo:D) {
   my Str:D $name = ($param.name ~~ /^ "{$param.sigil}{$param.twigil}" (.*) $/).[0].Str;
   my Any:_ $default = $param.default && ($param.default)();
   ParamInfo.new(
-    named => $param.named, sigil => $param.sigil, name => $name, type => $param.type,
+    named => $param.named, name => $name, type => $param.type,
     default => $default, doc => $param.WHY);
 }
 
@@ -54,22 +53,26 @@ sub type-name(Any:U $type --> Str:D) {
   }
 }
 
-#   ./bin/bibscrape [--names=<Any> ...] [--nouns=<Any> ...] [--init] [--debug] [--scrape] [--fix] [--show-window] [--escape-acronyms] [--isbn-media=<MediaType> (Both Online Print)] [--isbn-type=<IsbnType> (Isbn10 Isbn13 Preserve)] [--isbn-sep=<Str>] [--issn-media=<MediaType> (Both Online Print)] [--field=<Any> ...] [--no-encode=<Any> ...] [--no-collapse=<Any> ...] [--omit=<Any> ...] [--omit-empty=<Any> ...] [<url>] -- =head1 SYNOPSIS bib-scrape.pl [options] <url> ...
-#     [<url>]    =head2 INPUTS
-# [default=both]
-
 sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) {
+  my Int:D constant $end-col = 80;
   my $out = '';
-  sub col(Int:D $col, Int:D $max-old-col --> Any:U) {
+  sub col(Int:D $col --> Any:U) {
     my Int:D $old-col = $out.split("\n")[*-1].chars;
-    if $old-col > $max-old-col { $out ~= "\n"; $old-col = 0; }
+    if $old-col > $col { $out ~= "\n"; $old-col = 0; }
     $out ~= ' ' x ($col - $old-col);
     return;
   }
-  sub wrap(Str:D $str --> Any:U) {
-    for $str ~~ m:g/ (. ** 1..49 ) [ ' '+ | $ ] / -> $line {
-      col(30,30);
-      $out ~= $line ~ "\n";
+  sub wrap(Int:D $start, Str:D $str is copy --> Any:U) {
+    for $str.split( / ' ' * ';' ' '* / ) -> $paragraph is copy {
+      $paragraph ~~ s:g/ ' '+ $//;
+      if $paragraph eq '' {
+        $out ~= "\n";
+      } else {
+        for $paragraph ~~ m:g/ (. ** {0..($end-col - $start)}) [ ' '+ | $ ] / -> $line {
+          col($start);
+          $out ~= $line;
+        }
+      }
     }
     return;
   }
@@ -78,19 +81,18 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) {
 
   # TODO: %param-info
   for @param-info -> ParamInfo:D $param-info {
-    $out ~= " " ~ $param-info.name ~ ($param-info.sigil eq '@' ?? ' ...' !! '');
+    $out ~= " " ~ $param-info.name ~ ($param-info.type ~~ Positional ?? ' ...' !! '');
   }
-  $out ~= "\n\n";
 
-  $out ~= $main.WHY.leading ~ "\n\n";
+  wrap(0, $main.WHY.leading);
 
   for $main.signature.params -> Parameter:D $param {
     my $param-info = param-info($param);
     with $param-info.doc and $param-info.doc.leading {
-      $out ~= $_ ~ "\n\n";
+      wrap(0, $_);
     }
     if $param-info.named {
-      $out ~= "  --{$param-info.name}";
+      $out ~= " --{$param-info.name}";
       given $param-info.type {
         when Bool { }
         when Positional { $out ~= "=<{type-name($param-info.type)}> ..."; }
@@ -99,42 +101,36 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) {
     } else {
       given $param-info.type {
         when Positional {
-          $out ~= "  {$param-info.name} ...";
+          $out ~= " {$param-info.name} ...";
         }
         default {
-          $out ~= "  {$param-info.name}";
+          $out ~= " {$param-info.name}";
         }
       }
     }
-    with $param-info.doc and $param-info.doc.trailing {
-      wrap($_);
-    }
-    if $param-info.named {
-      given $param-info.sigil {
-        when '$' and $param-info.type ~~ Bool {
-          wrap("Use --/{$param-info.name} to set to False.");
-        }
-        when '@' {
-          wrap("Use --/{$param-info.name}=<{type-name($param-info.type)}> to remove an element.");
-          wrap("Use --{$param-info.name}= to reset to the empty list.");
-          wrap("Use --/{$param-info.name}= to reset to the default.");
-        }
-      }
-    }
+    # TODO: comma in list keyword flags
     if $param-info.default.defined {
-      wrap("(Default: {$param-info.default})");
+      wrap(28, "Default: {$param-info.default}");
+    } else {
+      $out ~= "\n";
+    }
+    $out ~= "\n";
+    # if $param-info.type ~~ Enumeration {
+    #   wrap(4, "<{type-name($param-info.type)}> = {$param-info.type.enums.keys.join(' | ')};");
+    # }
+    with $param-info.doc and $param-info.doc.trailing {
+      wrap(4, $_);
     }
     $out ~= "\n";
   }
-  $out ~= &MAIN.WHY;
-  say &duel.WHY;
+  wrap(0, $main.WHY.trailing);
   $out.chomp;
 }
 
 sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capture:D) {
 
   my Int:D $positionals = 0;
-  my Any:_ @param-value = @param-info».default;
+  my Any:_ @param-value; # = @param-info».default;
   my Any:_ %param-value = %param-info.map({ $_.key => $_.value.default });
   while @args {
     my Str:D $arg = shift @args;
@@ -142,14 +138,16 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
       # Positionals
       when $no-parse | !/^ '--' / {
         my $param = @param-info[$positionals];
-        given $param.sigil {
-          when '$' {
-            @param-value[$positionals] = ($param.type)($arg);
-            $positionals++;
-          }
-          when '@' {
+        given $param.type {
+          when Positional {
+            @param-value[$positionals] = Array[$param.type.of].new()
+              unless @param-value[$positionals];
             push @param-value[$positionals], ($param.type.of)($arg);
             # NOTE: no `$positionals++`
+          }
+          default {
+            @param-value[$positionals] = ($param.type)($arg);
+            $positionals++;
           }
         }
       }
@@ -159,37 +157,38 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
       when /^ '--help' | '-h' | '-?' $/ { %param-value<help> = True; }
       when /^ '--' ('/'?) (<-[=]>+) (['=' (.*)]?) $/ {
         my $polarity = ($0.chars == 0);
+        say "==", $polarity;
         my $name = $1.Str;
         # TODO: when $name eq ''
         my $param = %param-info{$name}; # TODO: Missing param name
         my $info = %param-info{$name};
-        given $info.sigil {
-          when '$' {
-            my $value =
-              $2.chars > 0 ?? $3 !!
-                $param.type ~~ Bool ?? $polarity.Str !! # TODO: yes, no
-                @args.shift; # TODO: missing arg
-            my $value2 = ($info.type)($arg);
-            %param-value{$info.name} = $value2;
-          }
-          when '@' {
-            if $arg eq '' {
+        given $info.type {
+          when Positional {
+            my Str:D $value-str = $2.[0].Str;
+            if $value-str eq '' {
               if $polarity {
-                %param-value{$info.name} = [];
+                %param-value{$info.name} = Array[$info.type.of].new();
               } else {
                 %param-value{$info.name} = $info.default;
               }
             } else {
-              my Any:D $value = ($info.type.of)($arg);
+              # TODO: comma in field options
+              my Any:D $value = ($info.type.of)($value-str);
               if $polarity {
                 push %param-value{$info.name}, $value;
               } else {
-                %param-value{$info.name}.grep({ not $_ eqv $value });
+                %param-value{$info.name} =
+                  Array[$info.type.of](%param-value{$info.name}.grep({ not ($_ eqv $value) }));
               }
             }
           }
           default {
-            die "Unknown sigil for {$info.name} argument: {$info.sigil}";
+            my $value =
+              $2.chars > 0 ?? $2.[0] !!
+                $param.type ~~ Bool ?? $polarity.Str !! # TODO: yes, no
+                @args.shift; # TODO: missing arg
+            my $value2 = ($info.type)($value);
+            %param-value{$info.name} = $value2;
           }
         }
       }
@@ -202,19 +201,111 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
   $capture;
 }
 
-#| Fight mechanics 
-sub duel($a, $b) {
-}
-#={ Magicians only, no mortals. }
+#|{;;
+Collect BibTeX entries from the websites of academic publishers.
+;;
+See the README.md at https://github.com/adamsmd/BibScrape for more details.
+;}
 
-#|{abcdef}
 sub MAIN(
+#={
+;----------------
+;BOOLEAN FLAGS
+;----------------
+;
+;Use --/flag to set a boolean flag to False.
+;;
+;----------------
+;LIST FLAGS
+;----------------
+;
+;Use --/flag=<value> to remove an element.
+;Use --flag= to reset to an empty list.
+;Use --/flag= to reset to the default list.
+;;
+;----------------
+;NAMES
+;----------------
+;;
+We warn the user about author and editor names that publishers often get
+wrong.  For example, some publisher assume the last name of Simon Peyton Jones
+is "Jones" when it should be "Peyton Jones", and some publishers put author
+names in all upper case (e.g., "CONNOR MCBRIDE").
+;;
+We call these names "suspect", not because they are wrong but because the user
+should double check them.
+;;
+The only names we do not consider suspect are the followin formats, which the
+publishers are unlikely to get wrong, or ones explicitly listed in the </NAME
+FILES>.
+;;
+First names:
+;
+; - Xxxx
+; - Xxxx-Xxxx
+; - Xxxx-xxxx
+; - XxxxXxxx
+;;
+Middle initial:
+;
+; - X.
+;;
+Last names:
+;
+; - Xxxx
+; - Xxxx
+; - O'Xxxx
+; - McXxxx
+; - MacXxxx
+;;
+This collection of name formats was chosen based the list of all authors in
+DBLP and tries to strike a ballance between prompting the user about too many
+names and missing names that should be reported.
+;;
+;----------------
+;NAME FILES
+;----------------
+;;
+A name file specifies the correct form for author names.
+;;
+A name file is plain text in Unicode format.
+In a name file, any line starting with # is a comment.
+Blank or whitespace-only lines separate blocks, and
+blocks consist of one or more lines.
+The first line is the canonical form of a name.
+Lines other than the first one are aliases that should be converted to the
+canonical form.
+;;
+When searching for the canonical form of a name, case distinctions and
+the divisions of the name into parts (e.g. first vs last name) are
+ignored as publishers often get these wrong (e.g., "Van Noort" will
+match "van Noort" and "Jones, Simon Peyton" will match "Peyton Jones,
+Simon").
+;;
+The default name file provides several examples and recommended practices.
+;;
+;----------------
+;NOUN FILES
+;----------------
+;;
+An noun file specifies words that should be protected from lower-casing
+by inserting curly braces.
+;;
+A noun file is plain text in Unicode format.
+Each line starting with # is a comment.
+Blank lines are ignored.
+Each line lists the way that a particular word
+should be curly braced.  (Curly braces tell BibTeX to not change the captalization of a particular part of a text.)
+Any word that matches but with the curly braces removed is converted to the form listed in the file.
+The first line to match in the file wins.}
 
-################################
-#| INPUTS
-################################
+#|{
+;----------------
+;INPUTS
+;----------------
+;}
 
-  Str:D @url = Array[Str:D](< >),
+  Str:D @url,# = Array[Str:D](< >),
 #={The url of the publisher's page for the paper to be scraped.
     Standard URL formats such as 'http://...' can be used.
     The non-standard URL format 'doi:...' can also be used.
@@ -223,17 +314,21 @@ sub MAIN(
   IO::Path:D :@names = Array[IO::Path:D](<.>.IO),
 #={Add <file> to the list of name files used to canonicalize author names.
     If <file> is the empty string, clears the list.
+    ;;
     See the L</NAME FILE> section for details on the format of name files.}
 
   IO::Path:D :@nouns = Array[IO::Path:D](<.>.IO),
 #={Add <file> to the list of noun files used to canonicalize fields.
     If <file> is the empty string, clears the list.
+    ;;
     See the L</NOUN FILE> section for details on the format of noun files.}
 
 # TODO: reorder
-################################
-#| OPERATING MODES
-################################
+#|{
+;----------------
+;OPERATING MODES
+;----------------
+;}
 
   Bool:D :$init = False,
 #={TODO}
@@ -250,9 +345,11 @@ sub MAIN(
   Bool:D :$show-window = False,
 #={Show the browser window while scraping}
 
-################################
-#| GENERAL OPTIONS
-################################
+#|{
+;----------------
+;GENERAL OPTIONS
+;----------------
+;}
 
   Bool:D :$escape-acronyms = True,
 #={In titles, enclose sequences of two or more uppercase letters (i.e.,
@@ -278,9 +375,11 @@ sub MAIN(
     ISSN if <kind> is 'print', only the online ISSN if <kind> is 'online',
     or both if <kind> is 'both'.}
 
-################################
-#| FIELD OPTIONS
-################################
+#|{
+;----------------
+;FIELD OPTIONS
+;----------------
+;}
 
   Str:D :@field = Array[Str:D](
     <author editor affiliation title
@@ -390,81 +489,3 @@ sub MAIN(
     }
   }
 }
-#={ !!!!!!!!!!!!!!!!!!XMagicians only, no mortals. }
-
-#NAMES
-
-# We warn the user about author and editor names that publishers often get
-# wrong.  For example, some publisher assume the last name of Simon Peyton Jones
-# is "Jones" when it should be "Peyton Jones", and some publishers put author
-# names in all upper case (e.g., "CONNOR MCBRIDE").
-
-# We call these names "suspect", not because they are wrong but because the user
-# should double check them.
-
-# The only names we do not consider suspect are the followin formats, which the
-# publishers are unlikely to get wrong, or ones explicitly listed in the </NAME
-# FILES>.
-
-# First names:
-#
-#   - Xxxx
-#   - Xxxx-Xxxx
-#   - Xxxx-xxxx
-#   - XxxxXxxx
-#
-# A single middle initial may follow the first name:
-#
-#   - X.
-#
-# Last names:
-#
-#   - Xxxx
-#   - Xxxx
-#   - O'Xxxx
-#   - McXxxx
-#   - MacXxxx
-#
-# This collection of name formats was chosen based the list of all authors in
-# DBLP and tries to strike a ballance between prompting the user about too many
-# names and missing names that should be reported.
-
-################################
-# =head2 NAME FILES
-################################
-#
-# A name file specifies the correct form for author names.
-#
-# A name file is plain text in Unicode format.
-# In a name file, any line starting with # is a comment.
-# Blank or whitespace-only lines separate blocks, and
-# blocks consist of one or more lines.
-# The first line is the canonical form of a name.
-# Lines other than the first one are aliases that should be converted to the
-# canonical form.
-#
-# When searching for the canonical form of a name, case distinctions and
-# the divisions of the name into parts (e.g. first vs last name) are
-# ignored as publishers often get these wrong (e.g., "Van Noort" will
-# match "van Noort" and "Jones, Simon Peyton" will match "Peyton Jones,
-# Simon").
-#
-# The default name file provides several examples and recommended practices.
-#
-
-################################
-# =head2 NOUN FILES
-################################
-#
-# An noun file specifies words that should be protected from lower-casing
-# by inserting curly braces.
-#
-# A noun file is plain text in Unicode format.
-# Each line starting with # is a comment.
-# Blank lines are ignored.
-# Each line lists the way that a particular word
-# should be curly braced.  (Curly braces tell BibTeX to not change the captalization of a particular part of a text.)
-# Any word that matches but with the curly braces removed is converted to the form listed in the file.
-# The first line to match in the file wins.
-#
-# =cut
