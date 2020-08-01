@@ -6,15 +6,6 @@ use BibScrape::Isbn;
 use BibScrape::Fix;
 use BibScrape::Scrape; # Must be last (See comment in Scrape.rakumod)
 
-my IO::Path:D $config-dir =
-  ($*DISTRO.is-win
-    ?? %*ENV<APPDATA> // %*ENV<USERPROFILE> ~ </AppData/Roaming/>
-    !! %*ENV<XDG_CONFIG_HOME> // %*ENV<HOME> ~ </.config>).IO
-    .add(<BibScrape>);
-my IO::Path:D $default-names = $config-dir.add('names.cfg');
-my IO::Path:D $default-nouns = $config-dir.add('nouns.cfg');
-
-
 #|{;;
 Collect BibTeX entries from the websites of academic publishers.
 ;;
@@ -236,10 +227,18 @@ practices.
 #={Fields that should be omitted from the output if they are empty}
 
 ) is export {
+  my IO::Path:D $config-dir =
+    ($*DISTRO.is-win
+      ?? %*ENV<APPDATA> // %*ENV<USERPROFILE> ~ </AppData/Roaming/>
+      !! %*ENV<XDG_CONFIG_HOME> // %*ENV<HOME> ~ </.config>).IO
+      .add(<BibScrape>);
+  my IO::Path:D $default-names = $config-dir.add('names.cfg');
+  my IO::Path:D $default-nouns = $config-dir.add('nouns.cfg');
+
   if $init {
     $config-dir.mkdir;
-    $*RESOURCE<names.cfg>.copy($default-names);
-    $*RESOURCE<nouns.cfg>.copy($default-nouns);
+    %?RESOURCES<names.cfg>.copy($default-names);
+    %?RESOURCES<nouns.cfg>.copy($default-nouns);
   }
 
   sub default-file(Str:D $type, IO::Path:D $file) {
