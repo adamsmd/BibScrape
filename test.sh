@@ -9,9 +9,9 @@
 # test file. The flags end at the first argument to not start with `-` or after
 # a `--` argument.
 #
-# For example, to run all ACM tests in headless mode, do:
+# For example, to run all ACM tests while showing the browser window, do:
 #
-#     $ ./test.sh --headless tests/acm-*.t
+#     $ ./test.sh --show-window tests/acm-*.t
 
 FLAGS=()
 

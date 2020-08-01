@@ -9,9 +9,9 @@
 
     TODO: install zef
 
-### Development Tools for Python 2.7
+### Development Tools for Python 3
 
-    $ sudo apt install python2-dev
+    $ sudo apt install python3-dev
 
 Cannot locate native library '(null)': libpython2.7.so.1.0: cannot open shared object file: No such file or directory
 
