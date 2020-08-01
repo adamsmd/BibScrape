@@ -1,10 +1,8 @@
 unit module BibScrape::Isbn;
 
-# http://www.isbn-international.org/page/ranges
-# https://www.isbn-international.org/range_file_generation
 # http://pcn.loc.gov/isbncnvt.html
-
-# NOTE: due to a bug in the XML module, must strip tags containing '.' from the file
+# https://www.isbn-international.org/range_file_generation
+# https://www.isbn-international.org/export_rangemessage.xml
 
 use XML;
 
@@ -19,7 +17,10 @@ class Rule {
 }
 
 sub rules(--> Array:D[Rule:D]) {
-  my XML::Document:D $xml = from-xml-file('resources/RangeMessage.xml');
+  my Str:D $xml-str = 'resources/export_rangemessage.xml'.IO.slurp;
+  # NOTE: due to a bug in the XML module, must strip tags containing '.'
+  $xml-str ~~ s/ '<EAN.UCCPrefixes>' [.|\r]* '</EAN.UCCPrefixes>' //;
+  my XML::Document:D $xml = from-xml($xml-str);
   my XML::Element:D @groups = $xml.elements(:RECURSE(Inf), :TAG<Group>);
   do for @groups -> XML::Element:D $group {
     my Str:D $prefix = $group.elements(:TAG<Prefix>, :SINGLE)[0].string;
