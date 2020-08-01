@@ -4,3 +4,4 @@ use lib 'lib';
 use lib '/home/adamsmd/l/tex/bibscrape/Inline-Python.git/lib';
 
 use BibScrape::Main;
+use BibScrape::CommandLine;

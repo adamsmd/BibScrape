@@ -55,9 +55,11 @@ Code coverage
 .
 README from old
 diff old
-main module: use META6::bin :MAIN;
+CommandLine ParseArgs module;
 --timeout flag
 Any:U -> Nil?
+%RESOURCES (use lib);
+may take up to 60 seconds
 
 # WebDriver
 
