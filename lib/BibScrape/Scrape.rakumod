@@ -9,8 +9,6 @@ use BibScrape::Month;
 use BibScrape::Ris;
 use BibScrape::WebDriver;
 
-use Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
-
 ########
 
 my BibScrape::WebDriver::WebDriver:_ $web-driver;
@@ -140,7 +138,7 @@ sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {
   html-meta-bibtex($entry, $meta, title => True, abstract => False);
 
   ## Abstract
-  my Inline::Python::PythonObject:D @abstract = $web-driver.find_elements_by_class_name( 'abstract' );
+  my #`(Inline::Python::PythonObject:D) @abstract = $web-driver.find_elements_by_class_name( 'abstract' );
   if @abstract {
     my Str:D $abstract = @abstract.head.get_property( 'innerHTML' );
     #my $abstract = meta( 'citation_abstract' );
@@ -162,7 +160,7 @@ sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {
 sub scrape-ieee-computer(--> BibScrape::BibTeX::Entry:D) {
   ## BibTeX
   await({ $web-driver.find_element_by_css_selector( '.article-action-toolbar button' ) }).click;
-  my Inline::Python::PythonObject:D $bibtex-link = await({ $web-driver.find_element_by_link_text( 'BibTex' ) });
+  my #`(Inline::Python::PythonObject:D) $bibtex-link = await({ $web-driver.find_element_by_link_text( 'BibTex' ) });
   $web-driver.execute_script( 'arguments[0].removeAttribute("target")', $bibtex-link);
   $web-driver.find_element_by_link_text( 'BibTex' ).click;
   my Str:D $bibtex-text = await({ $web-driver.find_element_by_tag_name( 'pre' ) }).get_property( 'innerHTML' );
@@ -298,7 +296,7 @@ sub scrape-ios-press(--> BibScrape::BibTeX::Entry:D) {
 
 sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
   ## Remove overlay
-  my Inline::Python::PythonObject:D @overlays = $web-driver.find_elements_by_class_name( 'reveal-overlay' );
+  my #`(Inline::Python::PythonObject:D) @overlays = $web-driver.find_elements_by_class_name( 'reveal-overlay' );
   @overlays.map({ $web-driver.execute_script( 'arguments[0].removeAttribute("style")', $_) });
 
   ## BibTeX
@@ -337,11 +335,11 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
 sub scrape-oxford(--> BibScrape::BibTeX::Entry:D) {
   # BibTeX
   await({ $web-driver.find_element_by_class_name( 'js-cite-button' ) }).click;
-  my Inline::Python::PythonObject:D $select-element = await({ $web-driver.find_element_by_id( 'selectFormat' ) });
-  my Inline::Python::PythonObject:D $select = $web-driver.select($select-element);
+  my #`(Inline::Python::PythonObject:D) $select-element = await({ $web-driver.find_element_by_id( 'selectFormat' ) });
+  my #`(Inline::Python::PythonObject:D) $select = $web-driver.select($select-element);
   await({
     $select.select_by_visible_text( '.bibtex (BibTex)' );
-    my Inline::Python::PythonObject:D $button = $web-driver.find_element_by_class_name( 'citation-download-link' );
+    my #`(Inline::Python::PythonObject:D) $button = $web-driver.find_element_by_class_name( 'citation-download-link' );
     # Make sure the drop-down was populated
     $button.get_attribute( 'class' ) !~~ / « 'disabled' » /
       and $button }
@@ -473,7 +471,7 @@ sub scrape-springer(--> BibScrape::BibTeX::Entry:D) {
   $entry.fields<keywords> = BibScrape::BibTeX::Value.new(@keywords.join( '; ' ));
 
   ## Abstract
-  my Inline::Python::PythonObject:D @abstract =
+  my #`(Inline::Python::PythonObject:D) @abstract =
     ($web-driver.find_elements_by_class_name( 'Abstract' ),
       $web-driver.find_elements_by_id( 'Abs1-content' )).flat;
   if @abstract {

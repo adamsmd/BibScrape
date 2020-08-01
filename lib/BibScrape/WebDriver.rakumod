@@ -1,15 +1,14 @@
 unit module BibScrape::WebDriver;
 
-use Inline::Python;
 use Temp::Path;
 use File::Directory::Tree;
 
 ########
 
 class WebDriver {
-  has Inline::Python::PythonObject:D $!web-driver handles * = Nil;
-  has Inline::Python:D $!python = Nil;
-  has IO::Path:D $downloads = Nil;
+  has #`(Inline::Python::PythonObject:_) $!web-driver handles *;
+  has #`(Inline::Python:_) $!python;
+  has IO::Path:_ $downloads;
 
   method get(Str:D $url --> Any:U) {
     $!web-driver.get($url);
@@ -17,6 +16,8 @@ class WebDriver {
   }
 
   submethod BUILD(Bool:D :$show-window = False --> Any:U) {
+    require Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
+
     $!downloads = make-temp-dir:prefix<BibScrape->;
     $!python = Inline::Python.new;
     $!python.run(qq:to/END/);
@@ -55,8 +56,8 @@ class WebDriver {
   method close(--> Any:U) {
     $!web-driver.quit()
       if $!web-driver.defined;
-    $!web-driver = Inline::Python::PythonObject;
-    $!python = Inline::Python;
+    $!web-driver = Nil; #Inline::Python::PythonObject;
+    $!python = Nil; #Inline::Python;
     rmtree $!downloads
       if $!downloads.defined;
     $!downloads = IO::Path;
@@ -72,7 +73,7 @@ class WebDriver {
     $!web-driver.find_elements_by_css_selector( "meta[name=\"$name\"]" )».get_attribute( 'content' );
   }
 
-  method select(Inline::Python::PythonObject:D $element --> Inline::Python::PythonObject:D) is export {
+  method select(#`(Inline::Python::PythonObject:D) $element #`(--> Inline::Python::PythonObject:D)) is export {
     $!python.call( '__main__', 'select', $element);
   }
 
@@ -88,7 +89,7 @@ class WebDriver {
 }
 ########
 
-sub infix:<%>($obj where WebDriver:D | Inline::Python::PythonObject:D, Str:D $attr --> Str:D) is export { $obj.__getattribute__($attr); }
+sub infix:<%>($obj where WebDriver:D | Any:D #`(Inline::Python::PythonObject:D), Str:D $attr --> Str:D) is export { $obj.__getattribute__($attr); }
 
 sub await(&block --> Any:D) is export {
   my Rat:D constant $timeout = 30.0;
