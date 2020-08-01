@@ -55,6 +55,9 @@ Code coverage
 .
 README from old
 diff old
+main module: use META6::bin :MAIN;
+--timeout flag
+Any:U -> Nil?
 
 # WebDriver
 
