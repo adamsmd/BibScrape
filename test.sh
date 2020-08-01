@@ -32,13 +32,13 @@ ERR_COUNT=0
 
 for i in "$@"; do
   echo "** Testing $i using a URL **"
-  URL=$(head -n 1 "$i")
-  if !(head -n 2 "$i"; ./bin/bibscrape "${FLAGS[@]}" "$URL") | diff -u "$i" - | wdiff -dt; then
+  URL=$(head -n 1 "$i") # TODO: flags on third line
+  if !(head -n 2 "$i"; ./bin/bibscrape "${FLAGS[@]}" "$URL" 2>&1) | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))
   fi
 
   echo "** Testing $i using a filename **"
-  if ! ./bin/bibscrape "${FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") | diff -u "$i" - | wdiff -dt; then
+  if ! ./bin/bibscrape "${FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") 2>&1 | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))
   fi
 done
