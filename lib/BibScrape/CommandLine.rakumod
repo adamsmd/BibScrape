@@ -95,7 +95,11 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
     }
     # TODO: comma in list keyword flags
     if $param-info.default.defined {
-      wrap(28, "Default: {$param-info.default}");
+      if $param-info.type ~~ Positional {
+        wrap(28, "Default: {$param-info.default.map({ "'$_'" })}");
+      } else {
+        wrap(28, "Default: {$param-info.default}");
+      }
     } else {
       $out ~= "\n";
     }
@@ -118,23 +122,27 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
   my ParamInfo:D %param-info = $infos[1];
   my Bool:D $no-parse = False;
   my Int:D $positionals = 0;
-  my Any:_ @param-value;
-  my Any:_ %param-value = %param-info.map({ $_.key => $_.value.default });
+  sub def(ParamInfo:D $param-info) {
+    $param-info.default
+      // ($param-info.type ~~ Positional
+        ?? Array[$param-info.type.of].new()
+        !! $param-info.type);
+  }
+  my Any:_ @param-value = @param-info.map(&def);
+  my Any:_ %param-value = %param-info.map({ $_.key => def($_.value) });
   while @args {
     my Str:D $arg = shift @args;
     given $arg {
       # Positionals
       when $no-parse | !/^ '--' / {
-        my ParamInfo:D $param = @param-info[$positionals];
-        given $param.type {
+        my ParamInfo:D $param-info = @param-info[$positionals];
+        given $param-info.type {
           when Positional {
-            @param-value[$positionals] = Array[$param.type.of].new()
-              unless @param-value[$positionals];
-            push @param-value[$positionals], ($param.type.of)($arg);
+            push @param-value[$positionals], ($param-info.type.of)($arg);
             # NOTE: no `$positionals++`
           }
           default {
-            @param-value[$positionals] = ($param.type)($arg);
+            @param-value[$positionals] = ($param-info.type)($arg);
             $positionals++;
           }
         }
@@ -156,7 +164,7 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
               if $polarity {
                 %param-value{$param-info.name} = Array[$param-info.type.of].new();
               } else {
-                %param-value{$param-info.name} = $param-info.default;
+                %param-value{$param-info.name} = def($param-info);
               }
             } else {
               # TODO: comma in field options
@@ -172,7 +180,7 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
           }
           default {
             my Str:D $value =
-              $2.chars > 0 ?? $2.[0] !!
+              $2.chars > 0 ?? $2.[0].Str !!
                 $param-info.type ~~ Bool ?? $polarity.Str !! # TODO: yes, no
                 @args.shift; # TODO: missing arg
             my Any:D $value2 = ($param-info.type)($value);

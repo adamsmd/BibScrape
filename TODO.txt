@@ -47,10 +47,8 @@ a test that has 'others' in author names
 # Code
 
 remove all 'die' and warn instead
-Automate cleaning of Isbn file
 Code coverage
 &foo
-:_
 -
 .
 |capture
@@ -60,6 +58,7 @@ diff old
 --timeout flag
 may take up to 60 seconds
 Trim known fields
+Ignore unknown in bibtex
 
 # WebDriver
 

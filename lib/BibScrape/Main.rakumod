@@ -121,10 +121,15 @@ practices.
     ;
     ;- If it starts with 'http:' or 'https:', it is interpreted as a URL.
     ;- If it starts with 'doi:', it is interpreted as a DOI.
-    ;- Otherwise, it is interpreted as a filename.
+    ;- Otherwise, it is interpreted as a filename.}
+
+  Str:D :@key,
+#={Specify the keys to use in the output BibTeX.
     ;;
-    The URL and DOI forms may be prefixed with '{<key>}' in order to specify an
-    explicit key.  E.g., "{my-key}http://...".}
+    Successive keys are used for succesive BibTeX entries.
+    ;;
+    If omitted or a single space, the key will be automatically generated or
+    copied from the existing BibTeX entry.}
 
   IO::Path:D :@names = Array[IO::Path:D](<.>.IO),
 #={Add to the list of names files.
@@ -273,44 +278,34 @@ practices.
     omit-empty => @omit-empty,
   );
 
-  my Regex:D $url-rx = rx:i/^ [ \s* '{' (<-[}]>*) '}' \s* ]? (['http' 's'? | 'doi'] ':' .*) $/;
-
   for @url -> Str:D $arg {
-    sub go(Str:_ $key is copy, Str:D $url is copy --> Any:U) {
-      $url ~~ $url-rx;
-      $key = $0.Str
-        if !$key.defined and $0.defined;
-
-      my BibScrape::BibTeX::Entry:D $entry = scrape($1.Str, show-window => $show-window);
-      $entry.fields<bib_scrape_url> = BibScrape::BibTeX::Value.new($url);
-
+    sub go(Str:D $key, Str:D $url --> Any:U) {
+      my BibScrape::BibTeX::Entry:D $entry = scrape($url, show-window => $show-window);
       $entry = $fixer.fix($entry);
-
       $entry.key = $key
-        if $key.defined;
-
+        if $key ne ' ';
       print $entry.Str;
-
       return;
     }
 
-    # Look for 'http:', 'https:' or 'doi:' with an optional `{key}` before the url
-    if $arg ~~ $url-rx {
-      go(Str, $arg);
+    if $arg ~~ m:i/^ 'http:' | 'https:' | 'doi:' / {
+      # It's really a URL
+      go(@key.shift // ' ', $arg);
       print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {
+      # Not a URL so try reading it as a file
       my BibScrape::BibTeX::Database:D $bibtex = bibtex-parse($arg.IO.slurp);
       for $bibtex.items -> BibScrape::BibTeX::Item:D $item {
         if $item !~~ BibScrape::BibTeX::Entry:D {
           print $item.Str;
         } else {
           if $item.fields<bib_scrape_url> {
-            go($item.key, $item.fields<bib_scrape_url>.simple-str);
+            go(@key.shift // $item.key, $item.fields<bib_scrape_url>.simple-str);
           } elsif $item.fields<doi> {
             my Str:D $doi = $item.fields<doi>.simple-str;
             $doi = "doi:$doi"
               unless $doi ~~ m:i/^ 'doi:' /;
-            go($item.key, $doi);
+            go(@key.shift // $item.key, $doi);
           } else {
             print $item.Str
           }

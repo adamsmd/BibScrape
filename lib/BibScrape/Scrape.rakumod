@@ -34,6 +34,8 @@ sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTe
     default { say "error: unknown domain: $domain"; }
   };
 
+  $entry.fields<bib_scrape_url> = BibScrape::BibTeX::Value.new($url);
+
   # Remove undefined fields
   $entry.set-fields($entry.fields.grep({ $_ }));
 
