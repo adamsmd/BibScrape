@@ -18,7 +18,7 @@ GLOBAL_FLAGS=()
 while test $# -gt 0; do
   case "$1" in
     --) break;;
-    -*) GLOBAL_FLAGS+=("$1"); shift;;
+    -*) GLOBAL_FLAGS+=(\"$1\"); shift;;
     * ) break;;
   esac
 done
@@ -32,7 +32,7 @@ ERR_COUNT=0
 
 for i in "$@"; do
   echo "** Testing $i using a URL **"
-  URL=$(head -n 1 "$i")
+  URL=\"$(head -n 1 "$i")\"
   FLAGS=$(head -n 2 "$i" | tail -1)
   if !(head -n 3 "$i"; eval ./bin/bibscrape $FLAGS "${GLOBAL_FLAGS[@]}" "$URL" 2>&1) | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))

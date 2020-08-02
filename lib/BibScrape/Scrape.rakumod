@@ -11,12 +11,13 @@ use BibScrape::WebDriver;
 my BibScrape::WebDriver::WebDriver:_ $web-driver;
 
 sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTeX::Entry:D) is export {
-  # Support 'doi:' as a url type
-  $url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
-
   $web-driver = BibScrape::WebDriver::WebDriver.new(show-window => $show-window);
   LEAVE { $web-driver.close(); }
-  $web-driver.get($url);
+
+  # Support 'doi:' as a url type
+  my Str:D $web-url = $url;
+  $web-url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
+  $web-driver.get($web-url);
 
   # Get the domain after following any redirects
   my Str:D $domain = ($web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"]).Str;
