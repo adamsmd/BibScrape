@@ -57,7 +57,7 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
       if $paragraph eq '' {
         $out ~= "\n";
       } else {
-        for $paragraph ~~ m:g/ (. ** {0..($end-col - $start)}) [ ' '+ | $ ] / -> Str:D $line {
+        for $paragraph ~~ m:g/ (. ** {0..($end-col - $start)}) [ ' '+ | $ ] / -> Str:D(Match:D) $line {
           col($start);
           $out ~= $line;
         }
