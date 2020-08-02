@@ -161,7 +161,8 @@ practices.
 #={Fix common BibTeX mistakes}
 
   Bool:D :$show-window = False,
-#={Show the browser window while scraping.  (Usefull for debugging.)}
+#={Show the browser window while scraping.  (Usefull for debugging or if
+    BibScrape unexpectedly hangs.)}
 
 #|{
  ----------------
@@ -238,27 +239,37 @@ practices.
       ?? %*ENV<APPDATA> // %*ENV<USERPROFILE> ~ </AppData/Roaming/>
       !! %*ENV<XDG_CONFIG_HOME> // %*ENV<HOME> ~ </.config>).IO
       .add(<BibScrape>);
+  my Str:D constant $names-filename = 'names.cfg';
+  my Str:D constant $nouns-filename = 'nouns.cfg';
   my IO::Path:D $default-names = $config-dir.add('names.cfg');
   my IO::Path:D $default-nouns = $config-dir.add('nouns.cfg');
 
   if $init {
     $config-dir.mkdir;
-    %?RESOURCES<names.cfg>.copy($default-names);
-    %?RESOURCES<nouns.cfg>.copy($default-nouns);
+    for ($names-filename, $nouns-filename) -> Str:D $src {
+      my IO::Path:D $dst = $config-dir.add($src);
+      if $dst.e {
+        say "Not copying default $src since $dst already exists";
+      } else {
+        %?RESOURCES{$src}.copy($dst);
+        say "Successfully copied default $src to $dst";
+      }
+    }
   }
 
-  sub default-file(Str:D $type, IO::Path:D $file) { # TODO: return type
+  sub default-file(Str:D $type, Str:D $file) { # TODO: return type
     sub (IO::Path:D $x --> IO::Path:D) {
       if $x ne '.' {
         $x
       } else {
-        if !$file.IO.e { die "$type file does not exist: $file; bibscrape with --init to automatically create it"; }
-        $file
+        my IO::Path:D $io = $config-dir.add($file);
+        if !$io.IO.e { die "$type file does not exist: $file.  Invoke bibscrape with --init to automatically create it."; }
+        $io
       }
     }
   }
-  @names = @names.map(default-file('Names', $default-names));
-  @nouns = @nouns.map(default-file('Nouns', $default-nouns));
+  @names = @names.map(default-file('Names', $names-filename));
+  @nouns = @nouns.map(default-file('Nouns', $nouns-filename));
 
   my BibScrape::Fix::Fix:D $fixer = BibScrape::Fix::Fix.new(
     names-files => @names,
