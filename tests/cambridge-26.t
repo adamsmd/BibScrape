@@ -1,4 +1,5 @@
 https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=6046168&fulltextType=RA&fileId=S0956796809990074
+
 Superscript in title
 @article{Sperber:2009:10.1017/S0956796809990074,
   author = {Sperber, Michael and Dybvig, R. Kent and Flatt, Matthew and van Straaten, Anton and Findler, Robby and Matthews, Jacob},

@@ -1,4 +1,5 @@
 https://doi.ieeecomputersociety.org/10.1109/LICS.2010.17
+
 Subscript in title and abstract
 @inproceedings{Place:2010:10.1109/LICS.2010.17,
   author = {Place, Thomas and Segoufin, Luc},

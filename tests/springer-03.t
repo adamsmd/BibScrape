@@ -1,4 +1,5 @@
 doi:10.1007/978-1-84628-609-4_20
+
 Test ISBN and warning about suspect names.
 @inbook{Duchowski:2007:10.1007/978-1-84628-609-4_20,
   author = {Duchowski, Andrew},

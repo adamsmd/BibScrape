@@ -1,4 +1,5 @@
 https://portal.acm.org/citation.cfm?id=984506
+
 Acronym in title
 @article{Hsaio:1982:10.1145/984505.984506,
   author = {Hsaio, David K.},

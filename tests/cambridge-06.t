@@ -1,4 +1,5 @@
 https://journals.cambridge.org/action/displayAbstract?aid=83911
+
 Call for papers.  Italics in abstract.  Subtitle.
 @article{Barthe:2001:10.1017/S0956796801004105,
   author = {Barthe, Gilles and Dybjer, Peter and Thiemann, Peter},

@@ -1,4 +1,5 @@
 https://doi.org/10.1145/1809028.1806631
+
 Acronym and math in title, paragraph and math in abstract
 @inproceedings{Might:2010:10.1145/1806596.1806631,
   author = {Might, Matthew and Smaragdakis, Yannis and Van Horn, David},

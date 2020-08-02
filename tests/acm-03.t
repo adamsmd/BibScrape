@@ -1,4 +1,5 @@
 https://portal.acm.org/citation.cfm?id=1190247
+
 Decodes HTML in abstract
 @inproceedings{Might:2007:10.1145/1190216.1190247,
   author = {Might, Matthew},

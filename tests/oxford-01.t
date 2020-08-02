@@ -1,4 +1,5 @@
 https://comjnl.oxfordjournals.org/content/54/5/717.abstract
+
 Unicode in authors
 @article{Sevinc:2011:10.1093/comjnl/bxp130,
   author = {Sevin{\c{c}}, Ender and Co{\c{s}}ar, Ahmet},

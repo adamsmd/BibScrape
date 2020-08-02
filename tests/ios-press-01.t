@@ -1,4 +1,5 @@
 https://content.iospress.com/articles/fundamenta-informaticae/fi65-1-2-02
+
 Example with Unicode
 @article{Abbott:2005,
   author = {Abbott, Michael and Altenkirch, Thorsten and McBride, Conor and Ghani, Neil},

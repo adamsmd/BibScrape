@@ -1,4 +1,5 @@
 https://onlinelibrary.wiley.com/doi/10.1002/spe.978/abstract
+
 Italics in title
 @article{Paolino:2010:10.1002/spe.978,
   author = {Paolino, Luca and Sebillo, Monica and Tortora, Genoveffa and Vitiello, Giuliana},

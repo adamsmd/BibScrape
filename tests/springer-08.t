@@ -1,4 +1,5 @@
 doi:10.1007/BFb0013061
+
 Unicode in title
 @inproceedings{Parigot:1992:10.1007/BFb0013061,
   author = {Parigot, Michel},

@@ -1,4 +1,5 @@
 https://doi.org/10.1007/11737414_3
+
 Shows unicode handling, but missing name for Bruno C.d.S. Oliveira
 @inproceedings{Hinze:2006:10.1007/11737414_3,
   author = {Hinze, Ralf and L{\"o}h, Andres and Oliveira, Bruno C. d. S.},

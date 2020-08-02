@@ -1,4 +1,5 @@
 https://content.iospress.com/articles/fundamenta-informaticae/fi65-1-2-04
+
 Unicode in author
 @article{Blanqui:2005,
   author = {Blanqui, Fr{\'e}d{\'e}ric},

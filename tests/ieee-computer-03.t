@@ -1,4 +1,5 @@
 https://doi.ieeecomputersociety.org/10.1109/LICS.2010.8
+
 Unicode in title and abstract
 @inproceedings{Endrullis:2010:10.1109/LICS.2010.8,
   author = {Endrullis, J{\"o}rg and Hendriks, Dimitri and Klop, Jan Willem},

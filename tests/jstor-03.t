@@ -1,4 +1,5 @@
 https://www.jstor.org/stable/10.2307/2899325
+
 Month extraction when jstor_formatteddate has day and year
 WARNING: Suspect name: Golub, T. R.
 WARNING: Suspect name: Slonim, D. K.

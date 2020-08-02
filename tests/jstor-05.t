@@ -1,4 +1,5 @@
 https://www.jstor.org/stable/10.2307/2899318
+
 Unicode in first author (effects key)
 @article{Barabasi:1999:10.2307/2899318,
   author = {Barab{\'a}si, Albert-L{\'a}szl{\'o} and Albert, R{\'e}ka},

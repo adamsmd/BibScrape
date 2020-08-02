@@ -13,12 +13,12 @@
 #
 #     $ ./test.sh --show-window tests/acm-*.t
 
-FLAGS=()
+GLOBAL_FLAGS=()
 
 while test $# -gt 0; do
   case "$1" in
     --) break;;
-    -*) FLAGS+=("$1"); shift;;
+    -*) GLOBAL_FLAGS+=("$1"); shift;;
     * ) break;;
   esac
 done
@@ -32,13 +32,14 @@ ERR_COUNT=0
 
 for i in "$@"; do
   echo "** Testing $i using a URL **"
-  URL=$(head -n 1 "$i") # TODO: flags on third line
-  if !(head -n 2 "$i"; ./bin/bibscrape "${FLAGS[@]}" "$URL" 2>&1) | diff -u "$i" - | wdiff -dt; then
+  URL=$(head -n 1 "$i")
+  FLAGS="$(head -n 2 "$i" | tail -1)"
+  if !(head -n 3 "$i"; ./bin/bibscrape $FLAGS "${GLOBAL_FLAGS[@]}" "$URL" 2>&1) | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))
   fi
 
   echo "** Testing $i using a filename **"
-  if ! ./bin/bibscrape "${FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") 2>&1 | diff -u "$i" - | wdiff -dt; then
+  if ! ./bin/bibscrape "${GLOBAL_FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") 2>&1 | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))
   fi
 done

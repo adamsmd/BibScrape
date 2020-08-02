@@ -1,4 +1,5 @@
 doi:10.1208/ps010201
+
 Non-continuously numbered journal
 @article{Lin:1999:10.1208/ps010201,
   author = {Lin, Chun-Jung and Smith, David E.},

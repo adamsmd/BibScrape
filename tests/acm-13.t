@@ -1,4 +1,5 @@
 https://portal.acm.org/citation.cfm?doid=237218.237407
+
 Page numbers with letters and dashes
 @inproceedings{Baker:1996:10.1145/237218.237407,
   author = {Baker, James E. and Cruz, Isabel F. and Liotta, Giuseppe and Tamassia, Roberto},

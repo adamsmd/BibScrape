@@ -1,4 +1,5 @@
 https://onlinelibrary.wiley.com/doi/10.1002/rsa.20376/abstract
+
 Unicode in first author's last name and math in abstract.
 @article{Chau:2011:10.1002/rsa.20376,
   author = {Ch{\^a}u, Phong and DeBiasio, Louis and Kierstead, H. A.},

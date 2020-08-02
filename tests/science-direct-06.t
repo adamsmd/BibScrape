@@ -1,4 +1,5 @@
 https://www.sciencedirect.com/science/article/pii/S0020019011001438
+
 Complex equation in abstract
 @article{Koukouvinos:2011:10.1016/j.ipl.2011.05.015,
   author = {Koukouvinos, Christos and Pillwein, Veronika and Simos, Dimitris E. and Zafeirakopoulos, Zafeirakis},

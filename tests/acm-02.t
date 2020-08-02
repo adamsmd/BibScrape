@@ -1,4 +1,5 @@
 https://portal.acm.org/citation.cfm?id=1411204.1411243
+
 Converts HTML italics to Tex, "Van" in author
 @inproceedings{VanHorn:2008:10.1145/1411204.1411243,
   author = {Van Horn, David and Mairson, Harry G.},

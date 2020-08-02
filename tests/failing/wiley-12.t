@@ -1,4 +1,5 @@
 https://onlinelibrary.wiley.com/doi/10.1002/(SICI)1099-0526(199703/04)2:4%3C31::AID-CPLX8%3E3.0.CO;2-3/abstract
+
 Multiple months
 @article{Szpiro:1997:10.1002/(SICI)1099-0526(199703/04)2:4<31::AID-CPLX8>3.0.CO;2-3,
   author = {Szpiro, George G.},

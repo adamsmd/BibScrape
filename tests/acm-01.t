@@ -1,4 +1,5 @@
 https://doi.org/10.1145/1863543.1863551
+
 A simple test
 @inproceedings{Mazurak:2010:10.1145/1863543.1863551,
   author = {Mazurak, Karl and Zdancewic, Steve},
