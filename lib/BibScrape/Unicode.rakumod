@@ -3,17 +3,19 @@ unit module BibScrape::Unicode;
 my Int:D %CCC;
 my Str:D %CODES;
 
-sub unicode2tex(Str:D $str --> Str:D) is export {
+sub unicode2tex(Str:D $str, Regex:D :$ignore = / False / --> Str:D) is export {
   my Str:D @out;
   for $str.ords -> Int:D $ord {
-    if %CODES{$ord}:exists {
+    if $ord.chr ~~ $ignore {
+      push @out, $ord.chr;
+    } elsif %CODES{$ord}:exists {
       if not %CCC{$ord}:exists {
         push @out, "\{%CODES{$ord}\}";
       } else {
         my Str:D $old = pop @out;
         if not $old.defined {
           $old = '{}';
-          say sprintf( 'WARNING: Combining character at start of string:  %s (U+%04x)', chr($ord), $ord);
+          say sprintf( 'WARNING: Combining character at start of string:  %s (U+%04x)', $ord.chr, $ord);
         }
         my Str:D $new = %CODES{$_};
         $new ~~ s/ '{}' /$old/;
@@ -22,9 +24,9 @@ sub unicode2tex(Str:D $str --> Str:D) is export {
         push @out, "\{$new\}";
       }
     } else {
-      say sprintf( 'WARNING: Unknown Unicode character: %s (U+x%04x)', chr($ord), $ord)
+      say sprintf( 'WARNING: Unknown Unicode character: %s (U+x%04x)', $ord.chr, $ord)
         if $ord >= 0x80;
-      push @out, chr($ord);
+      push @out, $ord.chr;
     }
   }
 

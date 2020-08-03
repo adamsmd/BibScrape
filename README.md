@@ -3,11 +3,16 @@
 
 ## Setup
 
-### Install `raku`
+### Install `perl6`/`raku` and `zef`
+
+If on Ubuntu the following will install both perl6 and zef
 
     $ sudo apt install perl6
 
-    TODO: install zef
+Alternatively, install `rakubrew` (including `rakubrew init`) then run the following:
+
+    $ rakubrew build
+    $ rakubrew build-zef
 
 ### Development Tools for Python 3
 

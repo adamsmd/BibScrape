@@ -47,6 +47,9 @@ may take up to 60 seconds
 Trim known fields
 Ignore unknown entries in bibtex
 single letter options
+flag test suite
+optimize
+check installation instructions
 
 # WebDriver
 
@@ -86,3 +89,5 @@ https://files.pythonhosted.org/packages/9f/f0/a391d1463ebb1b233795cabfc0ef38d3db
 # Unsorted
 
 url or howpubilshed that starts with http://[dx.]?doi.org/
+
+Performance: loading Locale::Language is slow

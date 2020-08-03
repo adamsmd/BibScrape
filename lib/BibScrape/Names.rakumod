@@ -39,8 +39,8 @@ sub split-names(Str:D $str --> Array:D[Str:D]) is export {
   depth-split($str, rx/ \s+ 'and' \s+ /);
 }
 
-# TODO: note that these are not exactly how BibTeX parses names, but they are good enough for us (because we avoid capitalization distinctions)
-# TODO: factor out common code
+# Note that these are not exactly how BibTeX parses names, but they are good
+# enough for us (because we avoid capitalization distinctions)
 sub flatten-name(Str:D $str --> Str:D) is export {
   my Str:D @parts = split-name($str.trim);
   do given @parts.elems {
@@ -51,7 +51,6 @@ sub flatten-name(Str:D $str --> Str:D) is export {
   }
 }
 
-# TODO: note that this may not include the 'von' (but only when in no-comma form)
 sub order-name(Str:D $str --> Str:D) is export {
   my Str:D @parts = split-name($str.trim);
   do given @parts.elems {
@@ -65,7 +64,7 @@ sub order-name(Str:D $str --> Str:D) is export {
   }
 }
 
-# TODO: note that this may include the 'von' (but not when in no-comma form)
+# Note that this may include the 'von' (but not when in non-comma form)
 sub last-name(Str:D $str --> Str:D) is export {
   my Str:D @parts = split-name($str.trim);
   do given @parts.elems {

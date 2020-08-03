@@ -12,6 +12,16 @@ use BibScrape::Unicode;
 
 enum MediaType <Print Online Both>;
 
+sub check(BibScrape::BibTeX::Entry:D $entry, Str:D $field, Str:D $msg, &check --> Any:U) {
+  if ($entry.fields{$field}:exists) {
+    my Str:D $value = $entry.fields{$field}.simple-str;
+    unless (&check($value)) {
+      say "WARNING: $msg: ", $value;
+    }
+  }
+  return;
+}
+
 class Fix {
   ## INPUTS
   has Array:D[Str:D] @.names is required;
@@ -154,12 +164,19 @@ class Fix {
         | 'http' 's'? '://portal.acm.org/citation.cfm'
         | 'http' 's'? '://www.jstor.org/stable/'
         | 'http' 's'? '://www.sciencedirect.com/science/article/' ]/; });
+
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', { $_ = Str if $_ eq ($entry.fields<doi> // '') });
+
     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
     for $entry.fields.keys -> Str:D $field {
-      $entry.fields{$field} = BibScrape::BibTeX::Value.new(latex-encode($entry.fields{$field}.simple-str))
-        unless $field ∈ @.no-encode;
+      unless $field ∈ @.no-encode {
+        update($entry, $field, {
+          $_ = rec(from-xml("<root>{$_}</root>").root.nodes);
+          s:g/" "* \xA0/\xA0/; # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
+          $_ = unicode2tex($_, ignore => rx/<[_^{}\\\$]>/); # NOTE: Ignores LaTeX introduced by translation from XML
+        });
+      }
     }
 
     # Canonicalize series: PEPM'97 -> PEPM~'97 (must be after Unicode escaping)
@@ -309,16 +326,6 @@ class Fix {
 
 }
 
-sub check(BibScrape::BibTeX::Entry:D $entry, Str:D $field, Str:D $msg, &check --> Any:U) {
-  if ($entry.fields{$field}:exists) {
-    my Str:D $value = $entry.fields{$field}.simple-str;
-    unless (&check($value)) {
-      say "WARNING: $msg: ", $value;
-    }
-  }
-  return;
-}
-
 sub greek(Str:D $str is copy --> Str:D) {
   # Based on table 131 in the Comprehensive Latex Symbol List
   my Str:D @mapping = <
@@ -418,18 +425,4 @@ sub rec-node(XML::Node:D $node --> Str:D) {
 
     default { die }
   }
-}
-
-sub latex-encode(Str:D $str is copy --> Str:D) {
-  my XML::Node:D $xml = from-xml("<root>{$str}</root>");
-  $str = rec($xml.root.nodes);
-
-  # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
-  $str ~~ s:g/" "* \xA0/\xA0/;
-
-  # TODO: Remove
-  # Encode unicode but skip any \, {, or } that we already encoded.
-  my Str:D @parts = $str.split(rx/ "\$" .*? "\$" | <[\\{}_^]> /, :v)».Str;
-
-  return @parts.map({ /<[_^{}\\\$]>/ ?? $_ !! unicode2tex($_) }).join('');
 }
