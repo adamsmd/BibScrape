@@ -16,8 +16,7 @@ class Rule {
   has Int:D $.publisher is required;
 }
 
-my Rule:D @rules;
-CHECK { @rules = rules(); }
+my Rule:D @rules = CHECK { rules(); }
 
 sub rules(--> Array:D[Rule:D]) {
   my Str:D $xml-str = %?RESOURCES<export_rangemessage.xml>.slurp;
