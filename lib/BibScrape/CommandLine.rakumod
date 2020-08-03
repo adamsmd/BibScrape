@@ -112,7 +112,7 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
   $out.chomp;
 }
 
-sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capture:D) is export {
+sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> Capture:D) is export {
   my List:D $params = params($main);
   my Param:D @params = $params[0];
   my Param:D %params = $params[1];
@@ -124,10 +124,10 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
         ?? Array[$param.type.of].new()
         !! $param.type);
   }
-  my Any:_ @param-value = @params.map(&def);
-  my Any:_ %param-value = %params.map({ $_.key => def($_.value) });
-  while @args {
-    my Str:D $arg = shift @args;
+  my Any:_ @args = @params.map(&def);
+  my Any:_ %args = %params.map({ $_.key => def($_.value) });
+  while @str-args {
+    my Str:D $arg = shift @str-args;
     given $arg {
       # Bare '--'
       when !$no-parse & /^ '--' $/ { $no-parse = True; }
@@ -142,38 +142,38 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
             my Str:D $value-str = $2.[0].Str;
             if $value-str eq '' {
               if $polarity {
-                %param-value{$param.name} = Array[$param.type.of].new();
+                %args{$param.name} = Array[$param.type.of].new();
               } else {
-                %param-value{$param.name} = def($param);
+                %args{$param.name} = def($param);
               }
             } else {
               # TODO: comma in field options
               my Any:D $value = ($param.type.of)($value-str);
               if $polarity {
-                push %param-value{$param.name}, $value;
+                push %args{$param.name}, $value;
               } else {
-                %param-value{$param.name} =
+                %args{$param.name} =
                   Array[$param.type.of](
-                    %param-value{$param.name}.grep({ not ($_ eqv $value) }));
+                    %args{$param.name}.grep({ not ($_ eqv $value) }));
               }
             }
           }
           default {
-            my Str:D $str-value =
+            my Str:D $value-str =
               $2.chars > 0 ?? $2.[0].Str
                 !! $param.type ~~ Bool ?? $polarity.Str
-                !! @args.shift; # TODO: missing arg
+                !! @str-args.shift; # TODO: missing arg
             my Any:D $value =
               do if $param.type ~~ Bool {
-                do given $str-value {
+                do given $value-str {
                   when m:i/ 'true' | 'y' | 'yes' | 'on' | '1' / { True }
                   when m:i/ 'false' | 'n' | 'no' | 'off' | '0' / { False }
                   default { die; }
                 };
               } else {
-                ($param.type)($str-value)
+                ($param.type)($value-str)
               };
-            %param-value{$param.name} = $value;
+            %args{$param.name} = $value;
           }
         }
       }
@@ -182,19 +182,19 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
         my Param:D $param = @params[$positionals];
         given $param.type {
           when Positional {
-            push @param-value[$positionals], ($param.type.of)($arg);
+            push @args[$positionals], ($param.type.of)($arg);
             # NOTE: no `$positionals++`
           }
           default {
-            @param-value[$positionals] = ($param.type)($arg);
+            @args[$positionals] = ($param.type)($arg);
             $positionals++;
           }
         }
       }
     }
   }
-  %param-value{ '' } = True # Prevent the capture from matching in order to trigger the usage message
-    if %param-value<help>;
-  my Capture:D $capture = Capture.new(list => @param-value, hash => %param-value);
+  %args{ '' } = True # Prevent the capture from matching in order to trigger the usage message
+    if %args<help>;
+  my Capture:D $capture = Capture.new(list => @args, hash => %args);
   $capture;
 }

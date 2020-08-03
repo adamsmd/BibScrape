@@ -17,8 +17,8 @@ sub MAIN(
 ;BOOLEAN FLAGS
 ;----------------
 ;
-;Use --flag to set to True.
-;Use --/flag to set to False.
+;Use --flag, --flag=true, --flag=yes, --flag=on or --flag=1 to set to True.
+;Use --/flag, --flag=false, --flag-yes, --flag=off or --flag=0 to set to False.
 ;
 ;----------------
 ;LIST FLAGS
