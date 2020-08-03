@@ -31,14 +31,14 @@ fi
 ERR_COUNT=0
 
 for i in "$@"; do
-  echo "** Testing $i using a URL **"
+  echo "** [$(date +%r)] Testing $i using a URL **"
   URL=\"$(head -n 1 "$i")\"
   FLAGS=$(head -n 2 "$i" | tail -1)
   if !(head -n 3 "$i"; eval ./bin/bibscrape $FLAGS "${GLOBAL_FLAGS[@]}" "$URL" 2>&1) | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))
   fi
 
-  echo "** Testing $i using a filename **"
+  echo "** [$(date +%r)] Testing $i using a filename **"
   if ! eval ./bin/bibscrape $FLAGS "${GLOBAL_FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") 2>&1 | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))
   fi

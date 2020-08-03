@@ -58,7 +58,8 @@ diff old
 --timeout flag
 may take up to 60 seconds
 Trim known fields
-Ignore unknown in bibtex
+Ignore unknown entries in bibtex
+single letter options
 
 # WebDriver
 

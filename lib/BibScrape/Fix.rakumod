@@ -18,16 +18,16 @@ class Fix {
   has Str:D %.nouns is required; # Maps strings to their replacements
 
   ## OPERATING MODES
-  has Bool:D $.debug is required;
   has Bool:D $.scrape is required;
   has Bool:D $.fix is required;
 
   ## GENERAL OPTIONS
   has Bool:D $.escape-acronyms is required;
+  has MediaType:D $.issn-media is required;
   has MediaType:D $.isbn-media is required;
   has BibScrape::Isbn::IsbnType:D $.isbn-type is required;
   has Str:D $.isbn-sep is required;
-  has MediaType:D $.issn-media is required;
+  has Bool:D $.verbose is required;
 
   ## FIELD OPTIONS
   has Str:D @.field is required;
@@ -134,9 +134,9 @@ class Fix {
       # PACMPL uses conference abbreviations (e.g., ICFP)
       /^ <[A..Z]>+ $/ });
 
-    self.isbn($entry, 'isbn', $.isbn-media, &canonical-isbn);
-
     self.isbn($entry, 'issn', $.issn-media, &canonical-issn);
+
+    self.isbn($entry, 'isbn', $.isbn-media, &canonical-isbn);
 
     # Change language codes (e.g., "en") to proper terms (e.g., "English")
     update($entry, 'language', { $_ = code2language($_) if code2language($_).defined });

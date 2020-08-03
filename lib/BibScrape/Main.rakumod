@@ -123,7 +123,7 @@ practices.
     ;- If it starts with 'doi:', it is interpreted as a DOI.
     ;- Otherwise, it is interpreted as a filename.}
 
-  Str:D :@key,
+  Str:D :k(:@key),
 #={Specify the keys to use in the output BibTeX.
     ;;
     Successive keys are used for succesive BibTeX entries.
@@ -151,18 +151,11 @@ practices.
   Bool:D :$init = False,
 #={Create the default names and nouns files.}
 
-  Bool:D :$debug = False,
-#={Print debug data}
-
   Bool:D :$scrape = True,
 #={Scrape the BibTeX entry from the publisher's page}
 
   Bool:D :$fix = True,
 #={Fix common BibTeX mistakes}
-
-  Bool:D :$show-window = False,
-#={Show the browser window while scraping.  (Usefull for debugging or if
-    BibScrape unexpectedly hangs.)}
 
 #|{
  ----------------
@@ -170,9 +163,22 @@ practices.
 ;----------------
 ;}
 
+  Bool:D :w(:$show-window) = False,
+#={Show the browser window while scraping.  (Usefull for debugging or if
+    BibScrape unexpectedly hangs.)}
+
   Bool:D :$escape-acronyms = True,
 #={In titles, enclose sequences of two or more uppercase letters (i.e.,
     an acronym) in braces so that BibTeX preserves their case.}
+
+  BibScrape::Fix::MediaType:D :$issn-media = BibScrape::Fix::Both,
+#={When both a print and an online ISSN are available:
+    ;
+    ;- if <MediaType> is "Print", use only the print ISSN,
+    ;- if <MediaType> is "Online", use only the online ISSN,
+    ;- if <MediaType> is "Both", use both the print and the online ISSN
+    ;;
+    If only one ISSN is available, this option is ignored.}
 
   BibScrape::Fix::MediaType:D :$isbn-media = BibScrape::Fix::Both,
 #={When both a print and an online ISBN are available:
@@ -193,15 +199,11 @@ practices.
     Hyphen and space are the most common.
     Use an empty string to specify no separator.}
 
-# TODO: reorder (before all ISBN)
-  BibScrape::Fix::MediaType:D :$issn-media = BibScrape::Fix::Both,
-#={When both a print and an online ISSN are available:
+  Bool:D :v(:$verbose) = False,
+#={Print debug data}
 
-    ;- if <MediaType> is "Print", use only the print ISSN,
-    ;- if <MediaType> is "Online", use only the online ISSN,
-    ;- if <MediaType> is "Both", use both the print and the online ISSN
-    ;;
-    If only one ISSN is available, this option is ignored.}
+  Bool:D :h(:$help) = False,
+#={Print this usage message}
 
 #|{
 ;----------------
@@ -209,7 +211,7 @@ practices.
 ;----------------
 ;}
 
-  Str:D :@field = Array[Str:D](<
+  Str:D :f(:@field) = Array[Str:D](<
     author editor affiliation title
     howpublished booktitle journal volume number series jstor_issuetitle
     type jstor_articletype school institution location conference_date
@@ -274,14 +276,14 @@ practices.
   my BibScrape::Fix::Fix:D $fixer = BibScrape::Fix::Fix.new(
     names-files => @names,
     nouns-files => @nouns,
-    debug => $debug,
     scrape => $scrape,
     fix => $fix,
     escape-acronyms => $escape-acronyms,
+    issn-media => $issn-media,
     isbn-media => $isbn-media,
     isbn-type => $isbn-type,
     isbn-sep => $isbn-sep,
-    issn-media => $issn-media,
+    verbose => $verbose,
     field => @field,
     no-encode => @no-encode,
     no-collapse => @no-collapse,
@@ -305,7 +307,8 @@ practices.
       print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {
       # Not a URL so try reading it as a file
-      my BibScrape::BibTeX::Database:D $bibtex = bibtex-parse($arg.IO.slurp);
+      my Str:D $str = ($arg eq '-' ?? $*IN !! $arg.IO).slurp;
+      my BibScrape::BibTeX::Database:D $bibtex = bibtex-parse($str);
       for $bibtex.items -> BibScrape::BibTeX::Item:D $item {
         if $item !~~ BibScrape::BibTeX::Entry:D {
           print $item.Str;
