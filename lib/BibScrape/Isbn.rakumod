@@ -16,6 +16,9 @@ class Rule {
   has Int:D $.publisher is required;
 }
 
+my Rule:D @rules;
+CHECK { @rules = rules(); }
+
 sub rules(--> Array:D[Rule:D]) {
   my Str:D $xml-str = %?RESOURCES<export_rangemessage.xml>.slurp;
   # NOTE: due to a bug in the XML module, must strip tags containing '.'
@@ -45,12 +48,6 @@ sub rules(--> Array:D[Rule:D]) {
         publisher => $length);
     }
   }.flat.Array
-}
-
-my Rule:D @rules;
-
-CHECK { # TODO: just directly assign instead of CHECK?
-  @rules = rules();
 }
 
 sub hyphenate(Str:D $isbn --> Str:D) {

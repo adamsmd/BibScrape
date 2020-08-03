@@ -15,7 +15,6 @@ class Param {
 sub params(Sub:D $main--> List:D) {
   my Param:D @params;
   my Param:D %params;
-  # TODO: BEGIN
   for $main.signature.params -> Parameter:D $parameter {
     my Param:D $param = Param.new($parameter);
     if $param.named {
