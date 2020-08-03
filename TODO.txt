@@ -40,8 +40,6 @@ Code coverage
 .
 |capture
 Nil
-README from old
-diff old
 --timeout flag
 may take up to 60 seconds
 Trim known fields
@@ -86,8 +84,200 @@ https://files.pythonhosted.org/packages/80/d6/4294f0b4bce4de0abf13e17190289f9d06
 https://pypi.org/project/urllib3/#files
 https://files.pythonhosted.org/packages/9f/f0/a391d1463ebb1b233795cabfc0ef38d3db4442339de68f847026199e69d7/urllib3-1.25.10-py2.py3-none-any.whl
 
+https://www.zotero.org/support/translators
+https://zotero-translator-tests.s3.amazonaws.com/index.html
+https://github.com/zotero/translators/
+https://github.com/zotero?type=source
+https://github.com/zotero/bib-web/blob/master/src/js/components/export-tools.jsx
+https://github.com/zotero/bib-web/blob/7f2df535ceb1579fa381b2ebbed182b01e862899/src/js/components/container.jsx
+https://github.com/zotero/bib
+https://github.com/citation-style-language/schema/blob/master/schemas/styles/stop-words.json
+https://citationstyles.org/
+https://github.com/zotero/bib/blob/e99cfe29087bb5b312ceec12aab0f6b62497b7b4/src/zotero-translation-client.js
+https://github.com/zotero/translation-server/search?q=bibtex&unscoped_q=bibtex
+https://zbib.org/
+https://www.zotero.org/repo/code/trunk/9cb70025-a888-4a29-a210-93ec52da40d4
+https://www.zotero.org/support/dev/start
+https://www.zotero.org/support/kb
+https://www.zotero.org/support/third_party_documentation
+
+https://dblp.org/db/links.html
+
 # Unsorted
 
 url or howpubilshed that starts with http://[dx.]?doi.org/
 
 Performance: loading Locale::Language is slow
+
+
+
+
+
+# Old
+
+
+tests/ieee-computer-2.t
+-  series = {Signal-Image Technologies and Internet-Based System, International IEEE Conference on},
++  series = {2012 Eighth International Conference on Signal Image Technology and Internet Based Systems},
+
+
+(!) Warn when names overlap
+(!) Warn if wrong publisher
+ISSN needs to be added to springer (e.g. SYBR1)
+Control flow analysis in {S}cheme: http://dx.doi.org/10.1145/53990.54007
+  {S}cheme
+  abstract
+  month
+'https://dl.acm.org/citation.cfm?id=2175516'
+   Invalid digits or wrong number of digits in ISBN: 3642119565,9783642119569 at Text/BibTeX/Fix.pm line 159.
+   (Example of going wrong if using wrong publisher)
+Upper vs lower case after colon:
+   https://dl.acm.org/citation.cfm?doid=78973.78977
+
+Other publishers indexed by ACM: http://dl.acm.org/citation.cfm?id=2175486.2175491
+
+http://journals.cambridge.org/article_S0956796897002864: HTML entities in author name
+
+http://link.springer.com/chapter/10.1007/978-3-642-19718-5_14 -> http://www.springerlink.com/content/1qt504757p15u683/
+
+"IV" in author name: http://link.springer.com/article/10.1023%2FA%3A1010051815785
+
+"Scheme" not capitalized: http://link.springer.com/article/10.1007%2FBF01806308}
+
+---------
+
+http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
+ #^dissertation
+ #^BUG (ACM's fault): download bibtex link is broken
+ #^Should follow to ProQuest
+http://portal.acm.org/citation.cfm?id=159531
+ #^non ACM publication
+http://portal.acm.org/citation.cfm?id=1227145
+ #^title is wrong (and not ACM publication)
+
+http://www.springerlink.com/content/m746t0/#section=281461&page=1
+ #^broken? no export link?
+http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
+ #^book
+
+Unicode in Title, Abstract, Author
+Formatted (e.g. superscript, italics) in Title, Abstract
+Complex names (e.g. Bruno C.d.S. Oliveira, Simon Peyton Jones)
+Export tab
+Missing abstract
+
+Multi-paragraph abstract
+Subtitle
+Book
+Journal Issue
+
+acm.org
+ U(T,Ab,Au) S(T,ab) I(T,Ab) x m
+sciencedirect.com
+ U(T,Ab,Au) S(T,Ab) I(T,Ab) (X) m
+springerlink.com
+ U(T,Ab,Au) S(t,ab) I(t,ab) x m
+journals.cambridge.org
+ U(T,Ab,Au) S(T,Ab) I(T,Ab) x m
+computer.org
+ U(t,ab,au) S(t,ab) I(t,ab) x m
+jstor.org
+ U(T,ab,au) S(T,ab) I(T,ab) x m
+iospress.metapress.com
+ U(T,ab,au) S(t,ab) I(t,ab) x m
+ieeexplore.ieee.org
+ U(t,ab,au) S(t,ab) I(t,ab) x m
+onlinelibrary.wiley.com
+ U(t,ab,Au) S(T,Ab) I(T,Ab) E m
+
+tests/ieee-computer-2.t
+-  series = {Signal-Image Technologies and Internet-Based System, International IEEE Conference on},
++  series = {2012 Eighth International Conference on Signal Image Technology and Internet Based Systems},
+
+\emph vs \textit
+http vs https
+dx.doi.org vs doi.org
+oxford domain name change
+tests/failing
+mode that compares against DBLP
+
+usenix
+
+arxiv:
+ - normal
+ - proceedings: https://arxiv.org/help/submit_index
+   - https://arxiv.org/abs/1708.06226
+   - https://arxiv.org/html/1708.06226
+     - https://arxiv.org/abs/1708.06459v1
+     - https://arxiv.org/abs/1708.06460v1
+     - https://arxiv.org/abs/1708.06461v1
+
+Fix:
+ - ieee-computer
+
+ - jstor (on campus?)
+ - cambridge (on campus only?)
+ - oxford (on campus only?)
+
+ - ieee-computer-01: lower case lics
+
+ - ACM PACMPL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+diff --git a/TODO b/TODO
+--- a/TODO
++++ b/TODO
+@@ -1,3 +1,6 @@
++Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-functional-programming/article/new-method-for-functional-arrays/7BBFBB58A34DFC28CBF0E758D989D622
++
++
+ (!) Warn when names overlap
+ (!) Warn if wrong publisher
+ ISSN needs to be added to springer (e.g. SYBR1)
+diff --git a/Text/BibTeX/Fix.pm b/Text/BibTeX/Fix.pm
+--- a/Text/BibTeX/Fix.pm
++++ b/Text/BibTeX/Fix.pm
+@@ -544,7 +544,7 @@ sub canonical_names {
+                 }
+             }
+         }
+-        print "WARNING: Suspect name: @{[$name->format($name_format)]}\n" unless
++        print "WARNING: Uncertain how to parse name: @{[$name->format($name_format)]}\n" unless
+             (not defined $name->part('von') and
+              not defined $name->part('jr') and
+              first_name(decode_entities(decode('utf8', join(' ', $name->part('first'))))) and
+diff --git a/Text/BibTeX/Scrape.pm b/Text/BibTeX/Scrape.pm
+--- a/Text/BibTeX/Scrape.pm
++++ b/Text/BibTeX/Scrape.pm
+@@ -54,6 +54,7 @@ sub parse_bibtex {
+     my ($id) = $bib_text =~ m[\{(.*?),]s;
+     $id =~ s[ ][_]g;
+     $id =~ s[[^[:ascii:]]][?]g;
++    $id =~ s[[']][?]g;
+     $bib_text =~ s/\{(.*?),/{$id,/s;
+ 
+     $entry->parse_s($bib_text, 0); # 1 for preserve values
+diff --git a/tests/jstor-1.t b/tests/jstor-1.t
+--- a/tests/jstor-1.t
++++ b/tests/jstor-1.t
+@@ -9,7 +9,7 @@ http://www.jstor.org/stable/2975544
+   pages = {174--185},
+   month = mar,
+   year = {1983},
+-  publisher = {Mathematical Association of America},
++  publisher = {Taylor {\&} Francis, Ltd.},
+   issn = {0002-9890 (Print) 1930-0972 (Online)},
+   doi = {10.2307/2975544},
+   bib_scrape_url = {http://www.jstor.org/stable/2975544},
