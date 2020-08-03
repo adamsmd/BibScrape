@@ -1,25 +1,12 @@
 # Flags
 
-flags for lists
-@url flag instead of $url
---input where *.IO.f
---names where *.IO.f
---nouns where *.IO.f
-%field
-%no-encode
-%no-collapse
-%omit
-%omit-empty
 comma or no comma after last field
-headless
 Case-insensitive nouns?
 Omit:class/type
 Include:class/type
 no issn, no isbn
-multiple $url
 whether to re-scrape bibtex
-
-debug?
+verbose
 
 # Key generation:
 

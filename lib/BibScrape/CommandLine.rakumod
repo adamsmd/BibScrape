@@ -159,12 +159,21 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @args is copy where { $_.all ~~ Str:D }--> Capt
             }
           }
           default {
-            my Str:D $value =
-              $2.chars > 0 ?? $2.[0].Str !!
-                $param.type ~~ Bool ?? $polarity.Str !! # TODO: yes, no
-                @args.shift; # TODO: missing arg
-            my Any:D $value2 = ($param.type)($value);
-            %param-value{$param.name} = $value2;
+            my Str:D $str-value =
+              $2.chars > 0 ?? $2.[0].Str
+                !! $param.type ~~ Bool ?? $polarity.Str
+                !! @args.shift; # TODO: missing arg
+            my Any:D $value =
+              do if $param.type ~~ Bool {
+                do given $str-value {
+                  when m:i/ 'true' | 'y' | 'yes' | 'on' | '1' / { True }
+                  when m:i/ 'false' | 'n' | 'no' | 'off' | '0' / { False }
+                  default { die; }
+                };
+              } else {
+                ($param.type)($str-value)
+              };
+            %param-value{$param.name} = $value;
           }
         }
       }

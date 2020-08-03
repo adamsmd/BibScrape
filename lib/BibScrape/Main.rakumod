@@ -141,7 +141,6 @@ practices.
     See the NOUNS FILES section for details.
     The file name "." means the default nouns file.}
 
-# TODO: reorder
 #|{
  ----------------
 ;OPERATING MODES
@@ -259,7 +258,7 @@ practices.
     }
   }
 
-  sub default-file(Str:D $type, Str:D $file) { # TODO: return type
+  sub default-file(Str:D $type, Str:D $file --> Callable[IO::Path:D]) {
     sub (IO::Path:D $x --> IO::Path:D) {
       if $x ne '.' {
         $x
