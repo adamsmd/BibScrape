@@ -61,10 +61,9 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
     .classify({ .fields<journal>:exists });
   my BibScrape::BibTeX::Entry:D $entry = (%entry<False> // %entry<True>).head;
 
-  # TODO: check SIGPLAN Notices
   ## HTML Meta
-  #my $meta = html-meta-parse($web-driver);
-  #html-meta-bibtex($entry, $meta);
+  my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
+  html-meta-bibtex($entry, $meta, journal => False #`(avoid SIGPLAN Notices));
 
   ## Abstract
   my Str:_ $abstract = $web-driver
