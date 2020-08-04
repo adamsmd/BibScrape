@@ -63,7 +63,6 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
   $out ~= "Usage:\n";
   $out ~= "  $*PROGRAM-NAME [options]";
 
-  # TODO: %params
   for @params -> Param:D $param {
     $out ~= " <" ~ $param.name ~ ($param.type ~~ Positional ?? '> ...' !! '>');
   }
@@ -88,7 +87,6 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
         default { $out ~= " <{$param.name}>"; }
       }
     }
-    # TODO: comma in list keyword flags
     if $param.default.defined {
       if $param.type ~~ Positional {
         wrap(28, "Default: {$param.default.map({ "'$_'" })}");
@@ -99,9 +97,9 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
       $out ~= "\n";
     }
     $out ~= "\n";
-    # if $param.type ~~ Enumeration {
-    #   wrap(4, "<{type-name($param.type)}> = {$param.type.enums.keys.join(' | ')};");
-    # }
+    if $param.type ~~ Enumeration {
+      wrap(4, "<{type-name($param.type)}> = {$param.type.enums.list.sort(*.value).map(*.key).join(' | ')};");
+    }
     with $param.doc and $param.doc.trailing {
       wrap(4, $_);
     }
@@ -123,6 +121,19 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
         ?? Array[$param.type.of].new()
         !! $param.type);
   }
+  sub val(Any:U $type, Str:D $value-str --> Any:D) {
+    given $type {
+      when Bool {
+        given $value-str {
+          when m:i/^ [ 'true' | 'y' | 'yes' | 'on' | '1' ] $/ { True }
+          when m:i/^ [ 'false' | 'n' | 'no' | 'off' | '0' ] $/ { False }
+          default { die "Could not parse argument to boolean flag: $value-str"; }
+        }
+      }
+      when IO::Path { $value-str.IO } # IO::Path isn't callable for some reason
+      default { $type($value-str) }
+    }
+  }
   my Any:_ @args = @params.map(&def);
   my Any:_ %args = %params.map({ $_.key => def($_.value) });
   while @str-args {
@@ -134,11 +145,13 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
       when !$no-parse & /^ '--' ('/'?) (<-[=]>+) (['=' (.*)]?) $/ {
         my Bool:D $polarity = ($0.chars == 0);
         my Str:D $name = $1.Str;
-        # TODO: when $name eq ''
-        my Param:D $param = %params{$name}; # TODO: Missing param name
+        my Param:D $param = %params{$name} // die "Unknown '$name' flag: $arg";
+        my Str:D $value-str =
+          $2.chars > 0 ?? $2.[0].Str
+            !! $param.type ~~ Bool ?? $polarity.Str
+            !! @str-args.shift // die "Missing argument for '$arg' flag";
         given $param.type {
           when Positional {
-            my Str:D $value-str = $2.[0].Str;
             if $value-str eq '' {
               if $polarity {
                 %args{$param.name} = Array[$param.type.of].new();
@@ -146,8 +159,7 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
                 %args{$param.name} = def($param);
               }
             } else {
-              # TODO: comma in field options
-              my Any:D $value = ($param.type.of)($value-str);
+              my Any:D $value = val($param.type.of, $value-str);
               if $polarity {
                 push %args{$param.name}, $value;
               } else {
@@ -158,20 +170,7 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
             }
           }
           default {
-            my Str:D $value-str =
-              $2.chars > 0 ?? $2.[0].Str
-                !! $param.type ~~ Bool ?? $polarity.Str
-                !! @str-args.shift; # TODO: missing arg
-            my Any:D $value =
-              do if $param.type ~~ Bool {
-                do given $value-str {
-                  when m:i/^ [ 'true' | 'y' | 'yes' | 'on' | '1' ] $/ { True }
-                  when m:i/^ [ 'false' | 'n' | 'no' | 'off' | '0' ] $/ { False }
-                  default { die; }
-                };
-              } else {
-                ($param.type)($value-str)
-              };
+            my Any:D $value = val($param.type, $value-str);
             %args{$param.name} = $value;
           }
         }
@@ -181,11 +180,11 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
         my Param:D $param = @params[$positionals];
         given $param.type {
           when Positional {
-            push @args[$positionals], ($param.type.of)($arg);
+            push @args[$positionals], val($param.type.of, $arg);
             # NOTE: no `$positionals++`
           }
           default {
-            @args[$positionals] = ($param.type)($arg);
+            @args[$positionals] = val($param.type, $arg);
             $positionals++;
           }
         }
