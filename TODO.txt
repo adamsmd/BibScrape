@@ -21,6 +21,8 @@ get PDF (eprint?)
 Trim known field types
 warn if not exists bib_scrape_url when rescraping and fallback to doi
 
+convert a howpublished that contains a url to the url field
+
 # Tests
 
 doi:http://dx.doi.org/
@@ -152,6 +154,9 @@ url or howpubilshed that starts with http://[dx.]?doi.org/
 
 (!) Warn when names overlap
 (!) Warn if wrong publisher
+use variables :D;
+
+All authors from big four (and authors cited)
 
 ---------
 

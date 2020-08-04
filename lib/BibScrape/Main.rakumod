@@ -17,17 +17,23 @@ sub MAIN(
 ;BOOLEAN FLAGS
 ;----------------
 ;
-;Use --flag, --flag=true, --flag=yes, --flag=y, --flag=on or --flag=1 to set to True.
-;Use --/flag, --flag=false, --flag=no, --flag=n, --flag=off or --flag=0 to set to False.
+;Use --flag, --flag=true, --flag=yes, --flag=y, --flag=on or --flag=1
+;to set a boolean flag to True.
+;
+;Use --/flag, --flag=false, --flag=no, --flag=n, --flag=off or --flag=0
+;to set a boolean flag to False.
 ;
 ;----------------
 ;LIST FLAGS
 ;----------------
 ;
-;Use --flag=<value> to add an element.
-;Use --/flag=<value> to remove an element.
-;Use --flag= to set to an empty list.
-;Use --/flag= to set to the default list.
+;Use --flag=<value> to add a value to a list flag.
+;
+;Use --/flag=<value> to remove a value from a list flag.
+;
+;Use --flag= to set a list flag to an empty list.
+;
+;Use --/flag= to set a list flag to its default list.
 ;
 ;----------------
 ;NAMES
@@ -83,7 +89,7 @@ Lines other than the first one are aliases that should be converted to the
 canonical form.
 ;;
 When searching for a name, case distinctions and divisions of the name into
-parts (e.g. first vs last name) are ignored as publishers often get these
+parts (e.g., first vs last name) are ignored as publishers often get these
 wrong (e.g., "Van Noort" will match "van Noort" and "Jones, Simon Peyton" will
 match "Peyton Jones, Simon").
 ;;
@@ -134,12 +140,12 @@ practices.
   IO::Path:D :@names = Array[IO::Path:D](<.>.IO),
 #={Add to the list of names files.
     See the NAMES FILES section for details.
-    The file name "." means the default names file.}
+    The file name "." means "names.cfg" in the user-configuration directory.}
 
   IO::Path:D :@nouns = Array[IO::Path:D](<.>.IO),
 #={Add to the list of nouns files.
     See the NOUNS FILES section for details.
-    The file name "." means the default nouns file.}
+    The file name "." means "nouns.cfg" in the user-configuration directory.}
 
 #|{
  ----------------
@@ -149,6 +155,9 @@ practices.
 
   Bool:D :$init = False,
 #={Create the default names and nouns files.}
+
+  Bool:D :$config-dir = False,
+#={Print the location of the user-configuration directory.}
 
   Bool:D :$scrape = True,
 #={Scrape the BibTeX entry from the publisher's page}
@@ -163,8 +172,8 @@ practices.
 ;}
 
   Bool:D :w(:$show-window) = False,
-#={Show the browser window while scraping.  (Usefull for debugging or if
-    BibScrape unexpectedly hangs.)}
+#={Show the browser window while scraping.  (This is usefull for debugging or
+    if BibScrape unexpectedly hangs.)}
 
   Bool:D :$escape-acronyms = True,
 #={In titles, enclose sequences of two or more uppercase letters (i.e.,
@@ -235,20 +244,25 @@ practices.
 
 --> Any:U
 ) is export {
-  my IO::Path:D $config-dir =
+
+  my IO::Path:D $config-dir-path =
     ($*DISTRO.is-win
       ?? %*ENV<APPDATA> // %*ENV<USERPROFILE> ~ </AppData/Roaming/>
       !! %*ENV<XDG_CONFIG_HOME> // %*ENV<HOME> ~ </.config>).IO
       .add(<BibScrape>);
   my Str:D constant $names-filename = 'names.cfg';
   my Str:D constant $nouns-filename = 'nouns.cfg';
-  my IO::Path:D $default-names = $config-dir.add('names.cfg');
-  my IO::Path:D $default-nouns = $config-dir.add('nouns.cfg');
+  my IO::Path:D $default-names = $config-dir-path.add('names.cfg');
+  my IO::Path:D $default-nouns = $config-dir-path.add('nouns.cfg');
+
+  if $config-dir {
+    say "User-configuration directory: $config-dir-path";
+  }
 
   if $init {
-    $config-dir.mkdir;
+    $config-dir-path.mkdir;
     for ($names-filename, $nouns-filename) -> Str:D $src {
-      my IO::Path:D $dst = $config-dir.add($src);
+      my IO::Path:D $dst = $config-dir-path.add($src);
       if $dst.e {
         say "Not copying default $src since $dst already exists";
       } else {
@@ -263,8 +277,10 @@ practices.
       if $x ne '.' {
         $x
       } else {
-        my IO::Path:D $io = $config-dir.add($file);
-        if !$io.IO.e { die "$type file does not exist: $file.  Invoke bibscrape with --init to automatically create it."; }
+        my IO::Path:D $io = $config-dir-path.add($file);
+        if !$io.IO.e {
+          die "$type file does not exist: $file.  Invoke bibscrape with --init to automatically create it.";
+        }
         $io
       }
     }
