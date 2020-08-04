@@ -147,7 +147,13 @@ Alternatively, install [`rakubrew`](https://rakubrew.org/) (including running
 
 #### Perl 6/Raku Modules
 
-    $ zef install ArrayHash HTML::Entity Inline::Python Locale::Codes Temp::Path XML
+    $ zef install ArrayHash HTML::Entity Locale::Codes Temp::Path XML
+
+Install `Inline::Python`
+    git clone
+    cd
+    git checkout python3
+    zef install . --exclude=python3
 
 #### Python Modules
 

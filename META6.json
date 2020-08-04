@@ -7,16 +7,18 @@
   "authors" : [ "Michael D. Adams" ],
   "license" : "AGPL-3.0-or-later",
   "provides" : {
-    "BibScrape::BibTeX":   "lib/BibScrape/BibTeX.rakumod",
-    "BibScrape::Fix":      "lib/BibScrape/Fix.rakumod",
-    "BibScrape::HtmlMeta": "lib/BibScrape/HtmlMeta.rakumod",
-    "BibScrape::Isbn":     "lib/BibScrape/Isbn.rakumod",
-    "BibScrape::Month":    "lib/BibScrape/Month.rakumod",
-    "BibScrape::Names":    "lib/BibScrape/Names.rakumod",
-    "BibScrape::Ris":      "lib/BibScrape/Ris.rakumod",
-    "BibScrape::Scrape":   "lib/BibScrape/Scrape.rakumod",
-    "BibScrape::Unicode":  "lib/BibScrape/Unicode.rakumod",
-    "BibScrape::WebDriver":"lib/BibScrape/WebDriver.rakumod"
+    "BibScrape::BibTeX":      "lib/BibScrape/BibTeX.rakumod",
+    "BibScrape::CommandLine": "lib/BibScrape/CommandLine.rakumod",
+    "BibScrape::Fix":         "lib/BibScrape/Fix.rakumod",
+    "BibScrape::HtmlMeta":    "lib/BibScrape/HtmlMeta.rakumod",
+    "BibScrape::Isbn":        "lib/BibScrape/Isbn.rakumod",
+    "BibScrape::Main":        "lib/BibScrape/Main.rakumod",
+    "BibScrape::Month":       "lib/BibScrape/Month.rakumod",
+    "BibScrape::Names":       "lib/BibScrape/Names.rakumod",
+    "BibScrape::Ris":         "lib/BibScrape/Ris.rakumod",
+    "BibScrape::Scrape":      "lib/BibScrape/Scrape.rakumod",
+    "BibScrape::Unicode":     "lib/BibScrape/Unicode.rakumod",
+    "BibScrape::WebDriver":   "lib/BibScrape/WebDriver.rakumod"
   },
   "depends" : [
     "ArrayHash",

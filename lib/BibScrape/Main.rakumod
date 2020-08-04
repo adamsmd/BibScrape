@@ -208,7 +208,10 @@ practices.
     Use an empty string to specify no separator.}
 
   Bool:D :v(:$verbose) = False,
-#={Print debug data}
+#={Print verbose output}
+
+  Bool:D :V(:$version) = False,
+#={Print version information}
 
   Bool:D :h(:$help) = False,
 #={Print this usage message}
@@ -244,7 +247,22 @@ practices.
 
 --> Any:U
 ) is export {
-
+  if $version {
+    given $?DISTRIBUTION.meta<ver> {
+      when '*' {
+        my $rev = run(<git rev-parse HEAD>, :out, :cwd($?DISTRIBUTION.prefix)).out.slurp(:close).chomp;
+        my $status = run(<git status --short>, :out, :cwd($?DISTRIBUTION.prefix)).out.slurp(:close).chomp;
+        if $status eq '' {
+          say "BibScrape version git:$rev (clean)";
+        } else {
+          say "BibScrape version git:$rev with status:\n$status";
+        }
+      }
+      default {
+        say "BibScrape version ", $_.Str;
+      }
+    }
+  }
   my IO::Path:D $config-dir-path =
     ($*DISTRO.is-win
       ?? %*ENV<APPDATA> // %*ENV<USERPROFILE> ~ </AppData/Roaming/>

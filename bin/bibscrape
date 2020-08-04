@@ -1,7 +1,7 @@
 #!/usr/bin/env perl6
 
-use lib 'lib';
-use lib '/home/adamsmd/l/tex/bibscrape/Inline-Python.git/lib';
+# Load local libraries if running from a repository and not installed
+if $?FILE.IO.parent.add( '../lib' ).e { use lib $?FILE.IO.parent.add( '../lib' ); }
 
 use BibScrape::CommandLine;
 use BibScrape::Main;
