@@ -23,6 +23,7 @@ warn if not exists bib_scrape_url when rescraping and fallback to doi
 
 # Tests
 
+doi:http://dx.doi.org/
  - jstor (on campus?)
  - cambridge (on campus only?)
  - oxford (on campus only?)

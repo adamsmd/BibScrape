@@ -16,7 +16,7 @@ sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTe
 
   # Support 'doi:' as a url type
   my Str:D $web-url = $url;
-  $web-url ~~ s:i/^ 'doi:' /https:\/\/doi.org\//;
+  $web-url ~~ s:i/^ 'doi:' [ 'http' 's'? '://' 'dx.'? 'doi.org/' ]? /https:\/\/doi.org\//;
   $web-driver.get($web-url);
 
   # Get the domain after following any redirects
