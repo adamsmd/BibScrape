@@ -5,7 +5,7 @@
   "version" : "20.07.30",
   "description" : "Collect BibTeX information from publisher pages",
   "authors" : [ "Michael D. Adams" ],
-  "license" : "MIT",
+  "license" : "AGPL-3.0-or-later",
   "provides" : {
     "BibScrape::BibTeX":   "lib/BibScrape/BibTeX.rakumod",
     "BibScrape::Fix":      "lib/BibScrape/Fix.rakumod",
