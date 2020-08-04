@@ -1,9 +1,6 @@
-# BibScrape: Automatically collect BibTeX entries from publisher websites
+# BibScrape: Scrape and Fix BibTeX Entries from Publisher Websites
 
-**This version depends on the `python3` branch of `Inline::Python`.  Until that
-is released upstream, you may have trouble setting up BibScrape.**
-
-This is a BibTeX scraper for collecting BibTeX entries from the websites of
+BibScrape is a BibTeX scraper for collecting BibTeX entries from the websites of
 computer-science academic publishers.  I use it personally to make preparing my
 BibTeX files easier, but more importantly it makes sure all entries are
 consistent. For example, it prevents having "ACM" as the publisher in one place
@@ -44,35 +41,35 @@ an article to scrape.
 
 For example:
 
-    $ bibscrape 'https://portal.acm.org/citation.cfm?id=1411204.1411243'
-    @inproceedings{VanHorn:2008:10.1145/1411204.1411243,
-      author = {Van Horn, David and Mairson, Harry G.},
-      title = {Deciding \textit{k}{CFA} is complete for {EXPTIME}},
-      booktitle = {Proceedings of the 13th ACM SIGPLAN International Conference on Functional Programming},
-      series = {ICFP~'08},
-      location = {Victoria, BC, Canada},
-      pages = {275--282},
-      numpages = {8},
-      month = sep,
-      year = {2008},
+    $ bibscrape 'https://portal.acm.org/citation.cfm?id=1614435'
+    @article{Benedikt:2009:10.1145/1614431.1614435,
+      author = {Benedikt, Michael and Segoufin, Luc},
+      title = {Regular tree languages definable in {FO} and in {FO}\textsubscript{\textit{mod}}},
+      journal = {ACM Transactions on Computational Logic (TOCL)},
+      volume = {11},
+      number = {1},
+      pages = {4:1--4:32},
+      articleno = {4},
+      numpages = {32},
+      month = oct,
+      year = {2009},
+      issue_date = {October 2009},
       publisher = {Association for Computing Machinery},
       address = {New York, NY, USA},
-      isbn = {978-1-59593-919-7},
-      doi = {10.1145/1411204.1411243},
-      bib_scrape_url = {https://portal.acm.org/citation.cfm?id=1411204.1411243},
-      keywords = {complexity; flow analysis},
-      abstract = {We give an exact characterization of the computational complexity of the \textit{k}CFA hierarchy. For any \textit{k} {\textgreater} 0, we prove that the control flow decision problem is complete for deterministic exponential time. This theorem validates empirical observations that such control flow analysis is intractable. It also provides more general insight into the complexity of abstract interpretation.},
+      issn = {1529-3785},
+      doi = {10.1145/1614431.1614435},
+      bib_scrape_url = {https://portal.acm.org/citation.cfm?id=1614435},
+      keywords = {Regular tree languages; first-order logic},
+      abstract = {We consider regular languages of labeled trees. We give an effective characterization of the regular languages over such trees that are definable in first-order logic in the language of labeled graphs. These languages are the analog on trees of the {\textquotedblleft}locally threshold testable{\textquotedblright} languages on strings. We show that this characterization yields a decision procedure for determining whether a regular tree language is first-order definable: The procedure is polynomial time in the minimal automaton presenting the regular language. We also provide an algorithm for deciding whether a regular language is definable in first-order logic supplemented with modular quantifiers.},
     }
 
-Other examples you can try are:
+You could also run the following to get the same result:
 
-    bibscrape 'https://portal.acm.org/citation.cfm?id=1614435'
-    bibscrape 'https://www.springerlink.com/content/nhw5736n75028853/'
-    bibscrape 'doi:10.1007/BF01975011'
+    $ bibscrape 'doi:10.1145/1614431.1614435'
 
 See the files in [`tests/`](tests) for more examples and what their outputs look
-like.  (The output starts on the fourth line of those files.  The first three
-lines are metadata.)
+like.  (The first three lines of those files are metadata.  Outputs start on the
+fourth line.)
 
 For more details on usage and command-line flags run:
 
@@ -80,12 +77,13 @@ For more details on usage and command-line flags run:
 
 ## Disclaimer
 
-Please use this software responsibly.  You are responsible for how you use it.
-It does not contain any bandwidth limiting code as most publisher pages respond
-slowly enough that it is usually not necessary.  However, I've only tested it
-for preparing small bibliographies with fewer than 100 entries.  If you try to
-scrape too many at a time, I make no guarantees that you won't accidentally DoS
-the publisher.
+Since BibScrape is sending network traffic to publisher web pages, please use
+this software responsibly.  You are solely responsible for how you use it.
+BibScrape does not contain any bandwidth limiting code as most publisher pages
+respond slowly enough that it is usually not necessary.  However, I've only
+tested it for preparing small bibliographies with fewer than 100 entries.  If
+you try to scrape too many at a time, I make no guarantee that you won't
+accidentally DoS the publisher.
 
 ## Limitations
 
@@ -93,8 +91,8 @@ the publisher.
   inherently fuzzy task.
 
 - To collect information from publisher pages, often 2-3 pages have to be
-  loaded, and publisher pages can be slow.  On average, it takes around 10-30
-  seconds per citation.
+  loaded, and publisher pages can be slow.  As a result, BibScrape takes around
+  10-30 seconds per BibTeX entry.
 
 - Always double check the "title", "author" and "abstract" fields in the output
   BibTeX.  Other fields will generally be right, but publishers sometimes do
@@ -104,30 +102,39 @@ the publisher.
 
 ## Tips
 
-- BibScrape's version number indicate the approximate date on which the software
-  was last updated.  For example, version 20.08.01 corresponds to August 1,
-  2020.  As publishers change their web pages, old versions of BibScrape will no
-  longer work correctly.
+- BibScrape's version number indicates the approximate date on which the
+  software was last updated.  For example, version 20.08.01 corresponds to
+  August 1, 2020.  As publishers change their web pages, old versions of
+  BibScrape may no longer work correctly.
 
 - Sometimes publisher pages don't load properly and an error results.  Often
   re-running BibScrape fixes the problem.
 
-- Sometimes publisher pages stall and don't finish loading.  If BibScrape takes
-  longer than 60 seconds for one BibTeX entry, the publisher page has probably
-  stalled.  Often, re-running BibScrape fixes the problem.
+- Sometimes publisher pages stall and don't finish loading, which causes
+  BibScrape to hang.  If BibScrape takes longer than 60 seconds for one BibTeX
+  entry, the publisher page has probably stalled.  Often, re-running BibScrape
+  fixes the problem.
 
 - If a publisher page consistently hangs or errors, use `--show-window` to show
   the browser window and see what is going on.
 
-- If an author name is formatted wrong is wrong, add an entry to your names file.
+- If an author name is formatted wrong, add an entry to your names file. See the
+  "NAMES FILES" section of `bibscrape --help`.
+
+- If a title contains a proper noun that needs to be protected from lower
+  casing, add an entry to your nouns file.  See the "NOUNS FILES" section of
+  `bibscrape --help`.
 
 ## Setup
+
+The following setup instructions assume you are on Ubuntu. Modify them as needed
+for your platform.
 
 ### Dependencies
 
 #### Perl 6/Raku and Zef
 
-If on Ubuntu, the following will install both Perl 6 and Zef.
+Run the following to install both Perl 6 and Zef.
 
     $ sudo apt install perl6
 
@@ -141,42 +148,65 @@ Alternatively, install [`rakubrew`](https://rakubrew.org/) (including running
 
     $ sudo apt install python3 python3-dev
 
+#### Selenium for Python 3
+
+    $ pip3 install selenium
+
 #### Firefox and `geckodriver`
 
     $ sudo apt install firefox firefox-geckodriver
 
-#### Perl 6/Raku Modules
+#### `Inline::Python` for Python 3
 
-    $ zef install ArrayHash HTML::Entity Locale::Codes Temp::Path XML
+BibScrape depends on the `python3` branch of `Inline::Python`.  Until that is
+released upstream, you have to install the GitHub version of `Inline::Python`
+using the following commands:
 
-Install `Inline::Python`
-    git clone
-    cd
+    git clone https://github.com/niner/Inline-Python.git
+    cd Inline-Python
     git checkout python3
+    zef nuke Inline::Python
     zef install . --exclude=python3
 
-#### Python Modules
+### Non-Installed Mode
 
-    $ pip3 install selenium
+If you want to run BibScrape without installing it, run the following from the
+directory in which the BibScrape source resides:
 
-### Installation
+    $ zef install --deps-only .
 
-    $ zef install
+Then you can run BibScrape with the following where `<DIR>` is the directory in
+which the BibScrape source resides.
+
+    $ <DIR>/bin/bibscrape ...
+
+### Installed Mode
+
+If you want to install BibScrape, run the following from the directory in which
+the BibScrape source resides:
+
+    $ zef install .
+
+Then you can run the `bibscrape` command from anywhere.
 
 ### Per User Initialization
 
+Every user that uses BibScrape, must run the following to creates the default
+names and nouns files.
+
     $ bibscrape --init
 
-This creates default names and nouns files in `~/.config/BibScrape/`.
+Run `bibscrape --config-dir` to find out where those files are created.
 
 ## Feedback
 
-If you have any problems or suggestions, feel free to contact me.  I am
-particularly interested in any articles for which BibScrape breaks or formats
-incorrectly and any BibTeX fixes that you think should be included.
+If you have any problems or suggestions, feel free to create a GitHub issue
+about it.  I am particularly interested in any publications for which BibScrape
+breaks or that it formats incorrectly as well as any BibTeX fixes that you think
+should be included.
 
-I am also interested in collecting pages that test things like articles that
-have Unicode in their titles and so forth.
+I am also interested in collecting publisher pages that test things like
+articles that have Unicode in their titles and so forth.
 
 However, since I am the only maintainer and there are hundreds of publishers, I
 have to limit what publishers to support.  If you find a computer-science
@@ -187,7 +217,9 @@ as aggregators are much less predictable in the sorts of errors they introduce.
 
 ### How to file issues
 
-Software versions
+Please include the following information in any issues you file:
+
+- Software versions as output from the following commands:
 
     bibscrape --version
     uname -a
@@ -199,15 +231,16 @@ Software versions
     zef info ArrayHash HTML::Entity Inline::Python Locale::Codes Temp::Path XML
     pip3 info selenium
 
-Command line you used to invoke BibScrape including any flags
+- The command line you used to invoke BibScrape including flags and arguments
 
-The BibTeX you expected to get from BibScrape
+- The BibTeX you expected to get from BibScrape
 
-The BibTeX you actually got from BibScrape
+- The BibTeX you actually got from BibScrape
 
 ## License
 
-Copyright (C) 2011-2020  Michael D. Adams [`<https://michaeldadams.org/>`](https://michaeldadams.org/)
+```
+Copyright (C) 2011-2020  Michael D. Adams <https://michaeldadams.org/>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -221,3 +254,4 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+```

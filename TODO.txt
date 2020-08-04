@@ -1,7 +1,8 @@
 # Flags
 
 Case-insensitive nouns?
-verbose
+verbose on each check or update
+single letter flags
 
 # Key generation:
 

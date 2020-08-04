@@ -210,7 +210,7 @@ practices.
   Bool:D :v(:$verbose) = False,
 #={Print verbose output}
 
-  Bool:D :V(:$version) = False,
+  Bool:D :$version = False,
 #={Print version information}
 
   Bool:D :h(:$help) = False,
@@ -264,6 +264,7 @@ practices.
       }
     }
   }
+
   my IO::Path:D $config-dir-path =
     ($*DISTRO.is-win
       ?? %*ENV<APPDATA> // %*ENV<USERPROFILE> ~ </AppData/Roaming/>
