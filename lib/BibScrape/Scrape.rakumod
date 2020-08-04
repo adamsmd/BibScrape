@@ -31,7 +31,7 @@ sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTe
     when m[ « 'oup.com'             $] { scrape-oxford(); }
     when m[ « 'sciencedirect.com'   $]
       || m[ « 'elsevier.com'        $] { scrape-science-direct(); }
-    when m[ « 'springer.com'        $] { scrape-springer(); }
+    when m[ « 'link.springer.com'   $] { scrape-springer(); }
     default { say "error: unknown domain: $domain"; }
   };
 
