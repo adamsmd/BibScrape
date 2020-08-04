@@ -253,9 +253,10 @@ practices.
         my $rev = run(<git rev-parse HEAD>, :out, :cwd($?DISTRIBUTION.prefix)).out.slurp(:close).chomp;
         my $status = run(<git status --short>, :out, :cwd($?DISTRIBUTION.prefix)).out.slurp(:close).chomp;
         if $status eq '' {
-          say "BibScrape version git:$rev (clean)";
+          say "BibScrape version git:{$rev}-clean";
         } else {
-          say "BibScrape version git:$rev with status:\n$status";
+          $status ~~ s:g/ "\n" /;/;
+          say "BibScrape version git:{$rev}-dirty[$status]";
         }
       }
       default {
