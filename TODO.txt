@@ -28,13 +28,52 @@ warn if not exists bib_scrape_url when rescraping and fallback to doi
 
 # Tests
 
+ - jstor (on campus?)
+ - cambridge (on campus only?)
+ - oxford (on campus only?)
+
 a test that has a jr part
 a test that has 'others' in author names
+
+Control flow analysis in {S}cheme: http://dx.doi.org/10.1145/53990.54007
+  {S}cheme
+  abstract
+  month
+'https://dl.acm.org/citation.cfm?id=2175516'
+   Invalid digits or wrong number of digits in ISBN: 3642119565,9783642119569 at Text/BibTeX/Fix.pm line 159.
+   (Example of going wrong if using wrong publisher)
+Upper vs lower case after colon:
+   https://dl.acm.org/citation.cfm?doid=78973.78977
+
+Other publishers indexed by ACM: http://dl.acm.org/citation.cfm?id=2175486.2175491
+
+http://journals.cambridge.org/article_S0956796897002864: HTML entities in author name
+
+http://link.springer.com/chapter/10.1007/978-3-642-19718-5_14 -> http://www.springerlink.com/content/1qt504757p15u683/
+
+"IV" in author name: http://link.springer.com/article/10.1023%2FA%3A1010051815785
+
+"Scheme" not capitalized: http://link.springer.com/article/10.1007%2FBF01806308}
+
+http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
+ #^dissertation
+ #^BUG (ACM's fault): download bibtex link is broken
+ #^Should follow to ProQuest
+http://portal.acm.org/citation.cfm?id=159531
+ #^non ACM publication
+http://portal.acm.org/citation.cfm?id=1227145
+ #^title is wrong (and not ACM publication)
+
+http://www.springerlink.com/content/m746t0/#section=281461&page=1
+ #^broken? no export link?
+http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
+ #^book
+
+Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-functional-programming/article/new-method-for-functional-arrays/7BBFBB58A34DFC28CBF0E758D989D622
 
 # Code
 
 remove all 'die' and warn instead
-Code coverage
 &foo
 -
 .
@@ -57,9 +96,17 @@ load browser as under-window
 
 # Publishers
 
-https://dblp.org/db/journals/publ/
-all cited by papers in big four
-arxiv
+usenix
+
+arxiv:
+ - normal
+ - proceedings: https://arxiv.org/help/submit_index
+   - https://arxiv.org/abs/1708.06226
+   - https://arxiv.org/html/1708.06226
+     - https://arxiv.org/abs/1708.06459v1
+     - https://arxiv.org/abs/1708.06460v1
+     - https://arxiv.org/abs/1708.06461v1
+
 
 # Other
 
@@ -107,58 +154,11 @@ https://dblp.org/db/links.html
 
 url or howpubilshed that starts with http://[dx.]?doi.org/
 
-Performance: loading Locale::Language is slow
-
-
-
-
-
-# Old
-
-
-tests/ieee-computer-2.t
--  series = {Signal-Image Technologies and Internet-Based System, International IEEE Conference on},
-+  series = {2012 Eighth International Conference on Signal Image Technology and Internet Based Systems},
-
-
 (!) Warn when names overlap
 (!) Warn if wrong publisher
-ISSN needs to be added to springer (e.g. SYBR1)
-Control flow analysis in {S}cheme: http://dx.doi.org/10.1145/53990.54007
-  {S}cheme
-  abstract
-  month
-'https://dl.acm.org/citation.cfm?id=2175516'
-   Invalid digits or wrong number of digits in ISBN: 3642119565,9783642119569 at Text/BibTeX/Fix.pm line 159.
-   (Example of going wrong if using wrong publisher)
-Upper vs lower case after colon:
-   https://dl.acm.org/citation.cfm?doid=78973.78977
-
-Other publishers indexed by ACM: http://dl.acm.org/citation.cfm?id=2175486.2175491
-
-http://journals.cambridge.org/article_S0956796897002864: HTML entities in author name
-
-http://link.springer.com/chapter/10.1007/978-3-642-19718-5_14 -> http://www.springerlink.com/content/1qt504757p15u683/
-
-"IV" in author name: http://link.springer.com/article/10.1023%2FA%3A1010051815785
-
-"Scheme" not capitalized: http://link.springer.com/article/10.1007%2FBF01806308}
 
 ---------
 
-http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
- #^dissertation
- #^BUG (ACM's fault): download bibtex link is broken
- #^Should follow to ProQuest
-http://portal.acm.org/citation.cfm?id=159531
- #^non ACM publication
-http://portal.acm.org/citation.cfm?id=1227145
- #^title is wrong (and not ACM publication)
-
-http://www.springerlink.com/content/m746t0/#section=281461&page=1
- #^broken? no export link?
-http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
- #^book
 
 Unicode in Title, Abstract, Author
 Formatted (e.g. superscript, italics) in Title, Abstract
@@ -170,6 +170,11 @@ Multi-paragraph abstract
 Subtitle
 Book
 Journal Issue
+
+T = Title
+Ab = Abstract
+Au = Author
+U = Unicode
 
 acm.org
  U(T,Ab,Au) S(T,ab) I(T,Ab) x m
@@ -187,97 +192,5 @@ iospress.metapress.com
  U(T,ab,au) S(t,ab) I(t,ab) x m
 ieeexplore.ieee.org
  U(t,ab,au) S(t,ab) I(t,ab) x m
-onlinelibrary.wiley.com
- U(t,ab,Au) S(T,Ab) I(T,Ab) E m
 
-tests/ieee-computer-2.t
--  series = {Signal-Image Technologies and Internet-Based System, International IEEE Conference on},
-+  series = {2012 Eighth International Conference on Signal Image Technology and Internet Based Systems},
-
-\emph vs \textit
-http vs https
-dx.doi.org vs doi.org
-oxford domain name change
-tests/failing
 mode that compares against DBLP
-
-usenix
-
-arxiv:
- - normal
- - proceedings: https://arxiv.org/help/submit_index
-   - https://arxiv.org/abs/1708.06226
-   - https://arxiv.org/html/1708.06226
-     - https://arxiv.org/abs/1708.06459v1
-     - https://arxiv.org/abs/1708.06460v1
-     - https://arxiv.org/abs/1708.06461v1
-
-Fix:
- - ieee-computer
-
- - jstor (on campus?)
- - cambridge (on campus only?)
- - oxford (on campus only?)
-
- - ieee-computer-01: lower case lics
-
- - ACM PACMPL
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-diff --git a/TODO b/TODO
---- a/TODO
-+++ b/TODO
-@@ -1,3 +1,6 @@
-+Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-functional-programming/article/new-method-for-functional-arrays/7BBFBB58A34DFC28CBF0E758D989D622
-+
-+
- (!) Warn when names overlap
- (!) Warn if wrong publisher
- ISSN needs to be added to springer (e.g. SYBR1)
-diff --git a/Text/BibTeX/Fix.pm b/Text/BibTeX/Fix.pm
---- a/Text/BibTeX/Fix.pm
-+++ b/Text/BibTeX/Fix.pm
-@@ -544,7 +544,7 @@ sub canonical_names {
-                 }
-             }
-         }
--        print "WARNING: Suspect name: @{[$name->format($name_format)]}\n" unless
-+        print "WARNING: Uncertain how to parse name: @{[$name->format($name_format)]}\n" unless
-             (not defined $name->part('von') and
-              not defined $name->part('jr') and
-              first_name(decode_entities(decode('utf8', join(' ', $name->part('first'))))) and
-diff --git a/Text/BibTeX/Scrape.pm b/Text/BibTeX/Scrape.pm
---- a/Text/BibTeX/Scrape.pm
-+++ b/Text/BibTeX/Scrape.pm
-@@ -54,6 +54,7 @@ sub parse_bibtex {
-     my ($id) = $bib_text =~ m[\{(.*?),]s;
-     $id =~ s[ ][_]g;
-     $id =~ s[[^[:ascii:]]][?]g;
-+    $id =~ s[[']][?]g;
-     $bib_text =~ s/\{(.*?),/{$id,/s;
- 
-     $entry->parse_s($bib_text, 0); # 1 for preserve values
-diff --git a/tests/jstor-1.t b/tests/jstor-1.t
---- a/tests/jstor-1.t
-+++ b/tests/jstor-1.t
-@@ -9,7 +9,7 @@ http://www.jstor.org/stable/2975544
-   pages = {174--185},
-   month = mar,
-   year = {1983},
--  publisher = {Mathematical Association of America},
-+  publisher = {Taylor {\&} Francis, Ltd.},
-   issn = {0002-9890 (Print) 1930-0972 (Online)},
-   doi = {10.2307/2975544},
-   bib_scrape_url = {http://www.jstor.org/stable/2975544},

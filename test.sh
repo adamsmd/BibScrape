@@ -34,12 +34,12 @@ for i in "$@"; do
   echo "** [$(date +%r)] Testing $i using a URL **"
   URL=\"$(head -n 1 "$i")\"
   FLAGS=$(head -n 2 "$i" | tail -1)
-  if !(head -n 3 "$i"; eval ./bin/bibscrape $FLAGS "${GLOBAL_FLAGS[@]}" "$URL" 2>&1) | diff -u "$i" - | wdiff -dt; then
+  if !(head -n 3 "$i"; eval timeout 60s ./bin/bibscrape $FLAGS "${GLOBAL_FLAGS[@]}" "$URL" 2>&1) | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))
   fi
 
   echo "** [$(date +%r)] Testing $i using a filename **"
-  if ! eval ./bin/bibscrape $FLAGS "${GLOBAL_FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") 2>&1 | diff -u "$i" - | wdiff -dt; then
+  if ! eval timeout 60s ./bin/bibscrape $FLAGS "${GLOBAL_FLAGS[@]}" <(grep -v '^WARNING: Suspect name: ' "$i") 2>&1 | diff -u "$i" - | wdiff -dt; then
     true $((ERR_COUNT++))
   fi
 done

@@ -17,8 +17,8 @@ sub MAIN(
 ;BOOLEAN FLAGS
 ;----------------
 ;
-;Use --flag, --flag=true, --flag=yes, --flag=on or --flag=1 to set to True.
-;Use --/flag, --flag=false, --flag-yes, --flag=off or --flag=0 to set to False.
+;Use --flag, --flag=true, --flag=yes, --flag=y, --flag=on or --flag=1 to set to True.
+;Use --/flag, --flag=false, --flag=no, --flag=n, --flag=off or --flag=0 to set to False.
 ;
 ;----------------
 ;LIST FLAGS
@@ -301,7 +301,7 @@ practices.
     }
 
     if $arg ~~ m:i/^ 'http:' | 'https:' | 'doi:' / {
-      # It's really a URL
+      # It's a URL
       go(@key.shift // ' ', $arg);
       print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {

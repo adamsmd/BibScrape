@@ -165,8 +165,8 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
             my Any:D $value =
               do if $param.type ~~ Bool {
                 do given $value-str {
-                  when m:i/ 'true' | 'y' | 'yes' | 'on' | '1' / { True }
-                  when m:i/ 'false' | 'n' | 'no' | 'off' | '0' / { False }
+                  when m:i/^ [ 'true' | 'y' | 'yes' | 'on' | '1' ] $/ { True }
+                  when m:i/^ [ 'false' | 'n' | 'no' | 'off' | '0' ] $/ { False }
                   default { die; }
                 };
               } else {
