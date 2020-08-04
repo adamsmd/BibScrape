@@ -1,7 +1,80 @@
-# bib-scrape
+# BibScrape: Automatically collect BibTeX entries from publisher websites
 
+This is a BibTeX scraper for collecting BibTeX entries from the websites of
+computer-science academic publishers.  I use it personally to make preparing my
+BibTeX files easier, but more importantly it makes all entries are consistent.
+For example, it prevents having "ACM" as the publisher in one place but
+"Association for Computing Machinery" in another.
 
-## Setup
+Currently it supports the following publishers:
+
+- ACM `<acm.org>`
+- Cambridge Journals `<cambridge.org>`
+- IEEE Computer Society `<computer.org>`
+- IEEE Explore `<ieeexplore.ieee.org>`
+- IOS Press `<iospress.com>`
+- JSTOR `<jstor.org>`
+- Oxford Journals `<oup.org>`
+- Science Direct `<sciencedirect.com>` / Elsevier `<elsevier.com>`
+- Springer `<link.springer.com>`
+
+In addition, this scraper fixes common problems with the BibTeX that
+these services provide.  For example, it fixes:
+
+- the handling of Unicode and other formatting (e.g. subscripts) in titles;
+- the incorrect use of the 'issue' field instead of the 'number' field;
+- the format of the 'doi' and 'pages' fields;
+- the use of macros for the 'month' field; and
+- *numerous* miscellaneous problems with specific publishers.
+
+For a complete list of fixes see `FIXES.md`.
+
+## Usage
+
+The basic usage is:
+
+    bibscrape <url> ...
+
+Each URL is the publishers page of an article to scrape.  Alternatively, if a
+URL starts with `doi:`, it is interpreted as the DOI of an article to scrape.
+
+For example:
+
+    $ ./bib-scrape.raku 'https://portal.acm.org/citation.cfm?id=1411204.1411243'
+
+    @inproceedings{VanHorn:2008:10.1145/1411204.1411243,
+      author = {Van Horn, David and Mairson, Harry G.},
+      title = {Deciding \textit{k}{CFA} is complete for {EXPTIME}},
+      booktitle = {Proceedings of the 13th ACM SIGPLAN International Conference on Functional Programming},
+      series = {ICFP~'08},
+      location = {Victoria, BC, Canada},
+      pages = {275--282},
+      numpages = {8},
+      month = sep,
+      year = {2008},
+      publisher = {Association for Computing Machinery},
+      address = {New York, NY, USA},
+      isbn = {978-1-59593-919-7},
+      doi = {10.1145/1411204.1411243},
+      bib_scrape_url = {https://portal.acm.org/citation.cfm?id=1411204.1411243},
+      keywords = {complexity; flow analysis},
+      abstract = {We give an exact characterization of the computational complexity of the \textit{k}CFA hierarchy. For any \textit{k} {\textgreater} 0, we prove that the control flow decision problem is complete for deterministic exponential time. This theorem validates empirical observations that such control flow analysis is intractable. It also provides more general insight into the complexity of abstract interpretation.},
+    }
+
+Other examples you can try are:
+
+    bibscrape 'https://portal.acm.org/citation.cfm?id=1614435'
+    bibscrape 'https://www.springerlink.com/content/nhw5736n75028853/'
+    bibscrape 'doi:10.1007/BF01975011'
+
+See the files in `t/` for examples of what outputs look like. (The output starts
+on the fourth line of those files.  The first three lines are test metadata.)
+
+For more details on usage and command-line flags run:
+
+    bibscrape --help
+
+## Dependencies
 
 ### Install `perl6`/`raku` and `zef`
 
@@ -36,32 +109,13 @@ Install `zef`
 
 ### Deps folder
 
-## Usage
+## Building
 
-    $ ./bib-scrape.raku 'https://portal.acm.org/citation.cfm?id=1411204.1411243'
+## Tips
 
-    @inproceedings{VanHorn:2008:10.1145/1411204.1411243,
-      author = {Van Horn, David and Mairson, Harry G.},
-      title = {Deciding \textit{k}{CFA} is complete for {EXPTIME}},
-      booktitle = {Proceedings of the 13th ACM SIGPLAN International Conference on Functional Programming},
-      series = {ICFP~'08},
-      location = {Victoria, BC, Canada},
-      pages = {275--282},
-      numpages = {8},
-      month = sep,
-      year = {2008},
-      publisher = {Association for Computing Machinery},
-      address = {New York, NY, USA},
-      isbn = {978-1-59593-919-7},
-      doi = {10.1145/1411204.1411243},
-      bib_scrape_url = {https://portal.acm.org/citation.cfm?id=1411204.1411243},
-      keywords = {complexity; flow analysis},
-      abstract = {We give an exact characterization of the computational complexity of the \textit{k}CFA hierarchy. For any \textit{k} {\textgreater} 0, we prove that the control flow decision problem is complete for deterministic exponential time. This theorem validates empirical observations that such control flow analysis is intractable. It also provides more general insight into the complexity of abstract interpretation.},
-    }
-
---headless
-
-Browser page load timeout
+sometimes pages hang
+--show-window
+sometimes pages error
 
 ## FAQ
 
@@ -90,100 +144,14 @@ Actual BibTeX
 
 
 
-BibScrape
-================
 
-This is a BibTeX scraper for collecting BibTeX entries from the
-websites of computer-science academic publishers.  I use it personally
-to make preparing my BibTeX files easier.  Currently it supports
+# Disclaimer
 
- - ACM `<acm.org>`,
- - Springer `<link.springer.com>`,
- - Science Direct `<sciencedirect.com>`,
- - IEEE Computer Society `<computer.org>`,
- - IEEE Explore `<ieeexplore.ieee.org>`,
- - Cambridge Journals `<journals.cambridge.org>`,
- - Oxford Journals `<oxfordjournals.org>`,
- - JSTOR `<jstor.org>`,
- - IOS Press `<iospress.metapress.com>`, and
- - Wiley `<onlinelibrary.wiley.com>`.
-
-In addition, this scraper fixes common problems with the BibTeX that
-these services provide.  For example, it fixes:
-
- - the handling of Unicode and other formatting (e.g. subscripts) in titles;
- - the incorrect use of the 'issue' field instead of the 'number' field;
- - the format of the 'doi' and 'pages' fields;
- - the use of macros for the 'month' field; and
- - *numerous* miscellaneous problems with specific publishers.
-
-Usage
-================
-The basic usage is
-
-    ./bib-scrape.pl URL ...
-
-Each URL is the page of an article you want to scrape.  Note that if
-you have a DOI, then prefixing 'https://doi.org/' on the DOI will
-form a usable URL.
-
-Examples:
-
-    ./bib-scrape.pl 'https://portal.acm.org/citation.cfm?id=1614435'
-    ./bib-scrape.pl 'https://www.springerlink.com/content/nhw5736n75028853/'
-    ./bib-scrape.pl 'https://doi.org/10.1007/BF01975011'
-
-For more details on usage and command-line flags run:
-
-    ./bib-scrape.pl --help
-
-Installation
-================
-This program is not designed to be installed(*).  You just run it directly
-from where you unpacked it.  However, there are Perl modules that it depends
-on.
-
-IMPORTANT: Be sure to always run the program from the directory where
-you unpacked it.  If you run the program from any other directory, it
-will not be able to find the `config/names.cfg` and `config/actions.cfg
-files.
-
-(*) There are two reasons for this.  First, Perl doesn't have a very
-good method of packaging applications.  Second, I don't know how to
-make the program find `config/names.cfg` and `config/actions.cfg` in
-such a packaging.  I would welcome help in preparing a better packaging
-solution.
-
-Global/Root Installation
-----------------
-If you want to install the module dependencies globally to `/usr/share/perl5`,
-do the following.
-
-1. Ensure that you have `sudo` permission.
-2. Ensure that `Module::Build` installed by running `sudo cpan Module::Build`.
-3. Generate the `Build` script by running `perl Build.PL`.
-4. Install the dependencies by running `sudo ./Build installdeps`.
-
-Local/Home Installation
-----------------
-If you want to install the module dependencies locally to
-your home directory, do the following.
-
-1. Install and Setup and install [`local::lib`](https://metacpan.org/pod/local::lib).
-   See [The Bootstrapping Technique](https://metacpan.org/pod/local::lib#The-bootstrapping-technique) for instructions.
-2. Ensure that `Module::Build` installed by running `cpan -I Module::Build`.
-   (The `-I` tells `cpan` to use `local::lib`.)
-3. Generate the `Build` script by running `perl Build.PL`.
-4. Install the dependencies by running `./Build installdeps`.
-
-Disclaimer
-================
-Please use this software responsibly.  You are responsible for how you
-use it.  It does not contain any bandwidth limiting code as most
-publisher pages respond slowly enough that it is usually not
-necessary.  However, I've only tested it for preparing small
-bibliographies with fewer than 100 entries.  If you try to scrape too
-many at a time, I make no guarantees that you won't accidentally DoS
+Please use this software responsibly.  You are responsible for how you use it.
+It does not contain any bandwidth limiting code as most publisher pages respond
+slowly enough that it is usually not necessary.  However, I've only tested it
+for preparing small bibliographies with fewer than 100 entries.  If you try to
+scrape too many at a time, I make no guarantees that you won't accidentally DoS
 the publisher.
 
 Feedback
@@ -240,36 +208,36 @@ Features
 
  - And much more ...
 
-Limitations
-================
- - JSTOR imposes strict rate limiting.  You may have `Error GETing`
-   errors if you try to get the BibTeX for multiple papers in a row.
+## Limitations
 
- - Basically don't trust the "title", "author" and "abstract" fields.
-   Other fields will generally be right, but these fields often have
-   Latex code that don't get preserved by the publishers. Though
-   bib-scrape will do it's best, the results are often spotty.
-   Example $O$$($n$)$.
+- Basically don't trust the "title", "author" and "abstract" fields. Other
+  fields will generally be right, but these fields often have Latex code that
+  don't get preserved by the publishers. Though bib-scrape will do it's best,
+  the results are often spotty. Example $O$$($n$)$.
 
- - IOS press often doesn't preserve mathematical italics, and
-   you can get better results by visiting the corresponding page on SpringerLink.
+- Data from the publishers is often wrong.  In particular, formatting of author
+  names is the biggest problem.  The data from the publishers is often
+  incomplete or incorrect.  For example, I've found 'Blume' misspelled as 'Blu',
+  'Bruno C.d.S Oliviera' listed as 'Bruno Oliviera' and 'Simon Peyton Jones'
+  listed as 'Jones, Simon Peyton'.  See the `config/names.cfg` file for how to
+  fix these.
 
- - Data from the publishers is often wrong.  In particular, formatting
-   of author names is the biggest problem.  The data from the
-   publishers is often incomplete or incorrect.  For example, I've
-   found 'Blume' misspelled as 'Blu', 'Bruno C.d.S Oliviera' listed as
-   'Bruno Oliviera' and 'Simon Peyton Jones' listed as 'Jones, Simon
-   Peyton'.  See the `config/names.cfg` file for how to fix these.
+- Many heuristics are involved in scraping and fixing the data.  This in an
+  inherently fuzzy area.
 
- - Many heuristics are involved in scraping and fixing the data.  This in an inherently fuzzy area.
+- Often 2-3 pages have to be loaded and publisher pages can be slow. In total it
+  takes around 15 seconds per citation.
 
- - Often 2-3 pages have to be loaded and publisher pages can be slow.
-   In total it takes around 1 second per citation.
+- There are many BibTeX problems that this program can't fix:
 
- - There are many BibTeX problems that this program can't fix:
-   - The 'howpublished' field shouldn't be used for URLs.  Use the url field for that.
-   - Names should be 'von last, first, jr' as it is the only unambiguous format in BibTeX.
-   - Proper names in titles should be capitalized with braces (e.g. "{H}askell").
+  - The 'howpublished' field shouldn't be used for URLs.  Use the url field for
+    that.
+  - Names should be 'von last, first, jr' as it is the only unambiguous format
+    in BibTeX.
+  - Proper names in titles should be capitalized with braces (e.g. "{H}askell").
+
+- Complex math in titles or abstracts is likely to break.  A couple superscripts
+  and Greek characters are fine, but more than that is trouble.
 
  - Complex math in titles or abstracts is likely to break.  A couple superscripts and
    Greek characters are fine, but more than that is trouble.

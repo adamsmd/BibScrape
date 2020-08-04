@@ -1,11 +1,6 @@
 # Flags
 
-comma or no comma after last field
 Case-insensitive nouns?
-Omit:class/type
-Include:class/type
-no issn, no isbn
-whether to re-scrape bibtex
 verbose
 
 # Key generation:
