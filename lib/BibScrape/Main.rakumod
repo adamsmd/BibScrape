@@ -159,10 +159,10 @@ practices.
   Bool:D :$config-dir = False,
 #={Print the location of the user-configuration directory.}
 
-  Bool:D :$scrape = True,
+  Bool:D :S(:$scrape) = True,
 #={Scrape the BibTeX entry from the publisher's page}
 
-  Bool:D :$fix = True,
+  Bool:D :F(:$fix) = True,
 #={Fix common BibTeX mistakes}
 
 #|{
@@ -171,7 +171,7 @@ practices.
 ;----------------
 ;}
 
-  Bool:D :w(:$show-window) = False,
+  Bool:D :w(:$window) = False,
 #={Show the browser window while scraping.  (This is usefull for debugging or
     if BibScrape unexpectedly hangs.)}
 
@@ -240,7 +240,7 @@ practices.
   Str:D :@no-collapse = Array[Str:D](< >),
 #={Fields that should not have their whitespace collapsed}
 
-  Str:D :@omit = Array[Str:D](< >),
+  Str:D :o(:@omit) = Array[Str:D](< >),
 #={Fields that should be omitted from the output}
 
   Str:D :@omit-empty = Array[Str:D](<abstract issn doi keywords>),
@@ -329,7 +329,7 @@ practices.
 
   for @url -> Str:D $arg {
     sub go(Str:D $key, Str:D $url --> Any:U) {
-      my BibScrape::BibTeX::Entry:D $entry = scrape($url, show-window => $show-window);
+      my BibScrape::BibTeX::Entry:D $entry = scrape($url, show-window => $window);
       $entry = $fixer.fix($entry);
       $entry.key = $key
         if $key ne ' ';

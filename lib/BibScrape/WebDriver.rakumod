@@ -34,8 +34,9 @@ class WebDriver {
         #  'text/plain,text/x-bibtex,application/x-bibtex,application/x-research-info-systems')
         profile.set_preference('browser.helperApps.neverAsk.saveToDisk',
           'text/plain,text/x-bibtex,application/x-bibtex,application/x-research-info-systems')
-        profile.set_preference('browser.download.folderList', 2)
+        profile.set_preference('browser.download.folderList', 2) # Use a custom folder for downloading
         profile.set_preference('browser.download.dir', '$downloads')
+        #profile.set_preference('permissions.default.image', 2) # Never load the images
 
         opt = options.Options()
         # Run without showing a browser window

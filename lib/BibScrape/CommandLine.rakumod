@@ -113,6 +113,7 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
   my List:D $params = params($main);
   my Param:D @params = $params[0];
   my Param:D %params = $params[1];
+  my Str:D %aliases = %params.values.map({ my Str:D $name = .name; .named_names.map({ $_ => $name }) }).flat;
   my Bool:D $no-parse = False;
   my Int:D $positionals = 0;
   sub def(Param:D $param) {
@@ -142,40 +143,46 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
       # Bare '--'
       when !$no-parse & /^ '--' $/ { $no-parse = True; }
       # Keyword
-      when !$no-parse & /^ '--' ('/'?) (<-[=]>+) (['=' (.*)]?) $/ {
-        my Bool:D $polarity = ($0.chars == 0);
-        my Str:D $name = $1.Str;
-        my Param:D $param = %params{$name} // die "Unknown '$name' flag: $arg";
-        my Str:D $value-str =
-          $2.chars > 0 ?? $2.[0].Str
-            !! $param.type ~~ Bool ?? $polarity.Str
-            !! @str-args.shift // die "Missing argument for '$arg' flag";
-        given $param.type {
-          when Positional {
-            if $value-str eq '' {
-              if $polarity {
-                %args{$param.name} = Array[$param.type.of].new();
+      when !$no-parse & /^ '-' ('-'?) ('/'?) (<-[=]>+) (['=' (.*)]?) $/ {
+        my Bool:D $polarity = ($1.chars == 0);
+        my Str @names = $0.chars == 0 ?? $2.Str.split('', :skip-empty) !! ($2.Str,);
+        for @names.kv -> Int:D $i, Str:D $name {
+          my Bool:D $last = $i == @names.end;
+          my Param:D $param = %params{%aliases{$name}} // die "Unknown flag '$name' in '$arg'";
+          unless $last or $param.type ~~ Bool {
+            die "Non-boolean, single-letter flag '$name' not last in '$arg'";
+          }
+          my Str:D $value-str =
+            $last && $3.chars > 0 ?? $3.[0].Str
+              !! $param.type ~~ Bool ?? $polarity.Str
+              !! @str-args.shift // die "Missing argument for flag '$name' in '$arg'";
+          given $param.type {
+            when Positional {
+              if $value-str eq '' {
+                if $polarity {
+                  %args{$param.name} = Array[$param.type.of].new();
+                } else {
+                  %args{$param.name} = def($param);
+                }
               } else {
-                %args{$param.name} = def($param);
-              }
-            } else {
-              my Any:D $value = val($param.type.of, $value-str);
-              if $polarity {
-                push %args{$param.name}, $value;
-              } else {
-                %args{$param.name} =
-                  Array[$param.type.of](
-                    %args{$param.name}.grep({ not ($_ eqv $value) }));
+                my Any:D $value = val($param.type.of, $value-str);
+                if $polarity {
+                  push %args{$param.name}, $value;
+                } else {
+                  %args{$param.name} =
+                    Array[$param.type.of](
+                      %args{$param.name}.grep({ not ($_ eqv $value) }));
+                }
               }
             }
-          }
-          default {
-            my Any:D $value = val($param.type, $value-str);
-            %args{$param.name} = $value;
+            default {
+              my Any:D $value = val($param.type, $value-str);
+              %args{$param.name} = $value;
+            }
           }
         }
       }
-      # Positionals
+      # Positional
       default {
         my Param:D $param = @params[$positionals];
         given $param.type {
