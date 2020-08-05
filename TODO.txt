@@ -1,5 +1,7 @@
 # TODO Items
 
+
+
 ## Speculative
 
 ### Flags
@@ -13,6 +15,18 @@ doi in key option
 use first n (non-trivial) words
 Format: author/editor1.last year title/journal.abbriv
 
+### Other
+
+Improve performance
+(no load images)
+(no load css?)
+
+numeric ranges might misfire if "-" doesn't represent a range, Common for tech report numbers
+
+XPath
+
+
+
 ## Wish list
 
 `use variables :D` that applies to all types
@@ -25,9 +39,35 @@ Format: author/editor1.last year title/journal.abbriv
 ignore non-domain files (timeout on file load?)
 load browser as under-window
 
+
+
 ## Priority
 
+convert a howpublished that contains a url to the url field
 url or howpubilshed that starts with http://[dx.]?doi.org/
+* EISSN from side pill of ACM
+
+### Publishers
+
+usenix
+
+arxiv:
+ - normal
+ - proceedings: https://arxiv.org/help/submit_index
+   - https://arxiv.org/abs/1708.06226
+   - https://arxiv.org/html/1708.06226
+     - https://arxiv.org/abs/1708.06459v1
+     - https://arxiv.org/abs/1708.06460v1
+     - https://arxiv.org/abs/1708.06461v1
+
+### Output
+
+Titlecase After colon in title?
+  Warn if not?
+follow jstor links to original publisher
+add abstract to jstor
+get PDF (eprint?)
+Trim known field types
 
 ### Tests
 
@@ -86,43 +126,7 @@ Trim known fields
 Ignore unknown entries in bibtex
 flag test suite
 
-### Publishers
 
-usenix
-
-arxiv:
- - normal
- - proceedings: https://arxiv.org/help/submit_index
-   - https://arxiv.org/abs/1708.06226
-   - https://arxiv.org/html/1708.06226
-     - https://arxiv.org/abs/1708.06459v1
-     - https://arxiv.org/abs/1708.06460v1
-     - https://arxiv.org/abs/1708.06461v1
-
-### Output
-
-Titlecase After colon in title?
-  Warn if not?
-follow jstor links to original publisher
-add abstract to jstor
-get PDF (eprint?)
-* EISSN from side pill of ACM
-Trim known field types
-warn if not exists bib_scrape_url when rescraping and fallback to doi
-
-convert a howpublished that contains a url to the url field
-
-
-
-### Other
-
-Improve performance
-(no load images)
-(no load css?)
-
-numeric ranges might misfire if "-" doesn't represent a range, Common for tech report numbers
-
-XPath
 
 ## Unsorted
 
@@ -166,6 +170,8 @@ ieeexplore.ieee.org
  U(t,ab,au) S(t,ab) I(t,ab) x m
 
 mode that compares against DBLP
+
+
 
 ## Links
 

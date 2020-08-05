@@ -102,6 +102,9 @@ accidentally DoS the publisher.
 
 ## Tips
 
+- Make a habit of putting single quotes around URLs (as seen in the Usage
+  examples above) in case they contain things like '&' or '?'.
+
 - BibScrape's version number indicates the approximate date on which the
   software was last updated.  For example, version 20.08.01 corresponds to
   August 1, 2020.  As publishers change their web pages, old versions of
