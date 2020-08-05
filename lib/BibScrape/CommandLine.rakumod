@@ -1,5 +1,7 @@
 unit module BibScrape::CommandLine;
 
+use variables :D;
+
 class Param {
   has Parameter:D $.parameter is required handles *;
   has Str:D $.name is required;

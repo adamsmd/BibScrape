@@ -1,5 +1,7 @@
 unit module BibScrape::Unicode;
 
+use variables :D;
+
 my Int:D %CCC;
 my Str:D %CODES;
 

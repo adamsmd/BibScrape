@@ -1,5 +1,7 @@
 unit module BibScrape::Fix;
 
+use variables :D;
+
 use HTML::Entity;
 use Locale::Language;
 use XML;

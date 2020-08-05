@@ -4,6 +4,8 @@ unit module BibScrape::Isbn;
 # https://www.isbn-international.org/range_file_generation
 # https://www.isbn-international.org/export_rangemessage.xml
 
+use variables :D;
+
 use XML;
 
 enum IsbnType <Isbn13 Isbn10 Preserve>;

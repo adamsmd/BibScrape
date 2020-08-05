@@ -1,5 +1,7 @@
 #!/usr/bin/env perl6
 
+use variables :D;
+
 # Load local libraries if running from a non-installed repository
 if $?FILE.IO.parent.add( '../lib' ).e { use lib $?FILE.IO.parent.add( '../lib' ); }
 

@@ -1,13 +1,15 @@
 unit module BibScrape::WebDriver;
 
+use variables :D;
+
 use Temp::Path;
 use File::Directory::Tree;
 
 ########
 
 class WebDriver {
-  has #`(Inline::Python::PythonObject:_) $!web-driver handles *;
-  has #`(Inline::Python:_) $!python;
+  has #`(Inline::Python::PythonObject:_) Any:_ $!web-driver handles *;
+  has #`(Inline::Python:_) Any:_ $!python;
   has IO::Path:_ $downloads;
 
   method get(Str:D $url --> Any:U) {
@@ -16,6 +18,7 @@ class WebDriver {
   }
 
   submethod BUILD(Bool:D :$show-window --> Any:U) {
+    use variables :_; # Otherwise we get: Cannot find method '!highwater' on object of type FakeOfType
     require Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
 
     $!downloads = make-temp-dir:prefix<BibScrape->;

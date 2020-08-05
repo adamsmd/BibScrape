@@ -1,5 +1,7 @@
 unit module BibScrape::Scrape;
 
+use variables :D;
+
 use BibScrape::BibTeX;
 use BibScrape::HtmlMeta;
 use BibScrape::Month;

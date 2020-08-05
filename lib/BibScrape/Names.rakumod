@@ -5,6 +5,8 @@ unit module BibScrape::Names;
 # - https://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
 # - https://www.ctan.org/tex-archive/info/bibtex/tamethebeast/
 
+use variables :D;
+
 sub depths(Str:D $str --> Array:D[Int:D]) {
   my Int:D @depths;
   my Int:D $depth = 0;

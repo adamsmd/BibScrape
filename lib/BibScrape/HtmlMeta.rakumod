@@ -1,5 +1,7 @@
 unit module BibScrape::HtmlMeta;
 
+use variables :D;
+
 use BibScrape::BibTeX;
 use BibScrape::Month;
 use BibScrape::WebDriver;

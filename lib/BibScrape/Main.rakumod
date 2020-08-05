@@ -1,5 +1,7 @@
 unit module BibScrape::Main;
 
+use variables :D;
+
 use BibScrape::BibTeX;
 use BibScrape::CommandLine;
 use BibScrape::Fix;

@@ -15,6 +15,11 @@ Format: author/editor1.last year title/journal.abbriv
 
 ## Wish list
 
+`use variables :D` that applies to all types
+  use invocant :D;
+  use parameters :D;
+  use attributes :D;
+
 ### WebDriver
 
 ignore non-domain files (timeout on file load?)
@@ -71,22 +76,15 @@ Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-function
 
 ### Code
 
-use variables :D;
-
 remove all 'die' and warn instead
 &foo
 -
 .
 |capture
 Nil
---timeout flag
-may take up to 60 seconds
 Trim known fields
 Ignore unknown entries in bibtex
-single letter options
 flag test suite
-optimize
-check installation instructions
 
 ### Publishers
 
@@ -125,39 +123,6 @@ Improve performance
 numeric ranges might misfire if "-" doesn't represent a range, Common for tech report numbers
 
 XPath
-
-### Links
-
-https://github.com/zotero/bib-web
-https://github.com/zotero/bib
-https://github.com/zotero/translation-server
-
-https://github.com/SeleniumHQ/selenium/blob/selenium-3.141.59/py/selenium/webdriver/remote/webdriver.py
-
-https://pypi.org/project/selenium/#files
-https://files.pythonhosted.org/packages/80/d6/4294f0b4bce4de0abf13e17190289f9d0613b0a44e5dd6a7f5ca98459853/selenium-3.141.0-py2.py3-none-any.whl
-
-https://pypi.org/project/urllib3/#files
-https://files.pythonhosted.org/packages/9f/f0/a391d1463ebb1b233795cabfc0ef38d3db4442339de68f847026199e69d7/urllib3-1.25.10-py2.py3-none-any.whl
-
-https://www.zotero.org/support/translators
-https://zotero-translator-tests.s3.amazonaws.com/index.html
-https://github.com/zotero/translators/
-https://github.com/zotero?type=source
-https://github.com/zotero/bib-web/blob/master/src/js/components/export-tools.jsx
-https://github.com/zotero/bib-web/blob/7f2df535ceb1579fa381b2ebbed182b01e862899/src/js/components/container.jsx
-https://github.com/zotero/bib
-https://github.com/citation-style-language/schema/blob/master/schemas/styles/stop-words.json
-https://citationstyles.org/
-https://github.com/zotero/bib/blob/e99cfe29087bb5b312ceec12aab0f6b62497b7b4/src/zotero-translation-client.js
-https://github.com/zotero/translation-server/search?q=bibtex&unscoped_q=bibtex
-https://zbib.org/
-https://www.zotero.org/repo/code/trunk/9cb70025-a888-4a29-a210-93ec52da40d4
-https://www.zotero.org/support/dev/start
-https://www.zotero.org/support/kb
-https://www.zotero.org/support/third_party_documentation
-
-https://dblp.org/db/links.html
 
 ## Unsorted
 
@@ -201,3 +166,36 @@ ieeexplore.ieee.org
  U(t,ab,au) S(t,ab) I(t,ab) x m
 
 mode that compares against DBLP
+
+## Links
+
+https://github.com/zotero/bib-web
+https://github.com/zotero/bib
+https://github.com/zotero/translation-server
+
+https://github.com/SeleniumHQ/selenium/blob/selenium-3.141.59/py/selenium/webdriver/remote/webdriver.py
+
+https://pypi.org/project/selenium/#files
+https://files.pythonhosted.org/packages/80/d6/4294f0b4bce4de0abf13e17190289f9d0613b0a44e5dd6a7f5ca98459853/selenium-3.141.0-py2.py3-none-any.whl
+
+https://pypi.org/project/urllib3/#files
+https://files.pythonhosted.org/packages/9f/f0/a391d1463ebb1b233795cabfc0ef38d3db4442339de68f847026199e69d7/urllib3-1.25.10-py2.py3-none-any.whl
+
+https://www.zotero.org/support/translators
+https://zotero-translator-tests.s3.amazonaws.com/index.html
+https://github.com/zotero/translators/
+https://github.com/zotero?type=source
+https://github.com/zotero/bib-web/blob/master/src/js/components/export-tools.jsx
+https://github.com/zotero/bib-web/blob/7f2df535ceb1579fa381b2ebbed182b01e862899/src/js/components/container.jsx
+https://github.com/zotero/bib
+https://github.com/citation-style-language/schema/blob/master/schemas/styles/stop-words.json
+https://citationstyles.org/
+https://github.com/zotero/bib/blob/e99cfe29087bb5b312ceec12aab0f6b62497b7b4/src/zotero-translation-client.js
+https://github.com/zotero/translation-server/search?q=bibtex&unscoped_q=bibtex
+https://zbib.org/
+https://www.zotero.org/repo/code/trunk/9cb70025-a888-4a29-a210-93ec52da40d4
+https://www.zotero.org/support/dev/start
+https://www.zotero.org/support/kb
+https://www.zotero.org/support/third_party_documentation
+
+https://dblp.org/db/links.html

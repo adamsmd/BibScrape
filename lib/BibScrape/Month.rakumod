@@ -1,5 +1,7 @@
 unit module BibScrape::Month;
 
+use variables :D;
+
 use BibScrape::BibTeX;
 
 my Str:D @long-names = <january february march april may june july august september october november december>;

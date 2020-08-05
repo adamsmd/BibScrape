@@ -1,5 +1,7 @@
 unit module BibScrape::Ris;
 
+use variables :D;
+
 use BibScrape::BibTeX;
 use BibScrape::Month;
 

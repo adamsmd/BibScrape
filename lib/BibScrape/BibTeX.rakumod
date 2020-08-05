@@ -3,6 +3,8 @@ unit module BibScrape::BibTeX;
 # Based on the grammar at https://github.com/aclements/biblib,
 # but with some modifications to better meet our needs
 
+use variables :D;
+
 use ArrayHash;
 
 enum Quotation <Bare Braces Quotes>;
@@ -176,7 +178,7 @@ sub bibtex-parse(Str:D $str --> Database:D) is export {
 sub update(BibScrape::BibTeX::Entry:D $entry, Str:D $field, &fun --> Any:U) is export {
   if $entry.fields{$field}:exists {
     # Have to put this in a variable so s/// can modify it
-    my $value where Value | Str | Int = $entry.fields{$field}.simple-str;
+    my Any:_ $value where Value:_ | Str:_ | Int:_ = $entry.fields{$field}.simple-str;
     &fun($value); # $value will be $_ in the block
     if $value.defined { $entry.fields{$field} = BibScrape::BibTeX::Value.new($value); }
     else { $entry.fields{$field}:delete; }
