@@ -115,14 +115,14 @@ The default nouns file provides several examples with comments and recommended
 practices.
 }
 
-#|{
- ----------------
-;INPUTS
-;----------------
-;}
+  #|{
+   ----------------
+  ;INPUTS
+  ;----------------
+  ;}
 
   Str:D @url,
-#={The publisher's page to be scraped or the filename of a BibTeX
+  #={The publisher's page to be scraped or the filename of a BibTeX
     file to be read to find BibTeX entries to rescrape or fix.
     ;
     ;- If it starts with 'http:' or 'https:', it is interpreted as a URL.
@@ -130,7 +130,7 @@ practices.
     ;- Otherwise, it is interpreted as a filename.}
 
   Str:D :k(:@key),
-#={Specify the keys to use in the output BibTeX.
+  #={Specify the keys to use in the output BibTeX.
     ;;
     Successive keys are used for succesive BibTeX entries.
     ;;
@@ -138,52 +138,52 @@ practices.
     copied from the existing BibTeX entry.}
 
   IO::Path:D :@names = Array[IO::Path:D](<.>.IO),
-#={Add to the list of names files.
+  #={Add to the list of names files.
     See the NAMES FILES section for details.
     The file name "." means "names.cfg" in the user-configuration directory.}
 
   IO::Path:D :@nouns = Array[IO::Path:D](<.>.IO),
-#={Add to the list of nouns files.
+  #={Add to the list of nouns files.
     See the NOUNS FILES section for details.
     The file name "." means "nouns.cfg" in the user-configuration directory.}
 
-#|{
- ----------------
-;OPERATING MODES
-;----------------
-;}
+  #|{
+   ----------------
+  ;OPERATING MODES
+  ;----------------
+  ;}
 
   Bool:D :$init = False,
-#={Create the default names and nouns files.}
+  #={Create the default names and nouns files.}
 
   Bool:D :$config-dir = False,
-#={Print the location of the user-configuration directory.}
+  #={Print the location of the user-configuration directory.}
 
   Bool:D :S(:$scrape) = True,
-#={Scrape the BibTeX entry from the publisher's page}
+  #={Scrape the BibTeX entry from the publisher's page}
 
   Bool:D :F(:$fix) = True,
-#={Fix common BibTeX mistakes}
+  #={Fix common BibTeX mistakes}
 
-#|{
- ----------------
-;GENERAL OPTIONS
-;----------------
-;}
+  #|{
+   ----------------
+  ;GENERAL OPTIONS
+  ;----------------
+  ;}
 
   Bool:D :w(:$window) = False,
-#={Show the browser window while scraping.  (This is usefull for debugging or
+  #={Show the browser window while scraping.  (This is usefull for debugging or
     if BibScrape unexpectedly hangs.)}
 
   Num:D :t(:$timeout) = 30.Num,
   #={Browser timeout in seconds for individual page loads}
 
   Bool:D :$escape-acronyms = True,
-#={In titles, enclose sequences of two or more uppercase letters (i.e.,
+  #={In titles, enclose sequences of two or more uppercase letters (i.e.,
     an acronym) in braces so that BibTeX preserves their case.}
 
   BibScrape::Fix::MediaType:D :$issn-media = BibScrape::Fix::Both,
-#={When both a print and an online ISSN are available:
+  #={When both a print and an online ISSN are available:
     ;
     ;- if <MediaType> is "Print", use only the print ISSN,
     ;- if <MediaType> is "Online", use only the online ISSN,
@@ -192,7 +192,7 @@ practices.
     If only one ISSN is available, this option is ignored.}
 
   BibScrape::Fix::MediaType:D :$isbn-media = BibScrape::Fix::Both,
-#={When both a print and an online ISBN are available:
+  #={When both a print and an online ISBN are available:
 
     ;- if <MediaType> is "Print", use only the print ISBN,
     ;- if <MediaType> is "Online", use only the online ISBN,
@@ -201,30 +201,30 @@ practices.
     If only one ISBN is available, this option is ignored.}
 
   BibScrape::Isbn::IsbnType:D :$isbn-type = BibScrape::Isbn::Preserve,
-#={- If <IsbnType> is "Isbn13", always convert ISBNs to ISBN-13
+  #={- If <IsbnType> is "Isbn13", always convert ISBNs to ISBN-13
     ;- If <IsbnType> is "Isbn10", when possible convert ISBns to ISBN-10
     ;- If <IsbnType> is "Preserve", do not convert ISBNs.}
 
   Str:D :$isbn-sep = '-',
-#={The string to separate parts of an ISBN.
+  #={The string to separate parts of an ISBN.
     Hyphen and space are the most common.
     Use an empty string to specify no separator.}
 
-# Haven't found any use for this yes, but leaving it here in case we ever do
-#  Bool:D :v(:$verbose) = False,
-##={Print verbose output}
+  # Haven't found any use for this yes, but leaving it here in case we ever do
+  #  Bool:D :v(:$verbose) = False,
+  ##={Print verbose output}
 
   Bool:D :$version = False,
-#={Print version information}
+  #={Print version information}
 
   Bool:D :h(:$help) = False,
-#={Print this usage message}
+  #={Print this usage message}
 
-#|{
-;----------------
-;FIELD OPTIONS
-;----------------
-;}
+  #|{
+   ----------------
+  ;FIELD OPTIONS
+  ;----------------
+  ;}
 
   Str:D :f(:@field) = Array[Str:D](<
     author editor affiliation title
@@ -235,19 +235,19 @@ practices.
     organization publisher address
     language isbn issn doi eid acmid url eprint bib_scrape_url
     note annote keywords abstract copyright>),
-#={Known BibTeX fields in the order that they should appear in the output}
+  #={Known BibTeX fields in the order that they should appear in the output}
 
   Str:D :@no-encode = Array[Str:D](<doi url eprint bib_scrape_url>),
-#={Fields that should not be LaTeX encoded}
+  #={Fields that should not be LaTeX encoded}
 
   Str:D :@no-collapse = Array[Str:D](< >),
-#={Fields that should not have their whitespace collapsed}
+  #={Fields that should not have their whitespace collapsed}
 
   Str:D :o(:@omit) = Array[Str:D](< >),
-#={Fields that should be omitted from the output}
+  #={Fields that should be omitted from the output}
 
   Str:D :@omit-empty = Array[Str:D](<abstract issn doi keywords>),
-#={Fields that should be omitted from the output if they are empty}
+  #={Fields that should be omitted from the output if they are empty}
 
 --> Any:U
 ) is export {
