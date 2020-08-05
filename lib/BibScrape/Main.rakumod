@@ -175,6 +175,9 @@ practices.
 #={Show the browser window while scraping.  (This is usefull for debugging or
     if BibScrape unexpectedly hangs.)}
 
+  Num:D :t(:$timeout) = 30.Num,
+  #={Browser timeout in seconds for individual page loads}
+
   Bool:D :$escape-acronyms = True,
 #={In titles, enclose sequences of two or more uppercase letters (i.e.,
     an acronym) in braces so that BibTeX preserves their case.}
@@ -329,7 +332,7 @@ practices.
 
   for @url -> Str:D $arg {
     sub go(Str:D $key, Str:D $url --> Any:U) {
-      my BibScrape::BibTeX::Entry:D $entry = scrape($url, show-window => $window);
+      my BibScrape::BibTeX::Entry:D $entry = scrape($url, show-window => $window, browser-timeout => $timeout);
       $entry = $fixer.fix($entry);
       $entry.key = $key
         if $key ne ' ';

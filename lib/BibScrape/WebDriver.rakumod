@@ -15,7 +15,7 @@ class WebDriver {
     return;
   }
 
-  submethod BUILD(Bool:D :$show-window = False --> Any:U) {
+  submethod BUILD(Bool:D :$show-window --> Any:U) {
     require Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
 
     $!downloads = make-temp-dir:prefix<BibScrape->;

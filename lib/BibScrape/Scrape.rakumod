@@ -10,9 +10,11 @@ use BibScrape::WebDriver;
 
 my BibScrape::WebDriver::WebDriver:_ $web-driver;
 
-sub scrape(Str:D $url is copy, Bool:D :$show-window = False --> BibScrape::BibTeX::Entry:D) is export {
-  $web-driver = BibScrape::WebDriver::WebDriver.new(show-window => $show-window);
+sub scrape(Str:D $url is copy, Bool:D :$show-window, Num:D :$browser-timeout --> BibScrape::BibTeX::Entry:D) is export {
+  $web-driver =
+    BibScrape::WebDriver::WebDriver.new(show-window => $show-window, browser-timeout => $browser-timeout);
   LEAVE { $web-driver.close(); }
+  $web-driver.set_page_load_timeout($browser-timeout);
 
   # Support 'doi:' as a url type
   my Str:D $web-url = $url;
