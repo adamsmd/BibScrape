@@ -1,28 +1,30 @@
-# Flags
+# TODO Items
+
+## Speculative
+
+### Flags
 
 Case-insensitive nouns?
 
-# Key generation:
+### Key generation:
 
 keep vs generate
 doi in key option
 use first n (non-trivial) words
 Format: author/editor1.last year title/journal.abbriv
 
-# Output
+## Wish list
 
-Titlecase After colon in title?
-  Warn if not?
-follow jstor links to original publisher
-add abstract to jstor
-get PDF (eprint?)
-* EISSN from side pill of ACM
-Trim known field types
-warn if not exists bib_scrape_url when rescraping and fallback to doi
+### WebDriver
 
-convert a howpublished that contains a url to the url field
+ignore non-domain files (timeout on file load?)
+load browser as under-window
 
-# Tests
+## Priority
+
+url or howpubilshed that starts with http://[dx.]?doi.org/
+
+### Tests
 
 jstor (on campus?)
 cambridge (on campus only?)
@@ -67,7 +69,9 @@ http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
 
 Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-functional-programming/article/new-method-for-functional-arrays/7BBFBB58A34DFC28CBF0E758D989D622
 
-# Code
+### Code
+
+use variables :D;
 
 remove all 'die' and warn instead
 &foo
@@ -84,13 +88,7 @@ flag test suite
 optimize
 check installation instructions
 
-# WebDriver
-
-ignore non-domain files (timeout on file load?)
-$web-driver.set_page_load_timeout(5);
-load browser as under-window
-
-# Publishers
+### Publishers
 
 usenix
 
@@ -103,8 +101,22 @@ arxiv:
      - https://arxiv.org/abs/1708.06460v1
      - https://arxiv.org/abs/1708.06461v1
 
+### Output
 
-# Other
+Titlecase After colon in title?
+  Warn if not?
+follow jstor links to original publisher
+add abstract to jstor
+get PDF (eprint?)
+* EISSN from side pill of ACM
+Trim known field types
+warn if not exists bib_scrape_url when rescraping and fallback to doi
+
+convert a howpublished that contains a url to the url field
+
+
+
+### Other
 
 Improve performance
 (no load images)
@@ -114,10 +126,7 @@ numeric ranges might misfire if "-" doesn't represent a range, Common for tech r
 
 XPath
 
-Tell user to always check the title and abstract as they are free form and
-there is little we can do to detect (let alone fix) errors
-
-# Links
+### Links
 
 https://github.com/zotero/bib-web
 https://github.com/zotero/bib
@@ -150,17 +159,12 @@ https://www.zotero.org/support/third_party_documentation
 
 https://dblp.org/db/links.html
 
-# Unsorted
-
-url or howpubilshed that starts with http://[dx.]?doi.org/
+## Unsorted
 
 (!) Warn when names overlap
 (!) Warn if wrong publisher
-use variables :D;
 
 All authors from big four (and authors cited)
-
----------
 
 
 Unicode in Title, Abstract, Author
