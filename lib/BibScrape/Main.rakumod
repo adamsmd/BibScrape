@@ -207,8 +207,9 @@ practices.
     Hyphen and space are the most common.
     Use an empty string to specify no separator.}
 
-  Bool:D :v(:$verbose) = False,
-#={Print verbose output}
+# Haven't found any use for this yes, but leaving it here in case we ever do
+#  Bool:D :v(:$verbose) = False,
+##={Print verbose output}
 
   Bool:D :$version = False,
 #={Print version information}
@@ -318,7 +319,7 @@ practices.
     isbn-media => $isbn-media,
     isbn-type => $isbn-type,
     isbn-sep => $isbn-sep,
-    verbose => $verbose,
+    # verbose => $verbose,
     field => @field,
     no-encode => @no-encode,
     no-collapse => @no-collapse,

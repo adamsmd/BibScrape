@@ -37,7 +37,7 @@ class Fix {
   has MediaType:D $.isbn-media is required;
   has BibScrape::Isbn::IsbnType:D $.isbn-type is required;
   has Str:D $.isbn-sep is required;
-  has Bool:D $.verbose is required;
+  # has Bool:D $.verbose is required;
 
   ## FIELD OPTIONS
   has Str:D @.field is required;
