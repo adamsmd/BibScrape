@@ -147,6 +147,13 @@ Alternatively, install [`rakubrew`](https://rakubrew.org/) (including running
     $ rakubrew build
     $ rakubrew build-zef
 
+Whichever you do, make sure the language version is at least `6.d`, as in the
+following.
+
+    $ perl6 --version
+    This is Rakudo version 2020.07 built on MoarVM version 2020.07
+    implementing Raku 6.d.
+
 #### Python 3 and the Development Tools for Python 3
 
     $ sudo apt install python3 python3-dev
