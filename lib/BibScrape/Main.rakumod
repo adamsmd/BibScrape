@@ -342,18 +342,20 @@ practices.
   );
 
   for @url -> Str:D $arg {
-    sub go(Str:D $key, Str:D $url --> Any:U) {
-      my BibScrape::BibTeX::Entry:D $entry = scrape($url, show-window => $window, browser-timeout => $timeout);
-      $entry = $fixer.fix($entry);
-      $entry.key = $key
-        if $key ne ' ';
+    sub scr(Str:D $url --> BibScrape::BibTeX::Entry:D) {
+      scrape($url, show-window => $window, browser-timeout => $timeout);
+    }
+    sub fix(Str:D $key, BibScrape::BibTeX::Entry:D $entry is copy --> Any:U) {
+      if $fix { $entry = $fixer.fix($entry) }
+      if $key ne ' ' { $entry.key = $key }
       print $entry.Str;
       return;
     }
 
     if $arg ~~ m:i/^ 'http:' | 'https:' | 'doi:' / {
       # It's a URL
-      go(@key.shift // ' ', $arg);
+      if !$scrape { die "Scraping disabled but given URL: $arg"; }
+      fix(@key.shift // ' ', scr($arg));
       print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {
       # Not a URL so try reading it as a file
@@ -363,13 +365,16 @@ practices.
         if $item !~~ BibScrape::BibTeX::Entry:D {
           print $item.Str;
         } else {
-          if $item.fields<bib_scrape_url> {
-            go(@key.shift // $item.key, $item.fields<bib_scrape_url>.simple-str);
+          my $key = @key.shift // $item.key;
+          if !$scrape {
+            fix($key, $item);
+          } elsif $item.fields<bib_scrape_url> {
+            fix($key, scr($item.fields<bib_scrape_url>.simple-str));
           } elsif $item.fields<doi> {
             my Str:D $doi = $item.fields<doi>.simple-str;
             $doi = "doi:$doi"
               unless $doi ~~ m:i/^ 'doi:' /;
-            go(@key.shift // $item.key, $doi);
+            fix($key, scr($doi));
           } else {
             print $item.Str
           }
