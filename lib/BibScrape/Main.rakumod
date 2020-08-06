@@ -375,6 +375,8 @@ practices.
             $doi = "doi:$doi"
               unless $doi ~~ m:i/^ 'doi:' /;
             fix($key, scr($doi));
+          } elsif $item.fields<url>.simple-str ~~ m:i/ 'http' 's'? '://' 'dx.'? 'doi.org/' / {
+            fix($key, scr($item.fields<url>.simple-str));
           } else {
             print $item.Str
           }
