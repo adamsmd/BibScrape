@@ -238,14 +238,14 @@ practices.
   ;}
 
   Str:D :f(:@field) = Array[Str:D](<
-    author editor affiliation title
-    howpublished booktitle journal volume number series jstor_issuetitle
-    type jstor_articletype school institution location conference_date
+    key author editor affiliation title
+    howpublished booktitle journal volume number series
+    type school institution location conference_date
     chapter pages articleno numpages
-    edition day month year issue_date jstor_formatteddate
+    edition day month year issue_date
     organization publisher address
-    language isbn issn doi eid acmid url eprint bib_scrape_url
-    note annote keywords abstract copyright>),
+    language isbn issn doi url eprint bib_scrape_url
+    note annote keywords abstract>),
   #={Known BibTeX fields in the order that they should appear in the output}
 
   Str:D :@no-encode = Array[Str:D](<doi url eprint bib_scrape_url>),

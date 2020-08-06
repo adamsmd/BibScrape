@@ -64,12 +64,10 @@ arxiv:
 
 ### Output
 
-Titlecase After colon in title?
-  Warn if not?
+Titlecase After colon in title? Warn if not?
 follow jstor links to original publisher
 add abstract to jstor
 get PDF (eprint?)
-Trim known field types
 
 ### Tests
 
