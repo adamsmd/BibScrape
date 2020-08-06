@@ -46,12 +46,12 @@ wrong.  For example, some publisher assume the last name of Simon Peyton Jones
 is "Jones" when it should be "Peyton Jones", and some publishers put author
 names in all upper case (e.g., "CONNOR MCBRIDE").
 ;;
-We call these names "suspect", not because they are wrong but because the user
-should double check them.
+We call these names "possibly incorrect", not because they are wrong but because
+the user should double check them.
 ;;
-The only names we do not consider suspect are those in the names files (see the
-NAMES FILE section) or those that consist of a first name, optional middle
-initial, and last name in any of the following formats:
+The only names we do not consider possibly incorrect are those in the names
+files (see the NAMES FILE section) or those that consist of a first name,
+optional middle initial, and last name in any of the following formats:
 ;;
 First name:
 ;

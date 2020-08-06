@@ -2,18 +2,18 @@ https://www.jstor.org/stable/10.2307/2899325
 
 Month extraction when jstor_formatteddate has day and year
 WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
-WARNING: Suspect name: Golub, T. R.
-WARNING: Suspect name: Slonim, D. K.
-WARNING: Suspect name: Tamayo, P.
-WARNING: Suspect name: Huard, C.
-WARNING: Suspect name: Gaasenbeek, M.
-WARNING: Suspect name: Mesirov, J. P.
-WARNING: Suspect name: Coller, H.
-WARNING: Suspect name: Loh, M. L.
-WARNING: Suspect name: Downing, J. R.
-WARNING: Suspect name: Caligiuri, M. A.
-WARNING: Suspect name: Bloomfield, C. D.
-WARNING: Suspect name: Lander, E. S.
+WARNING: Possibly incorrect name: Golub, T. R.
+WARNING: Possibly incorrect name: Slonim, D. K.
+WARNING: Possibly incorrect name: Tamayo, P.
+WARNING: Possibly incorrect name: Huard, C.
+WARNING: Possibly incorrect name: Gaasenbeek, M.
+WARNING: Possibly incorrect name: Mesirov, J. P.
+WARNING: Possibly incorrect name: Coller, H.
+WARNING: Possibly incorrect name: Loh, M. L.
+WARNING: Possibly incorrect name: Downing, J. R.
+WARNING: Possibly incorrect name: Caligiuri, M. A.
+WARNING: Possibly incorrect name: Bloomfield, C. D.
+WARNING: Possibly incorrect name: Lander, E. S.
 @article{Golub:1999:10.2307/2899325,
   author = {Golub, T. R. and Slonim, D. K. and Tamayo, P. and Huard, C. and Gaasenbeek, M. and Mesirov, J. P. and Coller, H. and Loh, M. L. and Downing, J. R. and Caligiuri, M. A. and Bloomfield, C. D. and Lander, E. S.},
   title = {Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring},

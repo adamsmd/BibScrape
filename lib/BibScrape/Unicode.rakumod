@@ -17,7 +17,7 @@ sub unicode2tex(Str:D $str, Regex:D :$ignore = / False / --> Str:D) is export {
         my Str:D $old = pop @out;
         if not $old.defined {
           $old = '{}';
-          say sprintf( 'WARNING: Combining character at start of string:  %s (U+%04x)', $ord.chr, $ord);
+          say sprintf( 'WARNING: Combining character at start of string: %s (U+%04x)', $ord.chr, $ord);
         }
         my Str:D $new = %CODES{$_};
         $new ~~ s/ '{}' /$old/;

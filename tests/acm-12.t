@@ -1,7 +1,7 @@
 https://portal.acm.org/citation.cfm?id=42011
 
 Page numbers with letters
-WARNING: Suspect name: Teskey, F. N.
+WARNING: Possibly incorrect name: Teskey, F. N.
 @inproceedings{Teskey:1987:10.1145/42005.42011,
   author = {Teskey, F. N.},
   title = {Enriched knowledge representation for information retrieval},

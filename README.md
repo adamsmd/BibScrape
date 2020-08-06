@@ -102,7 +102,7 @@ accidentally DoS the publisher.
 
 ## Tips
 
-- Make a habit of putting single quotes around URLs (as seen in the Usage
+- Make a habit of putting single quotes around URLs (as seen in the usage
   examples above) in case they contain things like '&' or '?'.
 
 - BibScrape's version number indicates the approximate date on which the
@@ -118,8 +118,8 @@ accidentally DoS the publisher.
   entry, the publisher page has probably stalled.  Often, re-running BibScrape
   fixes the problem.
 
-- If a publisher page consistently hangs or errors, use `--show-window` to show
-  the browser window and see what is going on.
+- If a publisher page consistently hangs or errors, use `--window` to show the
+  browser window and see what is going on.
 
 - If an author name is formatted wrong, add an entry to your names file. See the
   "NAMES FILES" section of `bibscrape --help`.
@@ -207,6 +207,20 @@ names and nouns files.
     $ bibscrape --init
 
 Run `bibscrape --config-dir` to find out where those files are created.
+
+### Testing
+
+The [`tests/`](tests) folder contains tests for each publisher.  You can run
+them using [`test.sh`](test.sh).  For example to run all the ACM tests, run the
+following command:
+
+    $ ./test.sh tests/acm-*.t
+
+The tests print the difference from the correct output.  Thus, tests that pass
+print just the test name.
+
+Note that publisher pages aren't the most reliable, so if a test fails, you
+should re-run that test to make sure it isn't a transient issue.
 
 ## Feedback
 

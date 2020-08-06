@@ -2,6 +2,8 @@
 
 
 
+Flag to geckodriver to terminate automatically
+
 ## Speculative
 
 ### Flags

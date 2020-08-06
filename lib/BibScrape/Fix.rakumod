@@ -18,7 +18,7 @@ sub check(BibScrape::BibTeX::Entry:D $entry, Str:D $field, Str:D $msg, &check --
   if ($entry.fields{$field}:exists) {
     my Str:D $value = $entry.fields{$field}.simple-str;
     unless (&check($value)) {
-      say "WARNING: $msg: ", $value;
+      say "WARNING: $msg: $value";
     }
   }
   return;
@@ -108,7 +108,7 @@ class Fix {
       update($entry, $key, { s:i:g/\s+ "," \s+/", "/; });
     }
 
-    check($entry, 'pages', 'suspect page number', {
+    check($entry, 'pages', 'Possibly incorrect page number', {
       my Regex:D $page = rx[
         # Simple digits
         \d+ |
@@ -137,10 +137,10 @@ class Fix {
       /^ $page+ % "," $/;
     });
 
-    check($entry, 'volume', 'suspect volume', {
+    check($entry, 'volume', 'Possibly incorrect volume', {
       /^ \d+ $/ || /^ \d+ "-" \d+ $/ || /^ <[A..Z]> "-" \d+ $/ || /^ \d+ "-" <[A..Z]> $/ });
 
-    check($entry, 'number', 'suspect number', {
+    check($entry, 'number', 'Possibly incorrect number', {
       /^ \d+ $/ || /^ \d+ "--" \d+ $/ || /^ [\d+]+ % "/" $/ || /^ \d+ "es" $/ ||
       /^ "Special Issue " \d+ ["--" \d+]? $/ || /^ "S" \d+ $/ ||
       # PACMPL uses conference abbreviations (e.g., ICFP)
@@ -216,7 +216,7 @@ class Fix {
           $_ eq ( '/' | '-' | '--' ) and BibScrape::BibTeX::Piece.new($_) or
           str2month($_) or
           /^ \d+ $/ and num2month($_) or
-          print "WARNING: Suspect month: $_\n" and BibScrape::BibTeX::Piece.new($_)});
+          say "WARNING: Possibly incorrect month: $_" and BibScrape::BibTeX::Piece.new($_)});
       $_ = BibScrape::BibTeX::Value.new(@x)});
 
     # Omit fields we don't want
@@ -231,7 +231,7 @@ class Fix {
     }
 
     # Year
-    check($entry, 'year', 'suspect year', { /^ \d\d\d\d $/ });
+    check($entry, 'year', 'Possibly incorrect year', { /^ \d\d\d\d $/ });
 
     # Generate an entry key
     my BibScrape::BibTeX::Value:_ $name-value =
@@ -275,7 +275,7 @@ class Fix {
       } elsif m/^$/ {
         $_ = Str
       } else {
-        print "WARNING: Suspect $field: $_\n"
+        say "WARNING: Possibly incorrect $field: $_"
       }
     });
   }
@@ -314,7 +314,7 @@ class Fix {
           <upper><lower>+                     # Name with prefix
         /;
       unless $flattened-name ~~ /^ \s* $first \s+ [$middle \s+]? $last \s* $/ {
-        print "WARNING: Suspect name: {order-name($name)}\n"
+        say "WARNING: Possibly incorrect name: {order-name($name)}"
       }
 
       push @new-names, order-name($name);
@@ -365,7 +365,7 @@ sub math-node(XML::Node:D $node --> Str:D) {
         when 'msubsup' { '{' ~ math-node($node.nodes[0]) ~ '}_{' ~ math-node($node.nodes[1]) ~ '}^{' ~ math-node($node.nodes[2]) ~ '}' }
         when 'msub' { '{' ~ math-node($node.nodes[0]) ~ '}_{' ~ math-node($node.nodes[1]) ~ '}' }
         when 'msup' { '{' ~ math-node($node.nodes[0]) ~ '}^{' ~ math-node($node.nodes[1]) ~ '}' }
-        default { say "WARNING: unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
+        default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
       }
     }
 
@@ -422,7 +422,7 @@ sub rec-node(XML::Node:D $node --> Str:D) {
             rec($node.nodes)
           }
         }
-        default { say "WARNING: unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
+        default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
       }
     }
 
