@@ -1,6 +1,7 @@
 https://www.jstor.org/stable/10.2307/2893230
 
 Info from JSTOR is broken
+WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 WARNING: Suspect name: Autran, B.
 WARNING: Suspect name: Carcelain, G.
 WARNING: Suspect name: Li, T. S.

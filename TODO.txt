@@ -43,6 +43,11 @@ load browser as under-window
 
 ## Priority
 
+flags for individual names or nouns
+
+suspect vs Suspect vs Possibly incorrect
+number = {{POPL}}
+
 convert a howpublished that contains a url to the url field
 url or howpubilshed that starts with http://[dx.]?doi.org/
 * EISSN from side pill of ACM

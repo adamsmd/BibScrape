@@ -1,6 +1,7 @@
 https://www.jstor.org/stable/10.2307/3001616
 
 Superscript and Unicode in title
+WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 @article{Cochran:1954:10.2307/3001616,
   author = {Cochran, William G.},
   title = {Some Methods for Strengthening the Common {\textgreek{q}}\textsuperscript{2} Tests},

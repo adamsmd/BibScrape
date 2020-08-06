@@ -1,6 +1,7 @@
 https://www.jstor.org/stable/2975544
 
 A simple test
+WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 @article{Leron:1983:10.2307/2975544,
   author = {Leron, Uri},
   title = {Structuring Mathematical Proofs},

@@ -304,6 +304,8 @@ sub scrape-ios-press(--> BibScrape::BibTeX::Entry:D) {
 }
 
 sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
+  say "WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.";
+
   ## Remove overlay
   my #`(Inline::Python::PythonObject:D) @overlays = $web-driver.find_elements_by_class_name( 'reveal-overlay' );
   @overlays.map({ $web-driver.execute_script( 'arguments[0].removeAttribute("style")', $_) });
