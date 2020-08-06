@@ -129,6 +129,11 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
 }
 
 sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {
+  if $web-driver%<current_url> ~~
+      /^ 'http' 's'? '://www.cambridge.org/core/services/aop-cambridge-core/content/view/' ( 'S' \d+) $/ {
+    $web-driver.get("https://doi.org/10.1017/$0");
+  }
+
   # This must be before BibTeX otherwise Cambridge sometimes hangs due to an alert box
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
 
@@ -304,7 +309,9 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
   @overlays.map({ $web-driver.execute_script( 'arguments[0].removeAttribute("style")', $_) });
 
   ## BibTeX
-  await({ $web-driver.find_element_by_class_name( 'cite-this-item' ) }).click;
+  # Note that on-campus is different than off-campus
+  await({ $web-driver.find_elements_by_css_selector( '[data-qa="cite-this-item"]' )
+          || $web-driver.find_elements_by_class_name( 'cite-this-item' ) })[0].click;
   await({ $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ) }).click;
   my BibScrape::BibTeX::Entry:D $entry = bibtex-parse($web-driver.read-downloads()).items.head;
 
@@ -313,7 +320,10 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
   html-meta-bibtex($entry, $meta);
 
   ## Title
-  my Str:D $title = $web-driver.find_element_by_class_name( 'title' ).get_property( 'innerHTML' );
+  # Note that on-campus is different than off-campus
+  my Str:D $title =
+    ($web-driver.find_elements_by_class_name( 'item-title' )
+      || $web-driver.find_elements_by_class_name( 'title' ))[0].get_property( 'innerHTML' );
   $entry.fields<title> = BibScrape::BibTeX::Value.new($title);
 
   ## DOI
