@@ -369,7 +369,7 @@ sub math-node(XML::Node:D $node --> Str:D) {
       }
     }
 
-    default { die }
+    default { die "Unknown XML node type '{$node.^name}': $node" }
   }
 }
 
@@ -426,6 +426,6 @@ sub rec-node(XML::Node:D $node --> Str:D) {
       }
     }
 
-    default { die }
+    default { die "Unknown XML node type '{$node.^name}': $node" }
   }
 }

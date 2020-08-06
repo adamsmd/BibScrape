@@ -116,13 +116,11 @@ Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-function
 
 ### Code
 
-remove all 'die' and warn instead
 &foo
 -
 .
 |capture
 Nil
-Trim known fields
 Ignore unknown entries in bibtex
 flag test suite
 
@@ -133,7 +131,6 @@ flag test suite
 (!) Warn when names overlap
 (!) Warn if wrong publisher
 
-All authors from big four (and authors cited)
 
 
 Unicode in Title, Abstract, Author

@@ -49,7 +49,7 @@ sub flatten-name(Str:D $str --> Str:D) is export {
     when 1 { "@parts[0]" }
     when 2 { "@parts[1] @parts[0]" }
     when 3 { "@parts[2] @parts[0] @parts[1]" }
-    default { die "Too many commas in name <$str>" }
+    default { die "Too many commas in name '$str'" }
   }
 }
 
@@ -62,7 +62,7 @@ sub order-name(Str:D $str --> Str:D) is export {
     }
     when 2 { "@parts[0], @parts[1]" }
     when 3 { "@parts[0], @parts[1], @parts[2]" }
-    default { die "Too many commas in name <$str>" }
+    default { die "Too many commas in name '$str'" }
   }
 }
 
@@ -76,6 +76,6 @@ sub last-name(Str:D $str --> Str:D) is export {
     }
     when 2 { @parts[0] }
     when 3 { @parts[0] }
-    default { die "Too many commas in name <$str>" }
+    default { die "Too many commas in name '$str'" }
   }
 }

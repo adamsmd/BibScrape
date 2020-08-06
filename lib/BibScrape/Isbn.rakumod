@@ -28,7 +28,7 @@ sub rules(--> Array:D[Rule:D]) {
   my XML::Element:D @groups = $xml.elements(:RECURSE(Inf), :TAG<Group>);
   do for @groups -> XML::Element:D $group {
     my Str:D $prefix = $group.elements(:TAG<Prefix>, :SINGLE)[0].string;
-    ($prefix ~~ /^ (\d+) '-' (\d+) $/) or die "Prefix: <$prefix>";
+    ($prefix ~~ /^ (\d+) '-' (\d+) $/) or die "Cannot parse prefix: <$prefix>";
     my Str:D ($ean, $grp) = ($0.Str, $1.Str);
     $prefix ~~ s:g/ '-' //;
 
@@ -38,7 +38,7 @@ sub rules(--> Array:D[Rule:D]) {
       my Str:D $range = $rule.elements(:TAG<Range>, :SINGLE)[0].string;
       my Int:D $length = $rule.elements(:TAG<Length>, :SINGLE)[0].string.Int;
 
-      ($range ~~ /^ (\d+) '-' (\d+) $/) or die "Range: <$range>";
+      ($range ~~ /^ (\d+) '-' (\d+) $/) or die "Cannot parse range: <$range>";
       my Str:D ($start, $end) = ($0.Str, $1.Str);
 
       Rule.new(
@@ -52,7 +52,7 @@ sub rules(--> Array:D[Rule:D]) {
 }
 
 sub hyphenate(Str:D $isbn --> Str:D) {
-  die "Bad ISBN: $isbn" unless $isbn ~~ /^ <[0..9]> ** 12 <[0..9Xx]> $/;
+  die "Cannot parse ISBN: $isbn" unless $isbn ~~ /^ <[0..9]> ** 12 <[0..9Xx]> $/;
 
   for @rules -> Rule:D $rule {
     if $rule.start le $isbn le $rule.end {
@@ -67,7 +67,7 @@ sub hyphenate(Str:D $isbn --> Str:D) {
         with $isbn;
     }
   }
-  die "Cannot find ISBN: $isbn";
+  die "Cannot find rule for ISBN: $isbn";
 }
 
 sub check-digit(Int:D $mod, @consts where { $_.all ~~ Int:D }, Str:D $digits is copy --> Str:D) {
@@ -89,10 +89,10 @@ sub check-digit-issn(Str:D $digits --> Str:D) { check-digit(11, (8,7,6,5,4,3,2),
 sub canonical-issn(Str:D $issn, IsbnType:D $type, Str:D $sep --> Str:D) is export {
   my Str:D $i = $issn; # Copy so errors can use the original
   $i ~~ s:g/ <[- ]> //;
-  $i ~~ m/^ (\d\d\d\d) (\d\d\d(\d|"X")) $/ or die "Invalid ISSN due to wrong number of digits: $issn";
+  $i ~~ m/^ (\d\d\d\d) (\d\d\d(\d|"X")) $/ or die "Cannot parse ISSN: $issn";
   $i = "$0-$1";
   my Str:D $check = check-digit-issn($issn);
-  $i ~~ / $check $/ or die "Bad check digit in ISSN. Expecting $check in $issn";
+  $i ~~ / $check $/ or die "Bad check digit in ISSN.  Expecting '$check' as last digit of ISSN '$issn'.";
   return $i;
 }
 
@@ -103,15 +103,15 @@ sub canonical-isbn(Str:D $isbn, IsbnType:D $type, Str:D $sep --> Str:D) is expor
 
   if $i ~~ m/^ <[0..9]> ** 9 <[0..9Xx]> $/ {
     my Str:D $check = check-digit10($i);
-    die "Bad check digit in ISBN-10. Expecting $check in $isbn" unless $i ~~ / $check $/;
+    die "Bad check digit in ISBN-10.  Expecting '$check' as last digit in ISBN '$isbn'." unless $i ~~ / $check $/;
     $i = '978' ~ $i;
     $was-isbn13 = False;
   } elsif $i ~~ m/^ <[0..9]> ** 12 <[0..9Xx]> $/ {
     my Str:D $check = check-digit13($i);
-    die "Bad check digit in ISBN-13. Expecting $check in $isbn" unless $i ~~ / $check $/;
+    die "Bad check digit in ISBN-13.  Expecting '$check' as last digit in ISBN '$isbn'." unless $i ~~ / $check $/;
     $was-isbn13 = True;
   } else {
-    die "Invalid digits or wrong number of digits in ISBN: $isbn";
+    die "Cannot parse ISBN: $isbn";
   }
 
   # By this point we know it is a valid ISBN-13 w/o dashes but with a possibly wrong check digit

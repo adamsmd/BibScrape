@@ -82,7 +82,7 @@ class WebDriver {
   }
 
   method read-downloads(--> Str:D) is export {
-    for 0..10 {
+    for 0..300 {
       my IO::Path:D @files = $!downloads.dir;
       return @files.head.slurp
         if @files;
