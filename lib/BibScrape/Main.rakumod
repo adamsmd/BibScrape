@@ -67,10 +67,19 @@ Middle initial:
 Last name:
 ;
 ; - Xxxx
-; - Xxxx
-; - O'Xxxx
-; - McXxxx
+; - Xxxx-Xxxx
+; - d'Xxxx
+; - D'Xxxx
+; - deXxxx
+; - DeXxxx
+; - DiXxxx
+; - DuXxxx
+; - LaXxxx
+; - LeXxxx
 ; - MacXxxx
+; - McXxxx
+; - O'Xxxx
+; - VanXxxx
 ;;
 This collection of name formats was chosen based the list of all authors in
 DBLP and tries to strike a ballance between names that publishers are unlikely

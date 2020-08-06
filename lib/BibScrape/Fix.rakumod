@@ -310,7 +310,8 @@ class Fix {
       my Regex:D $last = rx/
           <upper><lower>+                     # Simple name
         | <upper><lower>+ '-' <upper><lower>+ # Hyphenated name with upper
-        | ["O'"|"Mc"|"Mac"] <upper><lower>+   # Name with prefix
+        | ["d'"|"D'"|"de"|"De"|"Di"|"Du"|"La"|"Le"|"Mac"|"Mc"|"O'"|"Van"]
+          <upper><lower>+                     # Name with prefix
         /;
       unless $flattened-name ~~ /^ \s* $first \s+ [$middle \s+]? $last \s* $/ {
         print "WARNING: Suspect name: {order-name($name)}\n"
