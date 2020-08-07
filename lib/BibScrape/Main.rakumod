@@ -153,10 +153,20 @@ practices.
     See the NAMES FILES section for details.
     The file name "." means "names.cfg" in the user-configuration directory.}
 
+  Str:D :@name = Array[Str:D].new(),
+  #={Add to the list of names as if <Str> were the content of a names file.
+    See the NAMES FILES section for details about names files.
+    Semicolons are interpreted as newlines.}
+
   IO::Path:D :@nouns = Array[IO::Path:D](<.>.IO),
   #={Add to the list of nouns files.
     See the NOUNS FILES section for details.
     The file name "." means "nouns.cfg" in the user-configuration directory.}
+
+  Str:D :@noun = Array[Str:D].new(),
+  #={Add to the list of nouns as if <Str> were the content of a nouns file.
+    See the NOUNS FILES section for details about nouns files.
+    Semicolons are interpreted as newlines.}
 
   #|{
    ----------------
@@ -325,7 +335,9 @@ practices.
 
   my BibScrape::Fix::Fix:D $fixer = BibScrape::Fix::Fix.new(
     names-files => @names,
+    names-strings => @name,
     nouns-files => @nouns,
+    nouns-strings => @noun,
     scrape => $scrape,
     fix => $fix,
     escape-acronyms => $escape-acronyms,

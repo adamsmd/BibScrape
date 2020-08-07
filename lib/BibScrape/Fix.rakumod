@@ -27,7 +27,7 @@ sub check(BibScrape::BibTeX::Entry:D $entry, Str:D $field, Str:D $msg, &check --
 class Fix {
   ## INPUTS
   has Array:D[Str:D] @.names is required;
-  has Str:D %.nouns is required; # Maps strings to their replacements
+  has Array:D[Str:D] @.nouns is required;
 
   ## OPERATING MODES
   has Bool:D $.scrape is required;
@@ -49,31 +49,32 @@ class Fix {
   has Str:D @.omit-empty is required;
 
   method new(#`(Any:D) *%args --> Fix:D) {
-    my Array:D[Str:D] @names;
-    @names[0] = Array[Str].new;
-    for %args<names-files> -> IO::Path:D $names-file {
-      for $names-file.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
-        $line.chomp;
+    sub string-blocks(Array:D[Str:D] @blocks, Str:D $blocks --> Any:U) {
+      push @blocks, Array[Str:D].new; # Ensure we are starting a new block
+      for $blocks.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
         $line ~~ s/"#".*//; # Remove comments (which start with `#`)
-        if $line ~~ /^\s*$/ { push @names, Array[Str:D].new; } # Start a new block
-        else { push @names[@names.end], $line; } # Add to existing block
+        $line ~~ s/\s+ $//; # Remove trailing whitespace
+        if $line ~~ /^\s*$/ { push @blocks, Array[Str:D].new; } # Start a new block
+        else { push @blocks[@blocks.end], $line; } # Add to existing block
       }
+      return;
     }
-    @names = @names.grep({ .elems > 0 });
-
-    my Str:D %nouns;
-    for %args<nouns-files> -> IO::Path:D $nouns-file {
-      for $nouns-file.slurp.split(rx/ "\r" | "\n" | "\r\n" /) -> Str:D $line is copy {
-        $line.chomp;
-        $line ~~ s/"#".*//; # Remove comments (which start with `#`)
-        if $line !~~ /^\s*$/ {
-          my Str:D $key = do given $line { S:g/<[{}]>// };
-          %nouns{$key} = $line;
-        }
+    sub blocks(Str:D $file-field, Str:D $string-field --> Array:D[Array:D[Str:D]]) {
+      my Array:D[Str:D] @blocks;
+      for %args{$file-field} -> IO::Path:D $file {
+        string-blocks(@blocks, $file.slurp);
       }
+      for %args{$string-field} -> Str:D $string is copy {
+        $string ~~ s:g/ ';' /\n/;
+        string-blocks(@blocks, $string);
+      }
+      @blocks = @blocks.grep({ .elems > 0 }); # Remove empty blocks
+      @blocks.Array;
     }
+    my Array:D[Str:D] @names = blocks(<names-files>, <names-strings>);
+    my Array:D[Str:D] @nouns = blocks(<nouns-files>, <nouns-strings>);
 
-    self.bless(names => @names, nouns => %nouns, |%args);
+    self.bless(names => @names, nouns => @nouns, |%args);
   }
 
   method fix(BibScrape::BibTeX::Entry:D $entry is copy --> BibScrape::BibTeX::Entry:D) {
@@ -200,9 +201,22 @@ class Fix {
 
     # Keep proper nouns capitalized
     update($entry, 'title', {
-      for %.nouns.kv -> Str:D $k, Str:D $v {
-        s:g/«$k»/$v/;
-        if m:i/«$k»/ { say "WARNING: Possibly uncapitalized noun '$/' in title"; }
+      for @.nouns -> Str:D @noun-group {
+        for @noun-group -> Str:D $noun {
+          my Str:D $noun2 = $noun.subst(rx/ <[{}]> /, '', :g);
+          s:g/ « [$noun | $noun2] » /{@noun-group.head}/;
+        }
+      }
+
+      for @.nouns -> Str:D @noun-group {
+        for @noun-group -> Str:D $noun {
+          my Str:D $noun2 = $noun.subst(rx/ <[{}]> /, '', :g);
+          for m:i:g/ « [$noun | $noun2] » / {
+            if $/ ne @noun-group.head {
+              say "WARNING: Possibly incorrectly capitalized noun '$/' in title";
+            }
+          }
+        }
       }
     });
 
