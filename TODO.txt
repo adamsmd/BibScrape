@@ -78,13 +78,6 @@ oxford (on campus only?)
 a test that has a jr part
 a test that has 'others' in author names
 
-Control flow analysis in {S}cheme: http://dx.doi.org/10.1145/53990.54007
-  {S}cheme
-  abstract
-  month
-'https://dl.acm.org/citation.cfm?id=2175516'
-   Invalid digits or wrong number of digits in ISBN: 3642119565,9783642119569 at Text/BibTeX/Fix.pm line 159.
-   (Example of going wrong if using wrong publisher)
 Upper vs lower case after colon:
    https://dl.acm.org/citation.cfm?doid=78973.78977
 

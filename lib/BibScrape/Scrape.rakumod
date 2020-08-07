@@ -18,14 +18,24 @@ sub scrape(Str:D $url is copy, Bool:D :$show-window, Num:D :$browser-timeout -->
   LEAVE { $web-driver.close(); }
   $web-driver.set_page_load_timeout($browser-timeout);
 
+  my BibScrape::BibTeX::Entry:D $entry = dispatch($url);
+
+  $entry.fields<bib_scrape_url> = BibScrape::BibTeX::Value.new($url);
+
+  # Remove undefined fields
+  $entry.set-fields($entry.fields.grep({ $_ }));
+
+  $entry;
+}
+
+sub dispatch(Str:D $url is copy --> BibScrape::BibTeX::Entry:D) {
   # Support 'doi:' as a url type
-  my Str:D $web-url = $url;
-  $web-url ~~ s:i/^ 'doi:' [ 'http' 's'? '://' 'dx.'? 'doi.org/' ]? /https:\/\/doi.org\//;
-  $web-driver.get($web-url);
+  $url ~~ s:i/^ 'doi:' [ 'http' 's'? '://' 'dx.'? 'doi.org/' ]? /https:\/\/doi.org\//;
+  $web-driver.get($url);
 
   # Get the domain after following any redirects
   my Str:D $domain = ($web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"]).Str;
-  my BibScrape::BibTeX::Entry:D $entry = do given $domain {
+  return do given $domain {
     when m[ « 'acm.org'             $] { scrape-acm(); }
     when m[ « 'cambridge.org'       $] { scrape-cambridge(); }
     when m[ « 'computer.org'        $] { scrape-ieee-computer(); }
@@ -38,23 +48,22 @@ sub scrape(Str:D $url is copy, Bool:D :$show-window, Num:D :$browser-timeout -->
     when m[ « 'link.springer.com'   $] { scrape-springer(); }
     default { say "error: unknown domain: $domain"; }
   };
-
-  $entry.fields<bib_scrape_url> = BibScrape::BibTeX::Value.new($url);
-
-  # Remove undefined fields
-  $entry.set-fields($entry.fields.grep({ $_ }));
-
-  $entry;
 }
 
 ########
 
 sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
+  if 'Association for Computing Machinery' ne
+      $web-driver.find_element_by_class_name( 'publisher__name' ).get_property( 'innerHTML' ) {
+    my Str:D $url = $web-driver.find_element_by_class_name( 'issue-item__doi' ).get_attribute( 'href' );
+    return dispatch($url);
+  }
+
   ## BibTeX
-  $web-driver.find_element_by_css_selector('a[data-title="Export Citation"]').click;
+  $web-driver.find_element_by_css_selector( 'a[data-title="Export Citation"]').click;
   my Str:D @citation-text =
     await({
-      $web-driver.find_elements_by_css_selector("#exportCitation .csl-right-inline") })
+      $web-driver.find_elements_by_css_selector( '#exportCitation .csl-right-inline' ) })
         .map({ $_ % <text> });
 
   # Avoid SIGPLAN Notices, SIGSOFT Software Eng Note, etc. by prefering
@@ -71,7 +80,7 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
 
   ## Abstract
   my Str:_ $abstract = $web-driver
-    .find_elements_by_css_selector(".abstractSection.abstractInFull")
+    .find_elements_by_css_selector( '.abstractSection.abstractInFull' )
     .reverse.head
     .get_property( 'innerHTML' );
   if $abstract.defined and $abstract ne '<p>No abstract available.</p>' {
