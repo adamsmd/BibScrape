@@ -1,7 +1,6 @@
 https://www.jstor.org/stable/10.2307/2893230
 
 Info from JSTOR is broken
-WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 WARNING: Possibly incorrect name: Autran, B.
 WARNING: Possibly incorrect name: Carcelain, G.
 WARNING: Possibly incorrect name: Li, T. S.

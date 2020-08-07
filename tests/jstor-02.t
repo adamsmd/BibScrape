@@ -1,7 +1,6 @@
 https://www.jstor.org/stable/2034627
 
 A simple test
-WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 @article{Bateman:1963:10.2307/2034627,
   author = {Bateman, Paul T. and Kohlbecker, Eugene E. and Tull, Jack P.},
   title = {On a Theorem of Erd{\"o}s and Fuchs in Additive Number Theory},

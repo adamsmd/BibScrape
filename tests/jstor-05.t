@@ -1,7 +1,6 @@
 https://www.jstor.org/stable/10.2307/2899318
 
 Unicode in first author (effects key)
-WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 @article{Barabasi:1999:10.2307/2899318,
   author = {Barab{\'a}si, Albert-L{\'a}szl{\'o} and Albert, R{\'e}ka},
   title = {Emergence of Scaling in Random Networks},

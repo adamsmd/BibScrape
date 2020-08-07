@@ -1,6 +1,7 @@
 https://comjnl.oxfordjournals.org/content/54/5/717.abstract
 
 Unicode in authors
+WARNING: Oxford imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 @article{Sevinc:2011:10.1093/comjnl/bxp130,
   author = {Sevin{\c{c}}, Ender and Co{\c{s}}ar, Ahmet},
   affiliation = {Computer Engineering Department, Middle East Technical University, Ankara, Turkey and Computer Engineering Department, Middle East Technical University, Ankara, Turkey},

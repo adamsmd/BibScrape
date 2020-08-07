@@ -48,6 +48,8 @@ XPath
 ignore non-domain files (timeout on file load?)
 load browser as under-window
 
+#opt.set_capability("pageLoadStrategy", 'eager')
+#service_args=['--load-images=no']
 
 
 ## Priority
@@ -78,14 +80,10 @@ get PDF (eprint?)
 
 ### Tests
 
-jstor (on campus?)
-cambridge (on campus only?)
-oxford (on campus only?)
-
 a test that has 'others' in author names
 
 Upper vs lower case after colon:
-   https://dl.acm.org/citation.cfm?doid=78973.78977
+  https://dl.acm.org/citation.cfm?doid=78973.78977
 
 Dissertation:
   http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs

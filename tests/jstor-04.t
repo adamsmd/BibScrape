@@ -1,7 +1,6 @@
 https://www.jstor.org/stable/10.2307/3703997
 
 Unicode in author name
-WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 @article{Robins:2000:10.2307/3703997,
   author = {Robins, James M. and Hern{\'a}n, Miguel {\'A}ngel and Brumback, Babette},
   title = {Marginal Structural Models and Causal Inference in Epidemiology},

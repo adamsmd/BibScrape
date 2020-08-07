@@ -1,7 +1,6 @@
 https://www.jstor.org/stable/10.2307/2899325
 
 Month extraction when jstor_formatteddate has day and year
-WARNING: JSTOR imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 WARNING: Possibly incorrect name: Golub, T. R.
 WARNING: Possibly incorrect name: Slonim, D. K.
 WARNING: Possibly incorrect name: Tamayo, P.
