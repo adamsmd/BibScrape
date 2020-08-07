@@ -463,6 +463,16 @@ sub scrape-springer(--> BibScrape::BibTeX::Entry:D) {
     }
   }
 
+  ## Author
+  my Str:D @authors =
+    #($web-driver.find_elements_by_css_selector( '[data-test="author-name"]' ),
+    #  $web-driver.find_elements_by_class_name( 'authors__name' ))
+    ($web-driver.find_elements_by_class_name( 'authors-affiliations__name' ),
+      $web-driver.find_elements_by_class_name( 'c-article-authors-search__title' )
+    ).flat».get_property( 'innerHTML' );
+  @authors.map({ s:g/ '&nbsp;' / /; });
+  $entry.fields<author> = BibScrape::BibTeX::Value.new(@authors.join( ' and ' ));
+
   ## ISBN
   my Str:D @pisbn = $web-driver.find_elements_by_id( 'print-isbn' )».get_property( 'innerHTML' );
   my Str:D @eisbn = $web-driver.find_elements_by_id( 'electronic-isbn' )».get_property( 'innerHTML' );

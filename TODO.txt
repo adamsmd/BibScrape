@@ -81,12 +81,6 @@ a test that has 'others' in author names
 Upper vs lower case after colon:
    https://dl.acm.org/citation.cfm?doid=78973.78977
 
-Other publishers indexed by ACM: http://dl.acm.org/citation.cfm?id=2175486.2175491
-
-http://journals.cambridge.org/article_S0956796897002864: HTML entities in author name
-
-http://link.springer.com/chapter/10.1007/978-3-642-19718-5_14 -> http://www.springerlink.com/content/1qt504757p15u683/
-
 "IV" in author name: http://link.springer.com/article/10.1023%2FA%3A1010051815785
 
 "Scheme" not capitalized: http://link.springer.com/article/10.1007%2FBF01806308}
@@ -108,6 +102,8 @@ http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
 Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-functional-programming/article/new-method-for-functional-arrays/7BBFBB58A34DFC28CBF0E758D989D622
 
 ### Code
+
+Sort elements in scrape
 
 &foo
 -
