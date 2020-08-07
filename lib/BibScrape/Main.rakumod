@@ -373,7 +373,7 @@ practices.
       # Not a URL so try reading it as a file
       my Str:D $str = ($arg eq '-' ?? $*IN !! $arg.IO).slurp;
       my BibScrape::BibTeX::Database:D $bibtex = bibtex-parse($str);
-      for $bibtex.items -> BibScrape::BibTeX::Item:D $item {
+      ITEM: for $bibtex.items -> BibScrape::BibTeX::Item:D $item {
         if $item !~~ BibScrape::BibTeX::Entry:D {
           print $item.Str;
         } else {
@@ -387,10 +387,18 @@ practices.
             $doi = "doi:$doi"
               unless $doi ~~ m:i/^ 'doi:' /;
             fix($key, scr($doi));
-          } elsif $item.fields<url>.simple-str ~~ m:i/ 'http' 's'? '://' 'dx.'? 'doi.org/' / {
-            fix($key, scr($item.fields<url>.simple-str));
           } else {
-            print $item.Str
+            for <url howpublished> -> Str:D $field {
+              next unless $item.fields{$field}:exists;
+              my Str:D $value = $item.fields{$field}.simple-str;
+              if $value ~~ m:i/^ 'doi:' | 'http' 's'? '://' 'dx.'? 'doi.org/' / {
+                fix($key, scr($value));
+                next ITEM;
+              }
+            }
+
+            say "WARNING: Not changing entry '{$item.key}' because could not find publisher URL";
+            print $item.Str;
           }
         }
       }

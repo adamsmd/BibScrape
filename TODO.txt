@@ -17,6 +17,7 @@ Flag to geckodriver to terminate automatically
 
 Case-insensitive nouns?
 
+
 ### Key generation:
 
 keep vs generate
@@ -53,6 +54,13 @@ load browser as under-window
 
 
 ## Priority
+
+Decode author names from input BibTeX
+
+Tests for --name flag
+--noun="{H}askell;haskell"
+
+bibscrape_flags
 
 flags for individual names or nouns
 
@@ -97,7 +105,11 @@ Book:
 ### Code
 
 Sort elements in scrape
+Documentation for names and nouns files
+report multiple noun matches in a title
+noun: $regex but not $regex
 
+~~ -> subst
 [0] vs .head
 &foo
 -
