@@ -46,7 +46,7 @@ sub dispatch(Str:D $url is copy --> BibScrape::BibTeX::Entry:D) {
     when m[ « 'sciencedirect.com'   $]
       || m[ « 'elsevier.com'        $] { scrape-science-direct(); }
     when m[ « 'link.springer.com'   $] { scrape-springer(); }
-    default { say "error: unknown domain: $domain"; }
+    default { die "Unsupported domain: $domain"; }
   };
 }
 
