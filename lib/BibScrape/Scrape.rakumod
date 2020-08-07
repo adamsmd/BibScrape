@@ -55,8 +55,9 @@ sub dispatch(Str:D $url is copy --> BibScrape::BibTeX::Entry:D) {
 sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
   if 'Association for Computing Machinery' ne
       $web-driver.find_element_by_class_name( 'publisher__name' ).get_property( 'innerHTML' ) {
-    my Str:D $url = $web-driver.find_element_by_class_name( 'issue-item__doi' ).get_attribute( 'href' );
-    return dispatch($url);
+    my Str:D @url = $web-driver.find_elements_by_class_name( 'issue-item__doi' )».get_attribute( 'href' );
+    if @url { return dispatch(@url.head); }
+    else { say "WARNING: Non-ACM paper at ACM link, and could not find link to actual publisher"; }
   }
 
   ## BibTeX

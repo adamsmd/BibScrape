@@ -81,18 +81,10 @@ a test that has 'others' in author names
 Upper vs lower case after colon:
    https://dl.acm.org/citation.cfm?doid=78973.78977
 
-"IV" in author name: http://link.springer.com/article/10.1023%2FA%3A1010051815785
-
-"Scheme" not capitalized: http://link.springer.com/article/10.1007%2FBF01806308}
-
 http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
  #^dissertation
  #^BUG (ACM's fault): download bibtex link is broken
  #^Should follow to ProQuest
-http://portal.acm.org/citation.cfm?id=159531
- #^non ACM publication
-http://portal.acm.org/citation.cfm?id=1227145
- #^title is wrong (and not ACM publication)
 
 http://www.springerlink.com/content/m746t0/#section=281461&page=1
  #^broken? no export link?
@@ -105,6 +97,7 @@ Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-function
 
 Sort elements in scrape
 
+[0] vs .head
 &foo
 -
 .
