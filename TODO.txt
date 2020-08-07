@@ -1,22 +1,12 @@
 # TODO Items
 
-
-for conf in popl icfp pldi oopsla; do for f in 0 1000 2000 3000 4000; do wget "https://dblp.org/search/publ/api?q=stream%3Astreams%2Fconf%2F$conf%3A&h=1000&format=bib1&rd=1a&f=$f" -O $conf-$f.bib; done; done
-for f in 0 1000 2000 3000 4000; do wget "https://dblp.org/search/publ/api?q=stream%3Astreams%2Fjournals%2Fpacmpl%3A&h=1000&format=bib1&rd=1a&f=$f" -O pacmpl-$f.bib; done
-perl -pe 's/\{\\["`~^c'"'"']{(.|\\i)\}\}/$1/g; s/{\\o}/o/g; s/{\\O}/O/g; s/{\\ss}/ss/g; s/{\\AA}/Aa/g; s/{\\aa}/aa/g; s/{\\ae}/ae/g; s/\\&/&/g; s/{-}/-/g; s/\\i/i/g;' *.bib >unescaped.txt
-  grep '\\' unescaped.txt |grep -v title
-
-  ../bin/bibscrape -/S -w -f timestamp -f biburl -f bibsource unescaped.txt | grep -i 'Suspect' | tee suspect.txt
-  cat suspect.txt |grep 'name'|sort -u
-
 Flag to geckodriver to terminate automatically
+
+################################
 
 ## Speculative
 
 ### Flags
-
-Case-insensitive nouns?
-
 
 ### Key generation:
 
@@ -27,15 +17,11 @@ Format: author/editor1.last year title/journal.abbriv
 
 ### Other
 
-Improve performance
-(no load images)
-(no load css?)
-
 numeric ranges might misfire if "-" doesn't represent a range, Common for tech report numbers
 
 XPath
 
-
+################################
 
 ## Wish list
 
@@ -46,25 +32,25 @@ XPath
 
 ### WebDriver
 
-ignore non-domain files (timeout on file load?)
-load browser as under-window
+Improve performance
+  ignore non-domain files (timeout on file load?)
+  (no load images)
+  (no load css?)
 
 #opt.set_capability("pageLoadStrategy", 'eager')
 #service_args=['--load-images=no']
 
+load browser as under-window
+
+################################
 
 ## Priority
 
 Decode author names from input BibTeX
 
-Tests for --name flag
---noun="{H}askell;haskell"
-
 bibscrape_flags
 
-flags for individual names or nouns
-
-* EISSN from side pill of ACM
+EISSN from side pill of ACM
 
 ### Publishers
 
@@ -81,12 +67,13 @@ arxiv:
 
 ### Output
 
-Titlecase After colon in title? Warn if not?
 follow jstor links to original publisher
 add abstract to jstor
 get PDF (eprint?)
 
 ### Tests
+
+flag test suite
 
 a test that has 'others' in author names
 
@@ -105,9 +92,11 @@ Book:
 ### Code
 
 Sort elements in scrape
+
 Documentation for names and nouns files
+
 report multiple noun matches in a title
-noun: $regex but not $regex
+Warn when names overlap
 
 ~~ -> subst
 [0] vs .head
@@ -116,16 +105,10 @@ noun: $regex but not $regex
 .
 |capture
 Nil
-Ignore unknown entries in bibtex
-flag test suite
 
 
 
 ## Unsorted
-
-(!) Warn when names overlap
-(!) Warn if wrong publisher
-
 
 ## Test coverage
 
