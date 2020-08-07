@@ -202,7 +202,7 @@ class Fix {
     update($entry, 'title', {
       for %.nouns.kv -> Str:D $k, Str:D $v {
         s:g/«$k»/$v/;
-        if m:i/«$k»/ { say "WARNING: Possibly uncapitalized noun '$_' in title"; }
+        if m:i/«$k»/ { say "WARNING: Possibly uncapitalized noun '$/' in title"; }
       }
     });
 
