@@ -385,8 +385,12 @@ sub rec-node(XML::Node:D $node --> Str:D) {
     when XML::Text { decode-entities($node.text) }
 
     when XML::Element {
-      sub wrap(Str:D $tag --> Str:D) { $node.nodes ?? "\\$tag\{" ~ rec($node.nodes) ~ "\}" !! '' }
+      sub wrap(Str:D $tag --> Str:D) {
+        my Str:D $str = rec($node.nodes);
+        $str eq '' ?? '' !! "\\$tag\{" ~ $str ~ "\}"
+      }
       given $node.name {
+        when 'a' and $node.attribs<class>:exists and $node.attribs<class> ~~ / « 'xref-fn' » / { '' } # Omit footnotes added by Oxford when on-campus
         when 'a' { rec($node.nodes) } # Remove <a> links
         when 'p' | 'par' { rec($node.nodes) ~ "\n\n" } # Replace <p> with \n\n
         when 'i' | 'italic' { wrap( 'textit' ) } # Replace <i> and <italic> with \textit
