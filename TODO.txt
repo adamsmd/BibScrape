@@ -1,6 +1,13 @@
 # TODO Items
 
 
+for conf in popl icfp pldi oopsla; do for f in 0 1000 2000 3000 4000; do wget "https://dblp.org/search/publ/api?q=stream%3Astreams%2Fconf%2F$conf%3A&h=1000&format=bib1&rd=1a&f=$f" -O $conf-$f.bib; done; done
+for f in 0 1000 2000 3000 4000; do wget "https://dblp.org/search/publ/api?q=stream%3Astreams%2Fjournals%2Fpacmpl%3A&h=1000&format=bib1&rd=1a&f=$f" -O pacmpl-$f.bib; done
+perl -pe 's/\{\\["`~^c'"'"']{(.|\\i)\}\}/$1/g; s/{\\o}/o/g; s/{\\O}/O/g; s/{\\ss}/ss/g; s/{\\AA}/Aa/g; s/{\\aa}/aa/g; s/{\\ae}/ae/g; s/\\&/&/g; s/{-}/-/g; s/\\i/i/g;' *.bib >unescaped.txt
+  grep '\\' unescaped.txt |grep -v title
+
+  ../bin/bibscrape -/S -w -f timestamp -f biburl -f bibsource unescaped.txt | grep -i 'Suspect' | tee suspect.txt
+  cat suspect.txt |grep 'name'|sort -u
 
 Flag to geckodriver to terminate automatically
 
@@ -75,23 +82,19 @@ jstor (on campus?)
 cambridge (on campus only?)
 oxford (on campus only?)
 
-a test that has a jr part
 a test that has 'others' in author names
 
 Upper vs lower case after colon:
    https://dl.acm.org/citation.cfm?doid=78973.78977
 
-http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
- #^dissertation
- #^BUG (ACM's fault): download bibtex link is broken
- #^Should follow to ProQuest
+Dissertation:
+  http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
+  #^dissertation
+  #^BUG (ACM's fault): download bibtex link is broken
+  #^Should follow to ProQuest
 
-http://www.springerlink.com/content/m746t0/#section=281461&page=1
- #^broken? no export link?
-http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
- #^book
-
-Add test "'" in key: https://www.cambridge.org/core/journals/journal-of-functional-programming/article/new-method-for-functional-arrays/7BBFBB58A34DFC28CBF0E758D989D622
+Book:
+  http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
 
 ### Code
 
@@ -114,6 +117,7 @@ flag test suite
 (!) Warn if wrong publisher
 
 
+## Test coverage
 
 Unicode in Title, Abstract, Author
 Formatted (e.g. superscript, italics) in Title, Abstract
