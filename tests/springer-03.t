@@ -1,6 +1,6 @@
 doi:10.1007/978-1-84628-609-4_20
 
-Test ISBN and warning about possibly incorrect names.
+Test ISBN and warning about possibly incorrect names
 @inbook{Duchowski:2007:10.1007/978-1-84628-609-4_20,
   author = {Duchowski, Andrew},
   affiliation = {Clemson University},

@@ -1,6 +1,6 @@
 https://comjnl.oxfordjournals.org/content/52/7/824.abstract
 
-Unicode in title and abstract. Underscore in title and abstract.
+Unicode in title and abstract.  Underscore in title and abstract.
 WARNING: Oxford imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 @article{Alhadidi:2009:10.1093/comjnl/bxn065,
   author = {Alhadidi, D[ima] and Belblidia, N[adia] and Debbabi, M[ourad] and Bhattacharya, P[rabir]},

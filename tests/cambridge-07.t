@@ -1,6 +1,6 @@
 https://journals.cambridge.org/article_S0956796811000128
 
-Strange volume/issue. Italics in abstract
+Strange volume/issue.  Italics in abstract
 @article{Nykanen:2011:10.1017/S0956796811000128,
   author = {Nyk{\"a}nen, Matti},
   affiliation = {University of Eastern Finland},
