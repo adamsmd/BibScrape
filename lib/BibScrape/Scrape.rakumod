@@ -126,6 +126,24 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
       if @journal;
   }
 
+  my Str:D %issn =
+    $web-driver
+      .find_elements_by_class_name( 'cover-image__details' )
+      .classify({ .find_elements_by_class_name( 'journal-meta' ).so })
+      .map({ $_.key => $_.value.head.get_property( 'innerHTML' ) });
+  if %issn {
+    my Str:D $issn = %issn<False> // %issn<True>;
+    my Str:_ $pissn =
+      $issn ~~ / '<span class="bold">ISSN:</span><span class="space">' (.*?) '</span>' /
+        ?? $0.Str !! Str;
+    my Str:_ $eissn =
+      $issn ~~ / '<span class="bold">EISSN:</span><span class="space">' (.*?) '</span>' /
+        ?? $0.Str !! Str;
+    if $pissn and $eissn {
+      $entry.fields<issn> = BibScrape::BibTeX::Value.new("$pissn (Print) $eissn (Online)");
+    }
+  }
+
   ## Pages
   if $entry.fields<articleno>:exists
       and $entry.fields<numpages>:exists
@@ -168,9 +186,9 @@ sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {
   }
 
   ## ISSN
-  my Str:D $issn = $web-driver.find_element_by_name( 'productIssn' ).get_attribute( 'value' );
+  my Str:D $pissn = $web-driver.find_element_by_name( 'productIssn' ).get_attribute( 'value' );
   my Str:D $eissn = $web-driver.find_element_by_name( 'productEissn' ).get_attribute( 'value' );
-  $entry.fields<issn> = BibScrape::BibTeX::Value.new("$issn (Print) $eissn (Online)");
+  $entry.fields<issn> = BibScrape::BibTeX::Value.new("$pissn (Print) $eissn (Online)");
 
   $entry;
 }
@@ -321,7 +339,7 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
   ## BibTeX
   # Note that on-campus is different than off-campus
   await({ $web-driver.find_elements_by_css_selector( '[data-qa="cite-this-item"]' )
-          || $web-driver.find_elements_by_class_name( 'cite-this-item' ) })[0].click;
+          || $web-driver.find_elements_by_class_name( 'cite-this-item' ) }).head.click;
   await({ $web-driver.find_element_by_css_selector( '[data-sc="text link: citation text"]' ) }).click;
   my BibScrape::BibTeX::Entry:D $entry = bibtex-parse($web-driver.read-downloads()).items.head;
 
@@ -333,7 +351,7 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
   # Note that on-campus is different than off-campus
   my Str:D $title =
     ($web-driver.find_elements_by_class_name( 'item-title' )
-      || $web-driver.find_elements_by_class_name( 'title' ))[0].get_property( 'innerHTML' );
+      || $web-driver.find_elements_by_class_name( 'title' )).head.get_property( 'innerHTML' );
   $entry.fields<title> = BibScrape::BibTeX::Value.new($title);
 
   ## DOI
@@ -386,10 +404,8 @@ sub scrape-oxford(--> BibScrape::BibTeX::Entry:D) {
 
   ## ISSN
   my Str:D $issn = $web-driver.find_element_by_tag_name( 'body' ).get_property( 'innerHTML' );
-  $issn ~~ / 'Print ISSN ' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)/;
-  my Str:D $pissn = $0.Str;
-  $issn ~~ / 'Online ISSN ' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)/;
-  my Str:D $eissn = $0.Str;
+  my Str:D $pissn = ($issn ~~ / 'Print ISSN ' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)/)[0].Str;
+  my Str:D $eissn = ($issn ~~ / 'Online ISSN ' (\d\d\d\d '-' \d\d\d<[0..9Xx]>)/)[0].Str;
   $entry.fields<issn> = BibScrape::BibTeX::Value.new("$pissn (Print) $eissn (Online)");
 
   ## Publisher
@@ -481,8 +497,7 @@ sub scrape-springer(--> BibScrape::BibTeX::Entry:D) {
   ## ISSN
   if $web-driver.find_element_by_tag_name( 'head' ).get_property( 'innerHTML' )
       ~~ / '{"eissn":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '","pissn":"' (\d\d\d\d '-' \d\d\d<[0..9Xx]>) '"}' / {
-    my Str:D $issn = "$1 (Print) $0 (Online)";
-    $entry.fields<issn> = BibScrape::BibTeX::Value.new($issn);
+    $entry.fields<issn> = BibScrape::BibTeX::Value.new("$1 (Print) $0 (Online)");
   }
 
   ## Series, Volume and ISSN

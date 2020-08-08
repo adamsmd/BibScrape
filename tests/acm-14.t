@@ -14,7 +14,7 @@ https://portal.acm.org/citation.cfm?id=242324
   issue_date = {Dec. 1996},
   publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
-  issn = {0360-0300},
+  issn = {0360-0300 (Print) 1557-7341 (Online)},
   doi = {10.1145/242224.242324},
   bib_scrape_url = {https://portal.acm.org/citation.cfm?id=242324},
 }

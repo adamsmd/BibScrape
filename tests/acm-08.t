@@ -15,7 +15,7 @@ Unicode in title
   issue_date = {October 2009},
   publisher = {Association for Computing Machinery},
   address = {New York, NY, USA},
-  issn = {1529-3785},
+  issn = {1529-3785 (Print) 1557-945X (Online)},
   doi = {10.1145/1614431.1614436},
   bib_scrape_url = {https://portal.acm.org/citation.cfm?id=1614431.1614436},
   keywords = {Abbreviations; environments as terms; terms as types},
