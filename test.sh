@@ -75,7 +75,7 @@ for i in "$@"; do
   if test 0 -eq $NO_WITHOUT_SCRAPING; then
     echo "** [$(date +%r)] Testing $i using a filename without scraping **"
     if ! eval timeout --foreground 60s "$BIBSCRAPE" --/scrape $FLAGS "${GLOBAL_FLAGS[@]}" <(grep -v '^WARNING: ' "$i") 2>&1 \
-        | diff -u "$i" - | wdiff -dt; then
+        | diff -u <(grep -v 'WARNING: Oxford imposes rate limiting.' "$i" | grep -v 'WARNING: Non-ACM paper at ACM link') - | wdiff -dt; then
       true $((ERR_COUNT++))
     fi
   fi

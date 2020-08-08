@@ -386,8 +386,10 @@ practices.
             # Undo any encoding that could get double encoded
             update($item, 'abstract', { s:g/ \s* "\{\\par}" \s* /\n\n/; }); # Must be before tex2unicode
             for $item.fields.keys -> Str:D $field {
-              update($item, $field, { $_ = tex2unicode($_) });
-              update($item, $field, { $_ = encode-entities($_); s:g/ '&#' (\d+) ';'/{$0.chr}/; });
+              unless $field ∈ @no-encode {
+                update($item, $field, { $_ = tex2unicode($_) });
+                update($item, $field, { $_ = encode-entities($_); s:g/ '&#' (\d+) ';'/{$0.chr}/; });
+              }
             }
             update($item, 'title', { s:g/ '{' (\d* [<upper> \d*] ** 2..*) '}' /$0/ });
             update($item, 'series', { s:g/ '~' / / });

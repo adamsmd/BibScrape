@@ -44,11 +44,7 @@ load browser as under-window
 
 ## Priority
 
-Decode author names from input BibTeX
-
-bibscrape_flags (not used but may help reader reproduce)
-
-EISSN from side pill of ACM
+!!! bibscrape_flags (not used but may help reader reproduce)
 
 ### Publishers
 
@@ -71,7 +67,7 @@ get PDF (eprint?)
 
 ### Tests
 
-quotes in title (``foo'' vs "foo" (e.g., SYBR?))
+Test that uses Sigplan notices
 
 flag test suite
 
@@ -79,9 +75,9 @@ a test that has 'others' in author names
 
 ### Documentation
 
-FEATURES.md
+!!! FEATURES.md
 
-Documentation for names and nouns files
+!!! Documentation for names and nouns files
 
 ### Code
 
@@ -90,8 +86,6 @@ Sort elements in scrape
 report multiple noun matches in a title
 Warn when names overlap
 
-~~ -> subst
-[0] vs .head
 &foo
 -
 .
@@ -101,8 +95,6 @@ Nil
 
 
 ## Unsorted
-
-Does bibtex replace "K. Dybvig" with "K.~Dybvig"?
 
 
 ## Test coverage
