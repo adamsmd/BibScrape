@@ -258,15 +258,17 @@ practices.
 NOUNS FILES
 ----------------
 
-An nouns file specifies words that should be protected from lower-casing by
+A nouns file specifies words that should be protected from lower-casing by
 inserting curly braces into the output BibTeX.
 
-A noun file is plain text in Unicode format. Anything after # (hash) is a
-comment. Blank or whitespace-only lines are ignored. Each line lists the way
-that a particular word should be curly braced. (Curly braces tell BibTeX to not
-change the captalization of a particular part of a text.) Any word that matches
-with the curly braces removed is converted to the form listed in the file. The
-first line to match in the file is the one that is used.
+A nouns file is plain text in Unicode format. Anything after # (hash) is a
+comment. Blank or whitespace-only lines separate blocks, and blocks consist of
+one or more lines. The first line in a block is the canonical/correct form for a
+noun. Typically, this first line includes curly braches, which tell BibTeX to
+not change the captalization of a particular part of a text. Lines other than
+the first one are aliases that should be converted to the canonical form. Lines
+(including the first line) match both with and without the curly braces in them.
+Matching is case sensitive.
 
 The default nouns file provides several examples with comments and recommended
 practices.

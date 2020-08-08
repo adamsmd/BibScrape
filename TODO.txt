@@ -75,8 +75,6 @@ a test that has 'others' in author names
 
 !!! FEATURES.md
 
-!!! Documentation for names and nouns files
-
 ### Code
 
 !!! Sort elements in scrape

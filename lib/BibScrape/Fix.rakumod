@@ -61,12 +61,12 @@ class Fix {
     }
     sub blocks(Str:D $file-field, Str:D $string-field --> Array:D[Array:D[Str:D]]) {
       my Array:D[Str:D] @blocks;
-      for %args{$file-field} -> IO::Path:D $file {
-        string-blocks(@blocks, $file.slurp);
-      }
       for %args{$string-field} -> Str:D $string is copy {
         $string ~~ s:g/ ';' /\n/;
         string-blocks(@blocks, $string);
+      }
+      for %args{$file-field} -> IO::Path:D $file {
+        string-blocks(@blocks, $file.slurp);
       }
       @blocks = @blocks.grep({ .elems > 0 }); # Remove empty blocks
       @blocks.Array;
