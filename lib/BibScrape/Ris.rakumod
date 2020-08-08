@@ -47,7 +47,7 @@ sub ris-author(Array:D[Str:D] $names --> Str:D) {
   $names
     .map({ # Translate "last, first, suffix" to "von Last, Jr, First"
       s/ (.*) ',' (.*) ',' (.*) /$1,$3,$2/;
-      / <-[, ]> / ?? $_ !! () })
+      / <-[,\ ]> / ?? $_ !! () })
     .join( ' and ' );
 }
 
@@ -132,7 +132,7 @@ sub bibtex-of-ris(Ris:D $ris --> BibScrape::BibTeX::Entry:D) is export {
   set( 'issn', %self<SN>)
     if %self<SN> and %self<SN> ~~ / « \d ** 4 '-' \d ** 4 » /;
   set( 'isbn', %self<SN>)
-    if %self<SN> and %self<SN> ~~ / « ([\d | 'X'] <[- ]>*) ** 10..13 » /;
+    if %self<SN> and %self<SN> ~~ / « ([\d | 'X'] <[-\ ]>*) ** 10..13 » /;
   #AD: address
   #AV: (unneeded)
   #M[1-3]: misc

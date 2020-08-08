@@ -88,7 +88,7 @@ sub check-digit-issn(Str:D $digits --> Str:D) { check-digit(11, (8,7,6,5,4,3,2),
 
 sub canonical-issn(Str:D $issn, IsbnType:D $type, Str:D $sep --> Str:D) is export {
   my Str:D $i = $issn; # Copy so errors can use the original
-  $i ~~ s:g/ <[- ]> //;
+  $i ~~ s:g/ <[-\ ]> //;
   $i ~~ m/^ (\d\d\d\d) (\d\d\d(\d|"X")) $/ or die "Cannot parse ISSN: $issn";
   $i = "$0-$1";
   my Str:D $check = check-digit-issn($issn);
@@ -98,7 +98,7 @@ sub canonical-issn(Str:D $issn, IsbnType:D $type, Str:D $sep --> Str:D) is expor
 
 sub canonical-isbn(Str:D $isbn, IsbnType:D $type, Str:D $sep --> Str:D) is export {
   my Str:D $i = $isbn; # Copy so errors can use the original
-  $i ~~ s:g/ <[- ]> //;
+  $i ~~ s:g/ <[-\ ]> //;
   my Bool:D $was-isbn13 = False;
 
   if $i ~~ m/^ <[0..9]> ** 9 <[0..9Xx]> $/ {

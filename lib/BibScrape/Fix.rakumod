@@ -278,7 +278,9 @@ class Fix {
 
   method isbn(BibScrape::BibTeX::Entry:D $entry, Str:D $field, MediaType:D $print_or_online, &canonical --> Any:U) {
     update($entry, $field, {
-      if m:i/^ (<[0..9x-]>+) " (Print) " (<[0..9x-]>+) " (Online)" $/ {
+      if m/^$/ {
+        $_ = Str
+      } elsif m:i/^ (<[0..9x\-\ ]>+) " (Print) " (<[0..9x\-\ ]>+) " (Online)" $/ {
         if $print_or_online eqv Print {
           $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep);
         }
@@ -291,12 +293,8 @@ class Fix {
             ~ &canonical($1.Str, $.isbn-type, $.isbn-sep)
             ~ ' (Online)';
         }
-      } elsif m:i/^ <[0..9x-]>+ $/ {
-        $_ = &canonical($_, $.isbn-type, $.isbn-sep);
-      } elsif m/^$/ {
-        $_ = Str
       } else {
-        say "WARNING: Possibly incorrect $field: $_"
+        $_ = &canonical($_, $.isbn-type, $.isbn-sep);
       }
     });
   }

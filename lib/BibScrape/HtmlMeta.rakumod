@@ -109,7 +109,7 @@ sub html-meta-bibtex(
       my Str:D ($month, $year) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', num2month($month));
-    } elsif %meta<citation_date>.head ~~ /^ <[ 0..9-]>*? <wb> (\w+) <wb> <[ .0..9-]>*? <wb> (\d\d\d\d) <wb> / {
+    } elsif %meta<citation_date>.head ~~ /^ <[\ 0..9-]>*? <wb> (\w+) <wb> <[\ .0..9-]>*? <wb> (\d\d\d\d) <wb> / {
       my Str:D ($month, $year) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', str2month($month));
