@@ -19,7 +19,7 @@ sub unicode2tex(Str:D $str, Regex:D :$ignore = / False / --> Str:D) is export {
           $old = '{}';
           say sprintf( 'WARNING: Combining character at start of string: %s (U+%04x)', $ord.chr, $ord);
         }
-        my Str:D $new = %CODES{$_};
+        my Str:D $new = %CODES{$ord};
         $new ~~ s/ '{}' /$old/;
         $new ~~ s:g/ '{' ( <[ij]> ) '}' /{$1}/
           if %CCC{$ord} == 230 || %CCC{$ord} == 234;
