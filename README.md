@@ -75,6 +75,9 @@ For more details on usage and command-line flags run:
 
     bibscrape --help
 
+Alternatively, read [`HELP.txt`](HELP.txt), which is a simply a copy of the
+output of `bibscrape --help`.
+
 ## Disclaimer
 
 Since BibScrape is sending network traffic to publisher web pages, please use
@@ -127,6 +130,10 @@ accidentally DoS the publisher.
 - If a title contains a proper noun that needs to be protected from lower
   casing, add an entry to your nouns file.  See the "NOUNS FILES" section of
   `bibscrape --help`.
+
+- By default the `url` and `doi` fields are not LaTeX escaped.  Using BibTeX
+  entries with these field may thus require that your LaTeX document use the
+  Latex `url` package.
 
 ## Setup
 

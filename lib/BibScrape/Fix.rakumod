@@ -102,11 +102,14 @@ class Fix {
 
     # Ranges: convert "-" to "--"
     for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> Str:D $key {
-      update($entry, $key, { s:i:g/\s* ["-" | \c[EN DASH] | \c[EM DASH]]+ \s*/--/; });
-      update($entry, $key, { s:i:g/"n/a--n/a"//; $_ = Str if !$_ });
-      update($entry, $key, { s:i:g/«(\w+) "--" $0»/$0/; });
-      update($entry, $key, { s:i:g/(^|" ") (\w+) "--" (\w+) "--" (\w+) "--" (\w+) ($|",")/$0$1-$2--$3-$4$5/ });
-      update($entry, $key, { s:i:g/\s+ "," \s+/", "/; });
+      my Str:D $dash = # Don't use en-dash in techreport numbers
+        $entry.type eq 'techreport' && $_ eq 'number'
+        ?? '-' !! '--';
+      update($entry, $key, { s:i:g/ \s* [ '-' | \c[EN DASH] | \c[EM DASH] ]+ \s* /$dash/; });
+      update($entry, $key, { s:i:g/ 'n/a--n/a' //; $_ = Str if !$_ });
+      update($entry, $key, { s:i:g/ «(\w+) '--' $0» /$0/; });
+      update($entry, $key, { s:i:g/ (^ | ' ') (\w+) '--' (\w+) '--' (\w+) '--' (\w+) ($ | ',')/$0$1-$2--$3-$4$5/ });
+      update($entry, $key, { s:i:g/ \s+ ',' \s+/, /; });
     }
 
     check($entry, 'pages', 'Possibly incorrect page number', {
@@ -186,14 +189,18 @@ class Fix {
     update($entry, 'series', { s:g/(<upper>+) " "* [ "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
 
     # Collapse spaces and newlines
-    $_.key ∈ $.no-collapse or update($entry, $_.key, {
-      s/\s* $//; # remove trailing whitespace
-      s/^ \s *//; # remove leading whitespace
-      s:g/(\n " "*) ** 2..*/\{\\par}/; # BibTeX eats whitespace so convert "\n\n" to paragraph break
-      s:g/\s* \n \s*/ /; # Remove extra line breaks
-      s:g/"\{\\par\}"/\n\{\\par\}\n/; # Nicely format paragraph breaks
-      s:g/\s ** 2..* / /; # Remove duplicate whitespace
-    }) for $entry.fields.pairs;
+    for $entry.fields.pairs -> Pair:D $pair {
+      unless $pair.key ∈ $.no-collapse {
+        update($entry, $pair.key, {
+          s/\s* $//; # remove trailing whitespace
+          s/^ \s *//; # remove leading whitespace
+          s:g/(\n " "*) ** 2..*/\{\\par}/; # BibTeX eats whitespace so convert "\n\n" to paragraph break
+          s:g/\s* \n \s*/ /; # Remove extra line breaks
+          s:g/"\{\\par\}"/\n\{\\par\}\n/; # Nicely format paragraph breaks
+          s:g/\s ** 2..* / /; # Remove duplicate whitespace
+        });
+      }
+    }
 
     # Keep acronyms capitalized
     update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) /\{$0\}/; })
@@ -220,8 +227,7 @@ class Fix {
       }
     });
 
-    # Use bibtex month macros
-    # Must be after field encoding because we use macros
+    # Use bibtex month macros.  Must be after field encoding because we use macros.
     update($entry, 'month', {
       s/ "." ($|"-") /$0/; # Remove dots due to abbriviations
       my BibScrape::BibTeX::Piece:D @x =
@@ -234,6 +240,9 @@ class Fix {
           say "WARNING: Possibly incorrect month: $_" and BibScrape::BibTeX::Piece.new($_)});
       $_ = BibScrape::BibTeX::Value.new(@x)});
 
+    # Year
+    check($entry, 'year', 'Possibly incorrect year', { /^ \d\d\d\d $/ });
+
     # Omit fields we don't want
     $entry.fields{$_}:exists and $entry.fields{$_}:delete for @.omit;
     for @.omit-empty {
@@ -244,9 +253,6 @@ class Fix {
         }
       }
     }
-
-    # Year
-    check($entry, 'year', 'Possibly incorrect year', { /^ \d\d\d\d $/ });
 
     # Generate an entry key
     my BibScrape::BibTeX::Value:_ $name-value =

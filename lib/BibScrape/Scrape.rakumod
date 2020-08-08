@@ -359,7 +359,7 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
 sub scrape-oxford(--> BibScrape::BibTeX::Entry:D) {
   say "WARNING: Oxford imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.";
 
-  # BibTeX
+  ## BibTeX
   await({ $web-driver.find_element_by_class_name( 'js-cite-button' ) }).click;
   my #`(Inline::Python::PythonObject:D) $select-element = await({ $web-driver.find_element_by_id( 'selectFormat' ) });
   my #`(Inline::Python::PythonObject:D) $select = $web-driver.select($select-element);
@@ -466,8 +466,6 @@ sub scrape-springer(--> BibScrape::BibTeX::Entry:D) {
 
   ## Author
   my Str:D @authors =
-    #($web-driver.find_elements_by_css_selector( '[data-test="author-name"]' ),
-    #  $web-driver.find_elements_by_class_name( 'authors__name' ))
     ($web-driver.find_elements_by_class_name( 'authors-affiliations__name' ),
       $web-driver.find_elements_by_class_name( 'c-article-authors-search__title' )
     ).flat».get_property( 'innerHTML' );

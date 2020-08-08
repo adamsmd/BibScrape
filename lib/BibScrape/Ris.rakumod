@@ -21,7 +21,7 @@ sub ris-parse(Str:D $text --> Ris:D) is export {
     } elsif !$line {
       # Do nothing
     } else {
-      # TODO: Test this code
+      # None of the publishers trigger this code, so it is untested
       my Str:D $list = %fields{$last_key};
       $list[$list.end] ~= "\n" ~ $line;
     }

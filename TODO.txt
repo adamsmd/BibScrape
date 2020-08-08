@@ -17,8 +17,6 @@ Format: author/editor1.last year title/journal.abbriv
 
 ### Other
 
-numeric ranges might misfire if "-" doesn't represent a range, Common for tech report numbers
-
 XPath
 
 ################################
@@ -48,7 +46,7 @@ load browser as under-window
 
 Decode author names from input BibTeX
 
-bibscrape_flags
+bibscrape_flags (not used but may help reader reproduce)
 
 EISSN from side pill of ACM
 
@@ -73,27 +71,21 @@ get PDF (eprint?)
 
 ### Tests
 
+quotes in title (``foo'' vs "foo" (e.g., SYBR?))
+
 flag test suite
 
 a test that has 'others' in author names
 
-Upper vs lower case after colon:
-  https://dl.acm.org/citation.cfm?doid=78973.78977
+### Documentation
 
-Dissertation:
-  http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
-  #^dissertation
-  #^BUG (ACM's fault): download bibtex link is broken
-  #^Should follow to ProQuest
+FEATURES.md
 
-Book:
-  http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
+Documentation for names and nouns files
 
 ### Code
 
 Sort elements in scrape
-
-Documentation for names and nouns files
 
 report multiple noun matches in a title
 Warn when names overlap
@@ -109,6 +101,9 @@ Nil
 
 
 ## Unsorted
+
+Does bibtex replace "K. Dybvig" with "K.~Dybvig"?
+
 
 ## Test coverage
 

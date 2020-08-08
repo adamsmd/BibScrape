@@ -138,7 +138,8 @@ practices.
     ;
     ;- If it starts with 'http:' or 'https:', it is interpreted as a URL.
     ;- If it starts with 'doi:', it is interpreted as a DOI.
-    ;- Otherwise, it is interpreted as a filename.}
+    ;- If it is '-', BibTeX entries are read from standard input.
+    ;- Otherwise, it is a filename from which BibTeX entries are read.}
 
   Str:D :k(:@key),
   #={Specify the keys to use in the output BibTeX.
@@ -196,7 +197,7 @@ practices.
   #={Show the browser window while scraping.  (This is usefull for debugging or
     if BibScrape unexpectedly hangs.)}
 
-  Num:D :t(:$timeout) = 30.Num,
+  Num:D :t(:$timeout) = 60.Num,
   #={Browser timeout in seconds for individual page loads}
 
   Bool:D :$escape-acronyms = True,

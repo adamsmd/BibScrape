@@ -108,6 +108,8 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
     $out ~= "\n";
   }
   wrap(0, $main.WHY.trailing);
+
+  $out ~~ s:g/ " "+ "\n" /\n/;
   $out.chomp;
 }
 
