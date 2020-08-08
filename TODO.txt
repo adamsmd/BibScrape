@@ -1,12 +1,31 @@
 # TODO Items
 
+################################
+
+## Wish list
+
+`use variables :D` that applies to all types
+  use invocant :D;
+  use parameters :D;
+  use attributes :D;
+
+### WebDriver
+
 Flag to geckodriver to terminate automatically
+
+Improve performance
+  ignore non-domain files (timeout on file load?)
+  (no load images)
+  (no load css?)
+
+#opt.set_capability("pageLoadStrategy", 'eager')
+#service_args=['--load-images=no']
+
+load browser as under-window
 
 ################################
 
 ## Speculative
-
-### Flags
 
 ### Key generation:
 
@@ -21,36 +40,13 @@ XPath
 
 ################################
 
-## Wish list
-
-`use variables :D` that applies to all types
-  use invocant :D;
-  use parameters :D;
-  use attributes :D;
-
-### WebDriver
-
-Improve performance
-  ignore non-domain files (timeout on file load?)
-  (no load images)
-  (no load css?)
-
-#opt.set_capability("pageLoadStrategy", 'eager')
-#service_args=['--load-images=no']
-
-load browser as under-window
-
-################################
-
 ## Priority
-
-!!! bibscrape_flags (not used but may help reader reproduce)
 
 ### Publishers
 
-usenix
+!!! usenix
 
-arxiv:
+!!! arxiv:
  - normal
  - proceedings: https://arxiv.org/help/submit_index
    - https://arxiv.org/abs/1708.06226
@@ -61,9 +57,11 @@ arxiv:
 
 ### Output
 
-follow jstor links to original publisher
-add abstract to jstor
-get PDF (eprint?)
+!!! follow jstor links to original publisher
+!!! add abstract to jstor
+!!! get PDF (eprint?)
+
+!!! $entry.fields<bib_scrape_args> = @*ARGS.map({ "'" ~ .subst("'", "'\\''") ~ "'" }).join( ' ' );
 
 ### Tests
 
@@ -81,10 +79,13 @@ a test that has 'others' in author names
 
 ### Code
 
-Sort elements in scrape
+!!! Sort elements in scrape
 
 report multiple noun matches in a title
 Warn when names overlap
+
+In CommandLine (twice):
+  my List:D $list = params($main);
 
 &foo
 -
