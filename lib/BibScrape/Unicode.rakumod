@@ -2,8 +2,8 @@ unit module BibScrape::Unicode;
 
 use variables :D;
 
-my Int:D %CCC;
-my Str:D %CODES;
+my Int:D %CCC; # from Int:D
+my Str:D %CODES; # from Int:D
 
 sub unicode2tex(Str:D $str, Regex:D :$ignore = / False / --> Str:D) is export {
   my Str:D @out;
@@ -33,6 +33,24 @@ sub unicode2tex(Str:D $str, Regex:D :$ignore = / False / --> Str:D) is export {
   }
 
   @out.join;
+}
+
+# This function doesn't work very well.  It is just good enough for most author names.
+sub tex2unicode(Str:D $str is copy --> Str:D) is export {
+  if $str ~~ / '{' / {
+    for %CODES.pairs.sort(*.value.chars).reverse».key -> Int:D(Str:D) $key {
+      my Str:D $value = %CODES{$key};
+      if $value ~~ / "\\" / {
+        $str ~~ s:g/ '{' $value '}' /{$key.chr}/;
+      }
+    }
+    for %CODES.kv -> Int:D(Str:D) $key, Str:D $value {
+      if $value !~~ / "\\" / and $value ~~ / <-alpha> / {
+        $str ~~ s:g/ '{' $value '}' /{$key.chr}/;
+      }
+    }
+  }
+  $str;
 }
 
 CHECK {

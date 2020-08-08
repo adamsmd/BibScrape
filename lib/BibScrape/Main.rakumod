@@ -2,11 +2,14 @@ unit module BibScrape::Main;
 
 use variables :D;
 
+use HTML::Entity;
+
 use BibScrape::BibTeX;
 use BibScrape::CommandLine;
 use BibScrape::Fix;
 use BibScrape::Isbn;
 use BibScrape::Scrape;
+use BibScrape::Unicode;
 
 #|{;;
 Collect BibTeX entries from the websites of academic publishers.
@@ -380,6 +383,14 @@ practices.
         } else {
           my $key = @key.shift // $item.key;
           if !$scrape {
+            # Undo any encoding that could get double encoded
+            update($item, 'abstract', { s:g/ \s* "\{\\par}" \s* /\n\n/; }); # Must be before tex2unicode
+            for $item.fields.keys -> Str:D $field {
+              update($item, $field, { $_ = tex2unicode($_) });
+              update($item, $field, { $_ = encode-entities($_); s:g/ '&#' (\d+) ';'/{$0.chr}/; });
+            }
+            update($item, 'title', { s:g/ '{' (\d* [<upper> \d*] ** 2..*) '}' /$0/ });
+            update($item, 'series', { s:g/ '~' / / });
             fix($key, $item);
           } elsif $item.fields<bib_scrape_url> {
             fix($key, scr($item.fields<bib_scrape_url>.simple-str));
