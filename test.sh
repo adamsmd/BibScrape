@@ -13,13 +13,15 @@
 #
 #     $ ./test.sh --show-window tests/acm-*.t
 
-# Determine where `bibscrape` is based on the location of this script
+# Determine where `bibscrape` is located based on the location of this script
 if [ -z "$BIBSCRAPE" ]; then
   SOURCE="${BASH_SOURCE[0]}"
   while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
     DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
     SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the
+    # path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
   done
   DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
   BIBSCRAPE="$DIR"/bin/bibscrape
@@ -27,12 +29,20 @@ fi
 
 GLOBAL_FLAGS=()
 
+NO_URL=0
+NO_FILENAME=0
+NO_WITHOUT_SCRAPING=0
+
 while test $# -gt 0; do
   case "$1" in
     --) break;;
-    -*) GLOBAL_FLAGS+=(\"$1\"); shift;;
+    --no-url) NO_URL=1;;
+    --no-filename) NO_FILENAME=1;;
+    --no-without-scraping) NO_WITHOUT_SCRAPING=1;;
+    -*) GLOBAL_FLAGS+=(\"$1\");;
     * ) break;;
   esac
+  shift
 done
 
 if test $# -eq 0; then
@@ -43,16 +53,31 @@ fi
 ERR_COUNT=0
 
 for i in "$@"; do
-  echo "** [$(date +%r)] Testing $i using a URL **"
-  URL=\"$(head -n 1 "$i")\"
   FLAGS=$(head -n 2 "$i" | tail -1)
-  if !(head -n 3 "$i"; eval timeout --foreground 60s "$BIBSCRAPE" $FLAGS "${GLOBAL_FLAGS[@]}" "$URL" 2>&1) | diff -u "$i" - | wdiff -dt; then
-    true $((ERR_COUNT++))
+
+  if test 0 -eq $NO_URL; then
+    echo "** [$(date +%r)] Testing $i using a URL **"
+    URL=\"$(head -n 1 "$i")\"
+    if !(head -n 3 "$i"; eval timeout --foreground 60s "$BIBSCRAPE" $FLAGS "${GLOBAL_FLAGS[@]}" "$URL" 2>&1) \
+        | diff -u "$i" - | wdiff -dt; then
+      true $((ERR_COUNT++))
+    fi
   fi
 
-  echo "** [$(date +%r)] Testing $i using a filename **"
-  if ! eval timeout --foreground 60s "$BIBSCRAPE" $FLAGS "${GLOBAL_FLAGS[@]}" <(grep -v '^WARNING: ' "$i") 2>&1 | diff -u "$i" - | wdiff -dt; then
-    true $((ERR_COUNT++))
+  if test 0 -eq $NO_FILENAME; then
+    echo "** [$(date +%r)] Testing $i using a filename **"
+    if ! eval timeout --foreground 60s "$BIBSCRAPE" $FLAGS "${GLOBAL_FLAGS[@]}" <(grep -v '^WARNING: ' "$i") 2>&1 \
+        | diff -u "$i" - | wdiff -dt; then
+      true $((ERR_COUNT++))
+    fi
+  fi
+
+  if test 0 -eq $NO_WITHOUT_SCRAPING; then
+    echo "** [$(date +%r)] Testing $i using a filename without scraping **"
+    if ! eval timeout --foreground 60s "$BIBSCRAPE" --/scrape $FLAGS "${GLOBAL_FLAGS[@]}" <(grep -v '^WARNING: ' "$i") 2>&1 \
+        | diff -u "$i" - | wdiff -dt; then
+      true $((ERR_COUNT++))
+    fi
   fi
 done
 
