@@ -196,7 +196,7 @@ class Fix {
           s/^ \s *//; # remove leading whitespace
           s:g/(\n " "*) ** 2..*/\{\\par}/; # BibTeX eats whitespace so convert "\n\n" to paragraph break
           s:g/\s* \n \s*/ /; # Remove extra line breaks
-          s:g/"\{\\par\}"/\n\{\\par\}\n/; # Nicely format paragraph breaks
+          s:g/\s* "\{\\par\}" \s*/\n\{\\par\}\n/; # Nicely format paragraph breaks
           s:g/\s ** 2..* / /; # Remove duplicate whitespace
         });
       }
