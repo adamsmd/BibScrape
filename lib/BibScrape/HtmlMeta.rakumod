@@ -64,28 +64,28 @@ sub html-meta-bibtex(
   # also contain authorship information
   my Str:D @authors;
   if %meta<citation_author>:exists { @authors = @(%meta<citation_author>) }
-  elsif %meta<citation_authors> { @authors = %meta<citation_authors>[0].split(';') }
+  elsif %meta<citation_authors> { @authors = %meta<citation_authors>.head.split(';') }
   set( 'author', @authors.map({ s:g/^ ' '+//; s:g/ ' '+ $//; $_ }).join( ' and ' ))
     if @authors;
 
   # 'title', 'rft_title', 'dc.title', 'twitter:title' also contain title information
-  set( 'title', %meta<citation_title>[0]);
+  set( 'title', %meta<citation_title>.head);
 
   # test/acm-17.t has the article number in 'citation_firstpage' but no 'citation_firstpage'
   # test/ieee-computer-1.t has 'pages' but empty 'citation_firstpage'
-  if %meta<citation_firstpage>:exists and %meta<citation_firstpage>[0]
-      and %meta<citation_lastpage>:exists and %meta<citation_lastpage>[0] {
+  if %meta<citation_firstpage>:exists and %meta<citation_firstpage>.head
+      and %meta<citation_lastpage>:exists and %meta<citation_lastpage>.head {
     set( 'pages',
-      %meta<citation_firstpage>[0] ~
-      (%meta<citation_firstpage>[0] ne %meta<citation_lastpage>[0]
-        ?? "--" ~ %meta<citation_lastpage>[0]
+      %meta<citation_firstpage>.head ~
+      (%meta<citation_firstpage>.head ne %meta<citation_lastpage>.head
+        ?? "--" ~ %meta<citation_lastpage>.head
         !! ""));
   } else {
-    set( 'pages', %meta<pages>[0]);
+    set( 'pages', %meta<pages>.head);
   }
 
-  set( 'volume', %meta<citation_volume>[0]);
-  set( 'number', %meta<citation_issue>[0]);
+  set( 'volume', %meta<citation_volume>.head);
+  set( 'number', %meta<citation_issue>.head);
 
   # 'keywords' also contains keyword information
   set( 'keywords',
@@ -95,21 +95,21 @@ sub html-meta-bibtex(
     if %meta<citation_keywords>:exists;
 
   # 'rft_pub' also contains publisher information
-  set( 'publisher', %meta<citation_publisher>[0] // %meta<dc.publisher>[0] // %meta<st.publisher>[0]);
+  set( 'publisher', %meta<citation_publisher>.head // %meta<dc.publisher>.head // %meta<st.publisher>.head);
 
   # 'dc.date', 'rft_date', 'citation_online_date' also contain date information
   if %meta<citation_publication_date>:exists {
-    if (%meta<citation_publication_date>[0] ~~ /^ (\d\d\d\d) <[/-]> (\d\d) [ <[/-]> (\d\d) ]? $/) {
+    if (%meta<citation_publication_date>.head ~~ /^ (\d\d\d\d) <[/-]> (\d\d) [ <[/-]> (\d\d) ]? $/) {
       my Str:D ($year, $month) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', num2month($month));
     }
   } elsif %meta<citation_date>:exists {
-    if %meta<citation_date>[0] ~~ /^ (\d\d) <[/-]> \d\d <[/-]> (\d\d\d\d) $/ {
+    if %meta<citation_date>.head ~~ /^ (\d\d) <[/-]> \d\d <[/-]> (\d\d\d\d) $/ {
       my Str:D ($month, $year) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', num2month($month));
-    } elsif %meta<citation_date>[0] ~~ /^ <[ 0..9-]>*? <wb> (\w+) <wb> <[ .0..9-]>*? <wb> (\d\d\d\d) <wb> / {
+    } elsif %meta<citation_date>.head ~~ /^ <[ 0..9-]>*? <wb> (\w+) <wb> <[ .0..9-]>*? <wb> (\d\d\d\d) <wb> / {
       my Str:D ($month, $year) = ($0.Str, $1.Str);
       set( 'year', $year);
       set( 'month', str2month($month));
@@ -117,34 +117,34 @@ sub html-meta-bibtex(
   }
 
   # 'dc.relation.ispartof', 'rft_jtitle', 'citation_journal_abbrev' also contain collection information
-  if %meta<citation_conference>:exists { set( 'booktitle', %meta<citation_conference>[0]) }
-  elsif %meta<citation_journal_title>:exists { set( 'journal', %meta<citation_journal_title>[0]) }
-  elsif %meta<citation_inbook_title>:exists { set( 'booktitle', %meta<citation_inbook_title>[0]) }
-  elsif %meta<st.title>:exists { set( 'journal', %meta<st.title>[0]) }
+  if %meta<citation_conference>:exists { set( 'booktitle', %meta<citation_conference>.head) }
+  elsif %meta<citation_journal_title>:exists { set( 'journal', %meta<citation_journal_title>.head) }
+  elsif %meta<citation_inbook_title>:exists { set( 'booktitle', %meta<citation_inbook_title>.head) }
+  elsif %meta<st.title>:exists { set( 'journal', %meta<st.title>.head) }
 
   # 'rft_id' and 'doi' also contain doi information
-  if %meta<citation_doi>:exists { set( 'doi', %meta<citation_doi>[0] )}
-  elsif %meta<st.discriminator>:exists { set( 'doi', %meta<st.discriminator>[0]) }
-  elsif %meta<dc.identifier>:exists and %meta<dc.identifier>[0] ~~ /^ 'doi:' (.+) $/ { set( 'doi', $1) }
+  if %meta<citation_doi>:exists { set( 'doi', %meta<citation_doi>.head )}
+  elsif %meta<st.discriminator>:exists { set( 'doi', %meta<st.discriminator>.head) }
+  elsif %meta<dc.identifier>:exists and %meta<dc.identifier>.head ~~ /^ 'doi:' (.+) $/ { set( 'doi', $1) }
 
   # If we get two ISBNs then one is online and the other is print so
   # we don't know which one to use and we can't use either one
   if %meta<citation_isbn>:exists and 1 == %meta<citation_isbn>.elems {
-    set( 'isbn', %meta<citation_isbn>[0]);
+    set( 'isbn', %meta<citation_isbn>.head);
   }
 
   # 'rft_issn' also contains ISSN information
   if %meta<st.printissn>:exists and %meta<st.onlineissn>:exists {
-    set( 'issn', %meta<st.printissn>[0] ~ ' (Print) ' ~ %meta<st.onlineissn>[0] ~ ' (Online)');
+    set( 'issn', %meta<st.printissn>.head ~ ' (Print) ' ~ %meta<st.onlineissn>.head ~ ' (Online)');
   } elsif %meta<citation_issn>:exists and 1 == %meta<citation_issn>.elems {
-    set( 'issn', %meta<citation_issn>[0]);
+    set( 'issn', %meta<citation_issn>.head);
   }
 
-  set( 'language', %meta<citation_language>[0] // %meta<dc.language>[0]);
+  set( 'language', %meta<citation_language>.head // %meta<dc.language>.head);
 
   # 'dc.description' also contains abstract information
   for (%meta<description>, %meta<Description>).flat -> Array:_[Str:D] $d {
-    set( 'abstract', $d[0]) if $d.defined and $d !~~ /^ [ '' $ | '****' | 'IEEE Xplore' | 'IEEE Computer Society' ] /;
+    set( 'abstract', $d.head) if $d.defined and $d !~~ /^ [ '' $ | '****' | 'IEEE Xplore' | 'IEEE Computer Society' ] /;
   }
 
   set( 'affiliation', %meta<citation_author_institution>.join( ' and ' ))
