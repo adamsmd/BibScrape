@@ -80,18 +80,19 @@ class Fix {
   method fix(BibScrape::BibTeX::Entry:D $entry is copy --> BibScrape::BibTeX::Entry:D) {
     $entry = $entry.clone;
 
+    ################################
+    # Pre-omit fixes               #
+    ################################
+
     # Doi field: remove "http://hostname/" or "DOI: "
-    $entry.fields<doi> = $entry.fields<url>
-      if not $entry.fields<doi>:exists
-          and ($entry.fields<url> // "") ~~ /^ "http" "s"? "://" "dx."? "doi.org/"/;
-    update($entry, 'doi', { s:i:g/"http" "s"? "://" <-[/]>+ "/"//; s:i:g/"DOI:"\s*//; });
+    if not $entry.fields<doi>:exists
+        and ($entry.fields<url> // "") ~~ /^ "http" "s"? "://" "dx."? "doi.org/"/ {
+      $entry.fields<doi> = $entry.fields<url>;
+      $entry.fields<url>:delete;
+    }
 
-    # Page numbers: no "pp." or "p."
-    update($entry, 'pages', { s:i:g/"p" "p"? "." \s*//; });
-
-    # rename fields
+    # Fix wrong field names (SpringerLink and ACM violate this)
     for ('issue', 'number', 'keyword', 'keywords') -> Str:D $key, Str:D $value {
-      # Fix broken field names (SpringerLink and ACM violate this)
       if $entry.fields{$key}:exists and
           (not $entry.fields{$value}:exists or
             $entry.fields{$key} eq $entry.fields{$value}) {
@@ -99,6 +100,21 @@ class Fix {
         $entry.fields{$key}:delete;
       }
     }
+
+    # Fix Springer's use of 'note' to store 'doi'
+    update($entry, 'note', { $_ = Str if $_ eq ($entry.fields<doi> // '') });
+
+    ################################
+    # Post-omit fixes              #
+    ################################
+
+    # Omit fields we don't want.  Should be first after inter-field fixes.
+    $entry.fields{$_}:exists and $entry.fields{$_}:delete for @.omit;
+
+    update($entry, 'doi', { s:i:g/"http" "s"? "://" <-[/]>+ "/"//; s:i:g/"DOI:"\s*//; });
+
+    # Page numbers: no "pp." or "p."
+    update($entry, 'pages', { s:i:g/"p" "p"? "." \s*//; });
 
     # Ranges: convert "-" to "--"
     for ('chapter', 'month', 'number', 'pages', 'volume', 'year') -> Str:D $key {
@@ -171,41 +187,6 @@ class Fix {
         | 'http' 's'? '://www.jstor.org/stable/'
         | 'http' 's'? '://www.sciencedirect.com/science/article/' ]/; });
 
-    # Fix Springer's use of 'note' to store 'doi'
-    update($entry, 'note', { $_ = Str if $_ eq ($entry.fields<doi> // '') });
-
-    # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
-    for $entry.fields.keys -> Str:D $field {
-      unless $field ∈ @.no-encode {
-        update($entry, $field, {
-          $_ = rec(from-xml("<root>{$_}</root>").root.nodes);
-          s:g/" "* \xA0/\xA0/; # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
-          $_ = unicode2tex($_, ignore => rx/<[_^{}\\\$]>/); # NOTE: Ignores LaTeX introduced by translation from XML
-        });
-      }
-    }
-
-    # Canonicalize series: PEPM'97 -> PEPM~'97 (must be after Unicode escaping)
-    update($entry, 'series', { s:g/(<upper>+) " "* [ "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
-
-    # Collapse spaces and newlines
-    for $entry.fields.pairs -> Pair:D $pair {
-      unless $pair.key ∈ $.no-collapse {
-        update($entry, $pair.key, {
-          s/\s* $//; # remove trailing whitespace
-          s/^ \s *//; # remove leading whitespace
-          s:g/(\n " "*) ** 2..*/\{\\par}/; # BibTeX eats whitespace so convert "\n\n" to paragraph break
-          s:g/\s* \n \s*/ /; # Remove extra line breaks
-          s:g/\s* "\{\\par\}" \s*/\n\{\\par\}\n/; # Nicely format paragraph breaks
-          s:g/\s ** 2..* / /; # Remove duplicate whitespace
-        });
-      }
-    }
-
-    # Keep acronyms capitalized
-    update($entry, 'title', { s:g/ (\d* [<upper> \d*] ** 2..*) /\{$0\}/; })
-      if $.escape-acronyms;
-
     # Keep proper nouns capitalized
     update($entry, 'title', {
       for @.nouns -> Str:D @noun-group {
@@ -227,7 +208,48 @@ class Fix {
       }
     });
 
-    # Use bibtex month macros.  Must be after field encoding because we use macros.
+    # Keep acronyms capitalized.
+    # We intentionally do not use <upper> as Unicode encoding will catch those.
+    update($entry, 'title', { s:g/ (\d* [<[A..Z]> \d*] ** 2..*) /\{$0\}/; })
+      if $.escape-acronyms;
+
+    # Year
+    check($entry, 'year', 'Possibly incorrect year', { /^ \d\d\d\d $/ });
+
+    # Eliminate Unicode but not for no-encode fields (e.g. doi, url, etc.)
+    for $entry.fields.keys -> Str:D $field {
+      unless $field ∈ @.no-encode {
+        update($entry, $field, {
+          $_ = rec(from-xml("<root>{$_}</root>").root.nodes);
+          s:g/" "* \xA0/\xA0/; # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
+          $_ = unicode2tex($_, ignore => rx/<[_^{}\\\$]>/); # NOTE: Ignores LaTeX introduced by translation from XML
+        });
+      }
+    }
+
+    ################################
+    # Post-Unicode fixes           #
+    ################################
+
+    # Canonicalize series: PEPM'97 -> PEPM~'97.  After Unicode encoding so "'" doesn't get encoded.
+    update($entry, 'series', { s:g/(<upper>+) " "* [ "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
+
+    # Collapse spaces and newlines.  After Unicode encoding so stuff from XML is caught.
+    for $entry.fields.pairs -> Pair:D $pair {
+      unless $pair.key ∈ $.no-collapse {
+        update($entry, $pair.key, {
+          s/ \s* $//; # remove trailing whitespace
+          s/^ \s* //; # remove leading whitespace
+          s:g/ (\n ' '*) ** 2..* /\{\\par}/; # BibTeX eats whitespace so convert "\n\n" to paragraph break
+          s:g/ \s* \n \s* / /; # Remove extra line breaks
+          s:g/ [\s | '{~}']* \s [\s | '{~}']* / /; # Remove duplicate whitespace
+          s:g/ \s* "\{\\par\}" \s* /\n\{\\par\}\n/; # Nicely format paragraph breaks
+          #s:g/ [\s | '{~}']+ \s [\s | '{~}']* / /; # Remove duplicate whitespace
+        });
+      }
+    }
+
+    # Use bibtex month macros.  After Unicode encoding because it uses macros.
     update($entry, 'month', {
       s/ "." ($|"-") /$0/; # Remove dots due to abbriviations
       my BibScrape::BibTeX::Piece:D @x =
@@ -240,11 +262,11 @@ class Fix {
           say "WARNING: Possibly incorrect month: $_" and BibScrape::BibTeX::Piece.new($_)});
       $_ = BibScrape::BibTeX::Value.new(@x)});
 
-    # Year
-    check($entry, 'year', 'Possibly incorrect year', { /^ \d\d\d\d $/ });
+    ################################
+    # Final fixes                  #
+    ################################
 
-    # Omit fields we don't want
-    $entry.fields{$_}:exists and $entry.fields{$_}:delete for @.omit;
+    # Omit empty fields we don't want
     for @.omit-empty {
       if $entry.fields{$_}:exists {
         my Str:D $str = $entry.fields{$_}.Str;

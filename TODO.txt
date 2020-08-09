@@ -65,8 +65,6 @@ XPath
 
 ### Tests
 
-Test that uses Sigplan notices
-
 flag test suite
 
 a test that has 'others' in author names
@@ -95,6 +93,15 @@ Nil
 
 ## Unsorted
 
+!!! GNU Parallel
+  --retry-failed
+  --retries n
+  cleanup?
+  xargs?
+
+!!! Author names database
+
+!!! Nouns database
 
 ## Test coverage
 
