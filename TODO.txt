@@ -11,15 +11,14 @@
 
 ### WebDriver
 
-Flag to geckodriver to terminate automatically
+!!! Flag to geckodriver to terminate automatically
 
-Improve performance
+!!! Improve performance
   ignore non-domain files (timeout on file load?)
   (no load images)
   (no load css?)
-
-#opt.set_capability("pageLoadStrategy", 'eager')
-#service_args=['--load-images=no']
+  opt.set_capability("pageLoadStrategy", 'eager')
+  service_args=['--load-images=no']
 
 load browser as under-window
 
@@ -61,11 +60,9 @@ XPath
 !!! add abstract to jstor
 !!! get PDF (eprint?)
 
-!!! $entry.fields<bib_scrape_args> = @*ARGS.map({ "'" ~ .subst("'", "'\\''") ~ "'" }).join( ' ' );
-
 ### Tests
 
-flag test suite
+!!! flag test suite
 
 a test that has 'others' in author names
 
@@ -77,27 +74,22 @@ a test that has 'others' in author names
 
 !!! Sort elements in scrape
 
-report multiple noun matches in a title
-Warn when names overlap
+!!! report multiple noun matches in a title
+!!! Warn when names overlap
 
-In CommandLine (twice):
+!!! In CommandLine (twice):
   my List:D $list = params($main);
 
-&foo
--
-.
-|capture
-Nil
+!!!
+  &foo
+  -
+  .
+  |capture
+  Nil
 
 
 
 ## Unsorted
-
-!!! GNU Parallel
-  --retry-failed
-  --retries n
-  cleanup?
-  xargs?
 
 !!! Author names database
 

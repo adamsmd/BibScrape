@@ -223,9 +223,6 @@ following command:
 
     $ ./test.sh tests/acm-*.t
 
-The tests print the difference from the correct output.  Thus, tests that pass
-print just the test name.
-
 Note that publisher pages aren't the most reliable, so if a test fails, you
 should re-run that test to make sure it isn't a transient issue.
 

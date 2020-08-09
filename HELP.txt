@@ -124,7 +124,7 @@ GENERAL OPTIONS
     The string to separate parts of an ISBN. Hyphen and space are the most
     common. Use an empty string to specify no separator.
 
- --version                  Default: False
+ --version|-V               Default: False
 
     Print version information
 

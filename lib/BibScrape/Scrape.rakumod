@@ -12,6 +12,8 @@ use BibScrape::WebDriver;
 
 my BibScrape::WebDriver::WebDriver:_ $web-driver;
 
+END { if $web-driver.defined { $web-driver.close(); } }
+
 sub scrape(Str:D $url is copy, Bool:D :$show-window, Num:D :$browser-timeout --> BibScrape::BibTeX::Entry:D) is export {
   $web-driver =
     BibScrape::WebDriver::WebDriver.new(show-window => $show-window, browser-timeout => $browser-timeout);

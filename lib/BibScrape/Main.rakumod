@@ -242,7 +242,7 @@ practices.
   #  Bool:D :v(:$verbose) = False,
   ##={Print verbose output}
 
-  Bool:D :$version = False,
+  Bool:D :V(:$version) = False,
   #={Print version information}
 
   Bool:D :h(:$help) = False,
