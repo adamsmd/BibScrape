@@ -147,7 +147,7 @@ practices.
     ;- If it is '-', BibTeX entries are read from standard input.
     ;- Otherwise, it is a filename from which BibTeX entries are read.}
 
-  Str:D :k(:@key),
+  Str:D :k(:@key) = Array[Str:D](< >) but Sep[','],
   #={Specify the keys to use in the output BibTeX.
     ;;
     Successive keys are used for succesive BibTeX entries.
@@ -155,7 +155,7 @@ practices.
     If omitted or a single space, the key will be automatically generated or
     copied from the existing BibTeX entry.}
 
-  IO::Path:D :@names = Array[IO::Path:D](<.>.IO),
+  IO::Path:D :@names = Array[IO::Path:D](<.>.IO) but Sep[';'],
   #={Add to the list of names files.
     See the NAMES FILES section for details.
     The file name "." means "names.cfg" in the user-configuration directory.}
@@ -165,7 +165,7 @@ practices.
     See the NAMES FILES section for details about names files.
     Semicolons are interpreted as newlines.}
 
-  IO::Path:D :@nouns = Array[IO::Path:D](<.>.IO),
+  IO::Path:D :@nouns = Array[IO::Path:D](<.>.IO) but Sep[';'],
   #={Add to the list of nouns files.
     See the NOUNS FILES section for details.
     The file name "." means "nouns.cfg" in the user-configuration directory.}
@@ -262,19 +262,20 @@ practices.
     edition day month year issue_date
     organization publisher address
     language isbn issn doi url eprint bib_scrape_url
-    note annote keywords abstract>),
+    note annote keywords abstract>)
+    but Sep[','],
   #={Known BibTeX fields in the order that they should appear in the output}
 
-  Str:D :@no-encode = Array[Str:D](<doi url eprint bib_scrape_url>),
+  Str:D :@no-encode = Array[Str:D](<doi url eprint bib_scrape_url>) but Sep[','],
   #={Fields that should not be LaTeX encoded}
 
-  Str:D :@no-collapse = Array[Str:D](< >),
+  Str:D :@no-collapse = Array[Str:D](< >) but Sep[','],
   #={Fields that should not have their whitespace collapsed}
 
-  Str:D :o(:@omit) = Array[Str:D](< >),
+  Str:D :o(:@omit) = Array[Str:D](< >) but Sep[','],
   #={Fields that should be omitted from the output}
 
-  Str:D :@omit-empty = Array[Str:D](<abstract issn doi keywords>),
+  Str:D :@omit-empty = Array[Str:D](<abstract issn doi keywords>) but Sep[','],
   #={Fields that should be omitted from the output if they are empty}
 
 --> Any:U

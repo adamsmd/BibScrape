@@ -2,6 +2,10 @@ unit module BibScrape::CommandLine;
 
 use variables :D;
 
+role Sep[Str:D $sep] is export {
+  method sep(--> Str:D) { $sep; }
+}
+
 class Param {
   has Parameter:D $.parameter is required handles *;
   has Str:D $.name is required;
@@ -89,19 +93,24 @@ sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
         default { $out ~= " <{$param.name}>"; }
       }
     }
+    if $param.type ~~ Enumeration {
+      wrap(28, "<{type-name($param.type)}> := {$param.type.enums.list.sort(*.value).map(*.key).join(' | ')};");
+    }
     if $param.default.defined {
       if $param.type ~~ Positional {
         wrap(28, "Default: {$param.default.map({ "'$_'" })}");
       } else {
         wrap(28, "Default: {$param.default}");
       }
+      if $param.default ~~ Sep {
+        $out ~= "\n";
+        $out ~= ' ' x 28; # Workaround do ; isn't interpreted as a newline
+        $out ~= "Separator: \'{$param.default.sep}\'\n";
+      }
     } else {
       $out ~= "\n";
     }
     $out ~= "\n";
-    if $param.type ~~ Enumeration {
-      wrap(4, "<{type-name($param.type)}> = {$param.type.enums.list.sort(*.value).map(*.key).join(' | ')};");
-    }
     with $param.doc and $param.doc.trailing {
       wrap(4, $_);
     }
@@ -120,11 +129,24 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
   my Str:D %aliases = %params.values.map({ my Str:D $name = .name; .named_names.map({ $_ => $name }) }).flat;
   my Bool:D $no-parse = False;
   my Int:D $positionals = 0;
-  sub def(Param:D $param) {
-    $param.default
-      // ($param.type ~~ Positional
-        ?? Array[$param.type.of].new()
-        !! $param.type);
+  sub def(Param:D $param --> Any:_) {
+    if $param.default.defined {
+      if $param.default ~~ Sep {
+        if $param.type ~~ Positional {
+          Array[$param.type.of]($param.default.map({$_}));
+        } else {
+          ($param.type)($param.default);
+        }
+      } else {
+        $param.default
+      }
+    } else {
+      if $param.type ~~ Positional {
+        Array[$param.type.of].new()
+      } else {
+        $param.type;
+      }
+    }
   }
   sub val(Any:U $type, Str:D $value-str --> Any:D) {
     given $type {
@@ -156,32 +178,38 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
           unless $last or $param.type ~~ Bool {
             die "Non-boolean, single-letter flag '$name' not last in '$arg'";
           }
-          my Str:D $value-str =
+          my Str:D $pre-value-str =
             $last && $3.chars > 0 ?? $3.[0].Str
               !! $param.type ~~ Bool ?? $polarity.Str
               !! @str-args.shift // die "Missing argument for flag '$name' in '$arg'";
-          given $param.type {
-            when Positional {
-              if $value-str eq '' {
-                if $polarity {
-                  %args{$param.name} = Array[$param.type.of].new();
+          my Str:D @value-str =
+            $param.default ~~ Sep
+              ?? $pre-value-str.split($param.default.sep)
+              !! $pre-value-str;
+          for @value-str -> Str:D $value-str {
+            given $param.type {
+              when Positional {
+                if $value-str eq '' {
+                  if $polarity {
+                    %args{$param.name} = Array[$param.type.of].new();
+                  } else {
+                    %args{$param.name} = def($param);
+                  }
                 } else {
-                  %args{$param.name} = def($param);
-                }
-              } else {
-                my Any:D $value = val($param.type.of, $value-str);
-                if $polarity {
-                  push %args{$param.name}, $value;
-                } else {
-                  %args{$param.name} =
-                    Array[$param.type.of](
-                      %args{$param.name}.grep({ not ($_ eqv $value) }));
+                  my Any:D $value = val($param.type.of, $value-str);
+                  if $polarity {
+                    push %args{$param.name}, $value;
+                  } else {
+                    %args{$param.name} =
+                      Array[$param.type.of](
+                        %args{$param.name}.grep({ not ($_ eqv $value) }));
+                  }
                 }
               }
-            }
-            default {
-              my Any:D $value = val($param.type, $value-str);
-              %args{$param.name} = $value;
+              default {
+                my Any:D $value = val($param.type, $value-str);
+                %args{$param.name} = $value;
+              }
             }
           }
         }

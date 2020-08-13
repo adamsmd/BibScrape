@@ -19,7 +19,9 @@ INPUTS
     - If it is '-', BibTeX entries are read from standard input.
     - Otherwise, it is a filename from which BibTeX entries are read.
 
- --key|-k=<Str> ...
+ --key|-k=<Str> ...         Default:
+
+                            Separator: ','
 
     Specify the keys to use in the output BibTeX.
 
@@ -29,6 +31,8 @@ INPUTS
     copied from the existing BibTeX entry.
 
  --names=<File> ...         Default: '.'
+
+                            Separator: ';'
 
     Add to the list of names files. See the NAMES FILES section for details. The
     file name "." means "names.cfg" in the user-configuration directory.
@@ -40,6 +44,8 @@ INPUTS
     interpreted as newlines.
 
  --nouns=<File> ...         Default: '.'
+
+                            Separator: ';'
 
     Add to the list of nouns files. See the NOUNS FILES section for details. The
     file name "." means "nouns.cfg" in the user-configuration directory.
@@ -88,9 +94,9 @@ GENERAL OPTIONS
     In titles, enclose sequences of two or more uppercase letters (i.e., an
     acronym) in braces so that BibTeX preserves their case.
 
- --issn-media=<MediaType>   Default: Both
+ --issn-media=<MediaType>   <MediaType> := Print | Online | Both
 
-    <MediaType> = Print | Online | Both
+                            Default: Both
 
     When both a print and an online ISSN are available:
 
@@ -100,9 +106,9 @@ GENERAL OPTIONS
 
     If only one ISSN is available, this option is ignored.
 
- --isbn-media=<MediaType>   Default: Both
+ --isbn-media=<MediaType>   <MediaType> := Print | Online | Both
 
-    <MediaType> = Print | Online | Both
+                            Default: Both
 
     When both a print and an online ISBN are available:
     - if <MediaType> is "Print", use only the print ISBN,
@@ -111,9 +117,9 @@ GENERAL OPTIONS
 
     If only one ISBN is available, this option is ignored.
 
- --isbn-type=<IsbnType>     Default: Preserve
+ --isbn-type=<IsbnType>     <IsbnType> := Isbn13 | Isbn10 | Preserve
 
-    <IsbnType> = Isbn13 | Isbn10 | Preserve
+                            Default: Preserve
 
     - If <IsbnType> is "Isbn13", always convert ISBNs to ISBN-13
     - If <IsbnType> is "Isbn10", when possible convert ISBns to ISBN-10
@@ -146,21 +152,31 @@ FIELD OPTIONS
                             'url' 'eprint' 'bib_scrape_url' 'note' 'annote'
                             'keywords' 'abstract'
 
+                            Separator: ','
+
     Known BibTeX fields in the order that they should appear in the output
 
  --no-encode=<Str> ...      Default: 'doi' 'url' 'eprint' 'bib_scrape_url'
+
+                            Separator: ','
 
     Fields that should not be LaTeX encoded
 
  --no-collapse=<Str> ...    Default:
 
+                            Separator: ','
+
     Fields that should not have their whitespace collapsed
 
  --omit|-o=<Str> ...        Default:
 
+                            Separator: ','
+
     Fields that should be omitted from the output
 
  --omit-empty=<Str> ...     Default: 'abstract' 'issn' 'doi' 'keywords'
+
+                            Separator: ','
 
     Fields that should be omitted from the output if they are empty
 

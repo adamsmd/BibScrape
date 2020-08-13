@@ -232,7 +232,7 @@ class Fix {
     ################################
 
     # Canonicalize series: PEPM'97 -> PEPM~'97.  After Unicode encoding so "'" doesn't get encoded.
-    update($entry, 'series', { s:g/(<upper>+) " "* [ "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
+    update($entry, 'series', { s:g/(<upper>+) " "* [ '19' | '20' | "'" | '{\\textquoteright}' ] (\d+)/$0~'$1/; });
 
     # Collapse spaces and newlines.  After Unicode encoding so stuff from XML is caught.
     for $entry.fields.pairs -> Pair:D $pair {

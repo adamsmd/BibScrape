@@ -95,6 +95,14 @@ a test that has 'others' in author names
 
 !!! Nouns database
 
+!!! IoT (acronym if two upper letters even with lower letters?)
+  (acronym if non-first char is upper case?)
+  (but then only brace non-lower characters
+  Tests: IoT AspectJ
+
+!!! Use ispell?
+  spell checkers as a list option (so can run multiple checkers)
+
 ## Test coverage
 
 Unicode in Title, Abstract, Author
