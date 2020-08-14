@@ -1,5 +1,5 @@
 https://doi.org/10.1145/1863543.1863551
---key=' ' --isbn-sep=' '
+--key='' --isbn-sep=' '
 Explicit autogeneration of key.  Flag with space in it.  ISBN with spaces.
 @inproceedings{Mazurak:2010:10.1145/1863543.1863551,
   author = {Mazurak, Karl and Zdancewic, Steve},

@@ -9,11 +9,22 @@
   use parameters :D;
   use attributes :D;
 
+a test that has 'others' in author names
+
+################################
+
+## Priority
+
+### Key generation:
+
+use first n (non-trivial) words
+  Format: author/editor1.last year title/journal.abbriv
+
 ### WebDriver
 
-!!! Flag to geckodriver to terminate automatically
+Flag to geckodriver to terminate automatically
 
-!!! Improve performance
+Improve performance
   ignore non-domain files (timeout on file load?)
   (no load images)
   (no load css?)
@@ -22,30 +33,11 @@
 
 load browser as under-window
 
-################################
-
-## Speculative
-
-### Key generation:
-
-keep vs generate
-doi in key option
-use first n (non-trivial) words
-Format: author/editor1.last year title/journal.abbriv
-
-### Other
-
-XPath
-
-################################
-
-## Priority
-
 ### Publishers
 
-!!! usenix
+usenix
 
-!!! arxiv:
+arxiv:
  - normal
  - proceedings: https://arxiv.org/help/submit_index
    - https://arxiv.org/abs/1708.06226
@@ -56,52 +48,52 @@ XPath
 
 ### Output
 
-!!! follow jstor links to original publisher
-!!! add abstract to jstor
-!!! get PDF (eprint?)
+follow jstor links to original publisher
+add abstract to jstor
+get PDF (eprint?)
 
 ### Tests
 
-!!! flag test suite
-
-a test that has 'others' in author names
+flag test suite
 
 ### Documentation
 
-!!! FEATURES.md
+FEATURES.md
 
 ### Code
 
-!!! Sort elements in scrape
+Sort elements in scrape
 
-!!! report multiple noun matches in a title
-!!! Warn when names overlap
+report multiple noun matches in a title
+Warn when names overlap
 
-!!! In CommandLine (twice):
+In CommandLine (twice):
   my List:D $list = params($main);
 
-!!!
-  &foo
-  -
-  .
-  |capture
-  Nil
+&foo
+Nil
 
+Inline::Python Crash
 
+### Other
 
-## Unsorted
+XPath
 
-!!! Author names database
+### Names and Nouns
 
-!!! Nouns database
+Author names database
 
-!!! IoT (acronym if two upper letters even with lower letters?)
+Nouns database
+
+IoT (acronym if two upper letters even with lower letters?)
   (acronym if non-first char is upper case?)
   (but then only brace non-lower characters
   Tests: IoT AspectJ
 
-!!! Use ispell?
+Use ispell?
   spell checkers as a list option (so can run multiple checkers)
+
+## Unsorted
 
 ## Test coverage
 

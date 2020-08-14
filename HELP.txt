@@ -27,7 +27,7 @@ INPUTS
 
     Successive keys are used for succesive BibTeX entries.
 
-    If omitted or a single space, the key will be automatically generated or
+    If omitted or an empty string, the key will be automatically generated or
     copied from the existing BibTeX entry.
 
  --names=<File> ...         Default: '.'

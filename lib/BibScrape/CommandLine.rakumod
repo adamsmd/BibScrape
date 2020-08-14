@@ -40,7 +40,7 @@ sub type-name(Any:U $type --> Str:D) {
   }
 }
 
-sub GENERATE-USAGE(Sub:D $main, |capture --> Str:D) is export {
+sub GENERATE-USAGE(Sub:D $main, | --> Str:D) is export {
   my Int:D constant $end-col = 80;
   my List:D $list = params($main);
   my Param:D @params = $list[0];

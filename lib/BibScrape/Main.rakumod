@@ -152,7 +152,7 @@ practices.
     ;;
     Successive keys are used for succesive BibTeX entries.
     ;;
-    If omitted or a single space, the key will be automatically generated or
+    If omitted or an empty string, the key will be automatically generated or
     copied from the existing BibTeX entry.}
 
   IO::Path:D :@names = Array[IO::Path:D](<.>.IO) but Sep[';'],
@@ -367,7 +367,7 @@ practices.
     }
     sub fix(Str:D $key, BibScrape::BibTeX::Entry:D $entry is copy --> Any:U) {
       if $fix { $entry = $fixer.fix($entry) }
-      if $key ne ' ' { $entry.key = $key }
+      if $key { $entry.key = $key }
       print $entry.Str;
       return;
     }
@@ -375,7 +375,7 @@ practices.
     if $arg ~~ m:i/^ 'http:' | 'https:' | 'doi:' / {
       # It's a URL
       if !$scrape { die "Scraping disabled but given URL: $arg"; }
-      fix(@key.shift // ' ', scr($arg));
+      fix(@key.shift || '', scr($arg));
       print "\n"; # BibTeX::Entry.Str doesn't have a newline at the end so we add one
     } else {
       # Not a URL so try reading it as a file
@@ -385,7 +385,7 @@ practices.
         if $item !~~ BibScrape::BibTeX::Entry:D {
           print $item.Str;
         } else {
-          my $key = @key.shift // $item.key;
+          my $key = @key.shift || $item.key;
           if !$scrape {
             # Undo any encoding that could get double encoded
             update($item, 'abstract', { s:g/ \s* "\{\\par}" \s* /\n\n/; }); # Must be before tex2unicode
