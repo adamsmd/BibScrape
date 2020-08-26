@@ -7,12 +7,14 @@ class Spell {
   has IO::Pipe:D $!out is required;
   has Str:D $.version is required;
 
-  method BUILD(Str:D :$prog = 'ispell' --> Any:U) {
+  method BUILD(Str:D :$cmd = 'ispell -a' --> Any:U) {
     # We use UTF8-C8 because ispell sometimes outputs invalid UTF8
-    # TODO: use shell and prog = 'ispell -a'
-    #$!proc = run $prog, '-a', :enc<utf8-c8>, :in, :out; #, :err;
+    #$!proc = shell $cmd, :enc<utf8-c8>, :in, :out; #, :err;
     # We use Proc::Async to avoid a memory leak (see https://github.com/rakudo/rakudo/issues/3858)
-    $!proc = Proc::Async.new($prog, '-a', :w, :enc<utf8-c8>);
+    my @args := Rakudo::Internals.IS-WIN
+            ?? (%*ENV<ComSpec>, '/c', $cmd)
+            !! ('/bin/sh', '-c', $cmd);
+    $!proc = Proc::Async.new(@args, :w, :enc<utf8-c8>);
 
     my $stdout-supply = $!proc.stdout(:bin);
     my $chan = $stdout-supply.Channel;
@@ -70,18 +72,3 @@ class Spell {
   }
   method DESTROY(--> Any:U) { self.close(); }
 }
-
-#  grep '^<title>' dblp/dblp.xml | perl -pe 's/^<title>//; s[</title>$][]' | raku -I lib -M BibScrape::Spell -ne 'my $x; my $y; BEGIN { $x = BibScrape::Spell::Spell.new(prog => "aspell"); say $x.version}; my @x = $x.capitalization($_); if $y++ % 1000 == 0 { say "!!!! $y !!!!"; }; if @x { .say for @x }' >cap-aspell.txt
-#hunspell
-#enchant
-
-#  grep '^<title>' dblp/dblp.xml | perl -pe 's/^<title>//; s[</title>$][]' | raku -I lib -M BibScrape::Spell -ne 'my $x; my $y; BEGIN { $x = BibScrape::Spell::Spell.new(prog => "ispell"); say $x.version}; my @x = $x.capitalization($_); if $y++ % 1000 == 0 { say "!!!! $y !!!!"; }; if @x { .say for @x }' >cap-ispell.txt
-
-# grep '^<title>' dblp/dblp.xml | perl -pe 's/^<title>//; s[</title>$][]' | raku -I lib -M BibScrape::Spell -ne 'my $x; my $y; BEGIN { $x = BibScrape::Spell::Spell.new(prog => "aspell"); say $x.version}; my @x = $x.capitalization($_); if $y++ % 1000 == 0 { say "!!!! $y !!!!"; }; if $y % 10000 == 0 { $x.close; $x = BibScrape::Spell::Spell.new(prog => "aspell"); }; if @x { .say for @x }' >cap-aspell.txt
-
-# grep '^<title>' dblp/dblp.xml | perl -pe 's/^<title>//; s[</title>$][]' | raku -I lib -M BibScrape::Spell -ne 'my $x; my $y; BEGIN { $x = BibScrape::Spell::Spell.new(prog => "hunspell"); say $x.version}; my @x = $x.capitalization($_); if $y++ % 1000 == 0 { say "!!!! $y !!!!"; }; if @x { .say for @x }' >cap-hunspell.txt
-
-# cat <(sort cap-aspell.txt | uniq -c) <(sort cap-ispell.txt | uniq -c) <(sort cap-hunspell.txt | uniq -c) <(sort cap-enchant.txt | uniq -c)|sort -n|less
-# cat <(sort cap-aspell.txt | uniq -c) <(sort cap-ispell.txt | uniq -c) <(sort cap-hunspell.txt | uniq -c) <(sort cap-enchant.txt | uniq -c)|sort -n >cap-counts.txt
-
-
