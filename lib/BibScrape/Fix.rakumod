@@ -191,15 +191,15 @@ class Fix {
     update($entry, 'title', {
       for @.nouns -> Str:D @noun-group {
         for @noun-group -> Str:D $noun {
-          my Str:D $noun2 = $noun.subst(rx/ <[{}]> /, '', :g);
-          s:g/ « [$noun | $noun2] » /{@noun-group.head}/;
+          my Str:D $noun-no-brace = $noun.subst(rx/ <[{}]> /, '', :g);
+          s:g/ « [$noun | $noun-no-brace] » /{@noun-group.head}/;
         }
       }
 
       for @.nouns -> Str:D @noun-group {
         for @noun-group -> Str:D $noun {
-          my Str:D $noun2 = $noun.subst(rx/ <[{}]> /, '', :g);
-          for m:i:g/ « [$noun | $noun2] » / {
+          my Str:D $noun-no-brace = $noun.subst(rx/ <[{}]> /, '', :g);
+          for m:i:g/ « [$noun | $noun-no-brace] » / {
             if $/ ne @noun-group.head {
               say "WARNING: Possibly incorrectly capitalized noun '$/' in title";
             }
