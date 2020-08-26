@@ -15,7 +15,7 @@ my Str:D %months;
 
 sub wrap(Str:D $macro --> BibScrape::BibTeX::Piece:_) {
   $macro.defined
-    ?? BibScrape::BibTeX::Piece.new($macro, BibScrape::BibTeX::Bare)
+    ?? BibScrape::BibTeX::Piece.new($macro, BibScrape::BibTeX::bare)
     !! BibScrape::BibTeX::Piece
 }
 

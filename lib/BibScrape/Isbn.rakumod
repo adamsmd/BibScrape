@@ -42,11 +42,11 @@ sub rules(--> Array:D[Rule:D]) {
       my Str:D ($start, $end) = ($0.Str, $1.Str);
 
       Rule.new(
-        start => $prefix ~ $start.substr(0, $length),
-        end => $prefix ~ $end.substr(0, $length),
-        prefix => $ean.chars,
-        group => $grp.chars,
-        publisher => $length);
+        :start($prefix ~ $start.substr(0, $length)),
+        :end($prefix ~ $end.substr(0, $length)),
+        :prefix($ean.chars),
+        :group($grp.chars),
+        :publisher($length));
     }
   }.flat.Array
 }

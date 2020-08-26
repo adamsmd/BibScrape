@@ -14,7 +14,7 @@ class Param {
   method new(Parameter:D $parameter --> Param:D) {
     my Str:D $name = ($parameter.name ~~ /^ "{$parameter.sigil}{$parameter.twigil}" (.*) $/).[0].Str;
     my Any:_ $default = $parameter.default && ($parameter.default)();
-    self.bless(:$parameter, :$name, :$default, doc => $parameter.WHY);
+    self.bless(:$parameter, :$name, :$default, :doc($parameter.WHY));
   }
 }
 
@@ -241,6 +241,6 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
   }
   %args{ '' } = True # Prevent the capture from matching in order to trigger the usage message
     if %args<help>;
-  my Capture:D $capture = Capture.new(list => @args, hash => %args);
+  my Capture:D $capture = Capture.new(:list(@args), :hash(%args));
   $capture;
 }

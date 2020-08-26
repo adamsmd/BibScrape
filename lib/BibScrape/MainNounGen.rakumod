@@ -6,17 +6,6 @@ use BibScrape::Spell;
 
 enum Stage <stage1 stage2 stage3>;
 
-
-#  grep '^<title>' dblp/dblp.xml | perl -pe 's/^<title>//; s[</title>$][]' | raku -I lib -M BibScrape::Spell -ne 'my $x; my $y; BEGIN { $x = BibScrape::Spell::Spell.new(prog => "aspell"); say $x.version}; my @x = $x.capitalization($_); if $y++ % 1000 == 0 { say "!!!! $y !!!!"; }; if @x { .say for @x }' >cap-aspell.txt
-#hunspell
-#enchant
-
-#  grep '^<title>' dblp/dblp.xml | perl -pe 's/^<title>//; s[</title>$][]' | raku -I lib -M BibScrape::Spell -ne 'my $x; my $y; BEGIN { $x = BibScrape::Spell::Spell.new(prog => "ispell"); say $x.version}; my @x = $x.capitalization($_); if $y++ % 1000 == 0 { say "!!!! $y !!!!"; }; if @x { .say for @x }' >cap-ispell.txt
-
-# grep '^<title>' dblp/dblp.xml | perl -pe 's/^<title>//; s[</title>$][]' | raku -I lib -M BibScrape::Spell -ne 'my $x; my $y; BEGIN { $x = BibScrape::Spell::Spell.new(prog => "aspell"); say $x.version}; my @x = $x.capitalization($_); if $y++ % 1000 == 0 { say "!!!! $y !!!!"; }; if $y % 10000 == 0 { $x.close; $x = BibScrape::Spell::Spell.new(prog => "aspell"); }; if @x { .say for @x }' >cap-aspell.txt
-
-# grep '^<title>' dblp/dblp.xml | perl -pe 's/^<title>//; s[</title>$][]' | raku -I lib -M BibScrape::Spell -ne 'my $x; my $y; BEGIN { $x = BibScrape::Spell::Spell.new(prog => "hunspell"); say $x.version}; my @x = $x.capitalization($_); if $y++ % 1000 == 0 { say "!!!! $y !!!!"; }; if @x { .say for @x }' >cap-hunspell.txt
-
 # cat <(sort cap-aspell.txt | uniq -c) <(sort cap-ispell.txt | uniq -c) <(sort cap-hunspell.txt | uniq -c) <(sort cap-enchant.txt | uniq -c)|sort -n|less
 # cat <(sort cap-aspell.txt | uniq -c) <(sort cap-ispell.txt | uniq -c) <(sort cap-hunspell.txt | uniq -c) <(sort cap-enchant.txt | uniq -c)|sort -n >cap-counts.txt
 
@@ -81,7 +70,7 @@ sub MAIN(Str:D $mode, Str:D $file, Str:D @cmds) is export {
       my Hash:D[Int:D] %word-sug;
       my Int:D %word-count;
       my BibScrape::Spell::Spell:D @spell =
-        @cmds.map({ BibScrape::Spell::Spell.new(cmd => $_) });
+        @cmds.map({ BibScrape::Spell::Spell.new(:cmd($_)) });
       $count = 0;
       for %words.keys -> Str:D $word {
         if $count % 500 == 0 { $*ERR.say("Time: {now.DateTime} Words processed: $count"); }

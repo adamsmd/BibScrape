@@ -18,7 +18,7 @@ class Piece {
     $piece;
   }
   multi method new(Int:D $piece --> Piece:D) {
-    self.bless(:$piece.Str, quotation => bare);
+    self.bless(:$piece.Str, :quotation(bare));
   }
   method Str(--> Str:D) {
     given $.quotation {
@@ -31,7 +31,7 @@ class Piece {
 class Value {
   has Piece:D @.pieces is required;
   multi method new(Piece:D @pieces --> Value:D) {
-    self.bless(pieces => map { Piece.new($_) }, @pieces);
+    self.bless(:pieces(@pieces.map({ Piece.new($_) })));
   }
   multi method new($value where Value:D --> Value:D) { $value; }
   multi method new($piece where Piece:D | Int:D | Str:D --> Value:D) {
@@ -154,25 +154,25 @@ class Actions {
   has &.entry-type-filter = { .fc };
   has &.entry-field-key-filter = { .fc };
 
-  method TOP($/) { make Database.new(items => $<bib-db><clause>».made); }
+  method TOP($/) { make Database.new(:items($<bib-db><clause>».made)); }
   method clause($/) { make ($<ignored> // $<comment> // $<preamble> // $<string> // $<entry>).made }
-  method ignored($/) { make Ignored.new(value => $/); }
+  method ignored($/) { make Ignored.new(:value($/)); }
   method comment($/) { make Comment.new(); }
-  method preamble($/) { make Preamble.new(value => $<value>.made); }
-  method string($/) { make String.new(key => (&.string-key-filter)($/<string-body><ident>.Str), value => $/<string-body><value>.made); }
-  method entry($/) { make Entry.new(type => (&.entry-type-filter)($/<ident>.Str), key => $/<key>.Str, fields => array-hash($/<entry-body>.made)); }
+  method preamble($/) { make Preamble.new(:value($<value>.made)); }
+  method string($/) { make String.new(:key((&.string-key-filter)($/<string-body><ident>.Str)), :value($/<string-body><value>.made)); }
+  method entry($/) { make Entry.new(:type((&.entry-type-filter)($/<ident>.Str)), :key($/<key>.Str), :fields(array-hash($/<entry-body>.made))); }
   method entry-body($/) { make $/<key-value>».made; }
   method key-value($/) { make ((&.entry-field-key-filter)($/<ident>.Str) => $/<value>.made); }
 
   method value($/) { make Value.new(Array[Piece].new($<piece>».made)); }
   method piece($/) { make ($<bare> // $<braces> // $<quotes>).made; }
-  method bare($/) { make Piece.new(piece => $/.Str, quotation => bare); }
-  method braces($/) { make Piece.new(piece => $/[0].Str, quotation => braces); }
-  method quotes($/) { make Piece.new(piece => $/[0].Str, quotation => quotes); }
+  method bare($/) { make Piece.new(:piece($/.Str), :quotation(bare)); }
+  method braces($/) { make Piece.new(:piece($/[0].Str), :quotation(braces)); }
+  method quotes($/) { make Piece.new(:piece($/[0].Str), :quotation(quotes)); }
 }
 
 sub bibtex-parse(Str:D $str --> Database:D) is export {
-  Grammar.parse($str, actions => Actions.new).made;
+  Grammar.parse($str, :actions(Actions.new)).made;
 }
 
 sub update(BibScrape::BibTeX::Entry:D $entry, Str:D $field, &fun --> Any:U) is export {

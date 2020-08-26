@@ -14,11 +14,11 @@ my BibScrape::WebDriver::WebDriver:_ $web-driver;
 
 END { if $web-driver.defined { $web-driver.close(); } }
 
-sub scrape(Str:D $url is copy, Bool:D :$show-window, Num:D :$browser-timeout --> BibScrape::BibTeX::Entry:D) is export {
+sub scrape(Str:D $url is copy, Bool:D :$window, Num:D :$timeout --> BibScrape::BibTeX::Entry:D) is export {
   $web-driver =
-    BibScrape::WebDriver::WebDriver.new(:$show-window, :$browser-timeout);
+    BibScrape::WebDriver::WebDriver.new(:$window, :$timeout);
   LEAVE { $web-driver.close(); }
-  $web-driver.set_page_load_timeout($browser-timeout);
+  $web-driver.set_page_load_timeout($timeout);
 
   my BibScrape::BibTeX::Entry:D $entry = dispatch($url);
 
@@ -79,7 +79,7 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
 
   ## HTML Meta
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
-  html-meta-bibtex($entry, $meta, journal => False #`(avoid SIGPLAN Notices));
+  html-meta-bibtex($entry, $meta, :!journal #`(avoid SIGPLAN Notices));
 
   ## Abstract
   my Str:_ $abstract = $web-driver
@@ -173,7 +173,7 @@ sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {
   my BibScrape::BibTeX::Entry:D $entry = bibtex-parse($web-driver.read-downloads()).items.head;
 
   ## HTML Meta
-  html-meta-bibtex($entry, $meta, title => True, abstract => False);
+  html-meta-bibtex($entry, $meta, :title, :!abstract);
 
   ## Abstract
   my #`(Inline::Python::PythonObject:D) @abstract = $web-driver.find_elements_by_class_name( 'abstract' );
@@ -394,7 +394,7 @@ sub scrape-oxford(--> BibScrape::BibTeX::Entry:D) {
 
   ## HTML Meta
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
-  html-meta-bibtex($entry, $meta, month => True, year => True);
+  html-meta-bibtex($entry, $meta, :month, :year);
 
   ## Title
   my Str:D $title = $web-driver.find_element_by_class_name( 'article-title-main' ).get_property( 'innerHTML' );
@@ -427,7 +427,7 @@ sub scrape-science-direct(--> BibScrape::BibTeX::Entry:D) {
 
   ## HTML Meta
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
-  html-meta-bibtex($entry, $meta, number => True);
+  html-meta-bibtex($entry, $meta, :number);
 
   ## Title
   my Str:D $title = $web-driver.find_element_by_class_name( 'title-text' ).get_property( 'innerHTML' );
@@ -472,7 +472,7 @@ sub scrape-springer(--> BibScrape::BibTeX::Entry:D) {
   ## HTML Meta
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
   $entry.type = html-meta-type($meta);
-  html-meta-bibtex($entry, $meta, author => True, publisher => True);
+  html-meta-bibtex($entry, $meta, :author, :publisher);
 
   for 'author', 'editor' -> Str:D $key {
     if $entry.fields{$key}:exists {

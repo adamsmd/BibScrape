@@ -26,8 +26,8 @@ sub check(BibScrape::BibTeX::Entry:D $entry, Str:D $field, Str:D $msg, &check --
 
 class Fix {
   ## INPUTS
-  has Array:D[Str:D] @.names is required;
-  has Array:D[Str:D] @.nouns is required;
+  has Array:D[Str:D] @.name-groups is required;
+  has Array:D[Str:D] @.noun-groups is required;
 
   ## OPERATING MODES
   has Bool:D $.scrape is required;
@@ -71,10 +71,11 @@ class Fix {
       @blocks = @blocks.grep({ .elems > 0 }); # Remove empty blocks
       @blocks.Array;
     }
-    my Array:D[Str:D] @names = blocks(<names-files>, <names-strings>);
-    my Array:D[Str:D] @nouns = blocks(<nouns-files>, <nouns-strings>);
+    my Array:D[Str:D] @name-groups = blocks(<names>, <name>);
+    my Array:D[Str:D] @noun-groups = blocks(<nouns>, <noun>);
 
-    self.bless(:@names, :@nouns, |%args);
+    # Note: Coersion to a Map prevents odd double nesting on list arguments
+    self.bless(:@name-groups, :@noun-groups, |%args.Map);
   }
 
   method fix(BibScrape::BibTeX::Entry:D $entry is copy --> BibScrape::BibTeX::Entry:D) {
@@ -189,14 +190,14 @@ class Fix {
 
     # Keep proper nouns capitalized
     update($entry, 'title', {
-      for @.nouns -> Str:D @noun-group {
+      for @.noun-groups -> Str:D @noun-group {
         for @noun-group -> Str:D $noun {
           my Str:D $noun-no-brace = $noun.subst(rx/ <[{}]> /, '', :g);
           s:g/ « [$noun | $noun-no-brace] » /{@noun-group.head}/;
         }
       }
 
-      for @.nouns -> Str:D @noun-group {
+      for @.noun-groups -> Str:D @noun-group {
         for @noun-group -> Str:D $noun {
           my Str:D $noun-no-brace = $noun.subst(rx/ <[{}]> /, '', :g);
           for m:i:g/ « [$noun | $noun-no-brace] » / {
@@ -222,7 +223,7 @@ class Fix {
         update($entry, $field, {
           $_ = rec(from-xml("<root>{$_}</root>").root.nodes);
           s:g/" "* \xA0/\xA0/; # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
-          $_ = unicode2tex($_, ignore => rx/<[_^{}\\\$]>/); # NOTE: Ignores LaTeX introduced by translation from XML
+          $_ = unicode2tex($_, :ignore(rx/<[_^{}\\\$]>/)); # NOTE: Ignores LaTeX introduced by translation from XML
         });
       }
     }
@@ -330,7 +331,7 @@ class Fix {
     NAME:
     for @names -> Str:D $name {
       my Str:D $flattened-name = flatten-name($name);
-      for @.names -> Str:D @name-group {
+      for @.name-groups -> Str:D @name-group {
         for @name-group -> Str:D $n {
           if $flattened-name.fc eq flatten-name($n).fc {
             push @new-names, @name-group.head.Str;

@@ -17,7 +17,7 @@ class WebDriver {
     return;
   }
 
-  submethod BUILD(Bool:D :$show-window --> Any:U) {
+  submethod BUILD(Bool:D :$window --> Any:U) {
     use variables :_; # Otherwise we get: Cannot find method '!highwater' on object of type FakeOfType
     require Inline::Python; # Must be the last import (otherwise we get: Cannot find method 'EXISTS-KEY' on 'BOOTHash': no method cache and no .^find_method)
 
@@ -43,7 +43,7 @@ class WebDriver {
 
         opt = options.Options()
         # Run without showing a browser window
-        opt.headless = not $show-window
+        opt.headless = not $window
 
         return webdriver.Firefox(
           firefox_profile = profile,

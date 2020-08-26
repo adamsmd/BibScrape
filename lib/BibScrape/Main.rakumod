@@ -344,10 +344,10 @@ practices.
   @nouns = @nouns.map(default-file('Nouns', $nouns-filename));
 
   my BibScrape::Fix::Fix:D $fixer = BibScrape::Fix::Fix.new(
-    names-files => @names,
-    names-strings => @name,
-    nouns-files => @nouns,
-    nouns-strings => @noun,
+    :@names,
+    :@name,
+    :@nouns,
+    :@noun,
     :$scrape,
     :$fix,
     :$escape-acronyms,
@@ -365,7 +365,7 @@ practices.
 
   for @url -> Str:D $arg {
     sub scr(Str:D $url --> BibScrape::BibTeX::Entry:D) {
-      scrape($url, show-window => $window, browser-timeout => $timeout);
+      scrape($url, :$window, :$timeout);
     }
     sub fix(Str:D $key, BibScrape::BibTeX::Entry:D $entry is copy --> Any:U) {
       if $fix { $entry = $fixer.fix($entry) }
