@@ -304,15 +304,15 @@ class Fix {
       if m/^$/ {
         $_ = Str
       } elsif m:i/^ (<[0..9x\-\ ]>+) " (Print) " (<[0..9x\-\ ]>+) " (Online)" $/ {
-        given $print_or_online {
+        $_ = do given $print_or_online {
           when print {
-            $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep);
+            &canonical($0.Str, $.isbn-type, $.isbn-sep);
           }
           when online {
-            $_ = &canonical($1.Str, $.isbn-type, $.isbn-sep);
+            &canonical($1.Str, $.isbn-type, $.isbn-sep);
           }
           when both {
-            $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep)
+            &canonical($0.Str, $.isbn-type, $.isbn-sep)
               ~ ' (Print) '
               ~ &canonical($1.Str, $.isbn-type, $.isbn-sep)
               ~ ' (Online)';
