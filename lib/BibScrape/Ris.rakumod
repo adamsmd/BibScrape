@@ -26,7 +26,7 @@ sub ris-parse(Str:D $text --> Ris:D) is export {
       $list[$list.end] ~= "\n" ~ $line;
     }
   }
-  Ris.new(fields => %fields);
+  Ris.new(:%fields);
 }
 
 my Str:D %ris-types = <

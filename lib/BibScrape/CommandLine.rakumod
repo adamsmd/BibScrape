@@ -14,7 +14,7 @@ class Param {
   method new(Parameter:D $parameter --> Param:D) {
     my Str:D $name = ($parameter.name ~~ /^ "{$parameter.sigil}{$parameter.twigil}" (.*) $/).[0].Str;
     my Any:_ $default = $parameter.default && ($parameter.default)();
-    self.bless(parameter => $parameter, name => $name, default => $default, doc => $parameter.WHY);
+    self.bless(:$parameter, :$name, :$default, doc => $parameter.WHY);
   }
 }
 

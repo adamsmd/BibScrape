@@ -12,13 +12,13 @@ class Piece {
   has Str:D $.piece is required;
   has Quotation:D $.quotation is required;
   multi method new(Str:D $piece, Quotation:D $quotation = Braces --> Piece:D) {
-    self.bless(piece => $piece, quotation => $quotation);
+    self.bless(:$piece, :$quotation);
   }
   multi method new(Piece:D $piece --> Piece:D) {
     $piece;
   }
   multi method new(Int:D $piece --> Piece:D) {
-    self.bless(piece => $piece.Str, quotation => Bare);
+    self.bless(:$piece.Str, quotation => bare);
   }
   method Str(--> Str:D) {
     given $.quotation {

@@ -74,7 +74,7 @@ class Fix {
     my Array:D[Str:D] @names = blocks(<names-files>, <names-strings>);
     my Array:D[Str:D] @nouns = blocks(<nouns-files>, <nouns-strings>);
 
-    self.bless(names => @names, nouns => @nouns, |%args);
+    self.bless(:@names, :@nouns, |%args);
   }
 
   method fix(BibScrape::BibTeX::Entry:D $entry is copy --> BibScrape::BibTeX::Entry:D) {

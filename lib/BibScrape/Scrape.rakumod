@@ -16,7 +16,7 @@ END { if $web-driver.defined { $web-driver.close(); } }
 
 sub scrape(Str:D $url is copy, Bool:D :$show-window, Num:D :$browser-timeout --> BibScrape::BibTeX::Entry:D) is export {
   $web-driver =
-    BibScrape::WebDriver::WebDriver.new(show-window => $show-window, browser-timeout => $browser-timeout);
+    BibScrape::WebDriver::WebDriver.new(:$show-window, :$browser-timeout);
   LEAVE { $web-driver.close(); }
   $web-driver.set_page_load_timeout($browser-timeout);
 

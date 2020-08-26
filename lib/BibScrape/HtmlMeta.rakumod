@@ -17,13 +17,13 @@ sub html-meta-parse(BibScrape::WebDriver::WebDriver:D $web-driver --> HtmlMeta:D
 #     $text =~ s/<meta name="citation_journal_title" content="ACM SIGPLAN Notices">[^\n]*//
 #         if $text =~ m/<meta name="citation_conference"/;
 
-  my Array:D[Str:D] %entries =
+  my Array:D[Str:D] %fields =
     $web-driver
     .find_elements_by_css_selector( 'meta[name]' )
     .classify({ .get_attribute( 'name' ) }, :as{ .get_attribute( 'content' ) })
     .pairs
     .map({ $_.key => Array[Str:D](@($_.value)) });
-  return HtmlMeta.new(fields => %entries);
+  return HtmlMeta.new(:%fields);
 }
 
 sub html-meta-type(HtmlMeta:D $html-meta --> Str:_) is export {
