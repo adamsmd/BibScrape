@@ -28,6 +28,8 @@ sub MAIN(
 ;Use --/flag, --flag=false, --flag=no, --flag=n, --flag=off or --flag=0
 ;to set a boolean flag to False.
 ;
+;Arguments to boolean flags (e.g., 'true', 'yes', etc.) are case insensitive.
+;
 ;----------------
 ;LIST FLAGS
 ;----------------
@@ -210,28 +212,28 @@ practices.
   #={In titles, enclose sequences of two or more uppercase letters (i.e.,
     an acronym) in braces so that BibTeX preserves their case.}
 
-  BibScrape::Fix::MediaType:D :$issn-media = BibScrape::Fix::Both,
+  BibScrape::Fix::MediaType:D :$issn-media = BibScrape::Fix::both,
   #={When both a print and an online ISSN are available:
     ;
-    ;- if <MediaType> is "Print", use only the print ISSN,
-    ;- if <MediaType> is "Online", use only the online ISSN,
-    ;- if <MediaType> is "Both", use both the print and the online ISSN
+    ;- if <MediaType> is "print", use only the print ISSN,
+    ;- if <MediaType> is "online", use only the online ISSN,
+    ;- if <MediaType> is "both", use both the print and the online ISSN
     ;;
     If only one ISSN is available, this option is ignored.}
 
-  BibScrape::Fix::MediaType:D :$isbn-media = BibScrape::Fix::Both,
+  BibScrape::Fix::MediaType:D :$isbn-media = BibScrape::Fix::both,
   #={When both a print and an online ISBN are available:
 
-    ;- if <MediaType> is "Print", use only the print ISBN,
-    ;- if <MediaType> is "Online", use only the online ISBN,
-    ;- if <MediaType> is "Both", use both the print and the online ISBN
+    ;- if <MediaType> is "print", use only the print ISBN,
+    ;- if <MediaType> is "online", use only the online ISBN,
+    ;- if <MediaType> is "both", use both the print and the online ISBN
     ;;
     If only one ISBN is available, this option is ignored.}
 
-  BibScrape::Isbn::IsbnType:D :$isbn-type = BibScrape::Isbn::Preserve,
-  #={- If <IsbnType> is "Isbn13", always convert ISBNs to ISBN-13
-    ;- If <IsbnType> is "Isbn10", when possible convert ISBns to ISBN-10
-    ;- If <IsbnType> is "Preserve", do not convert ISBNs.}
+  BibScrape::Isbn::IsbnType:D :$isbn-type = BibScrape::Isbn::preserve,
+  #={- If <IsbnType> is "isbn13", always convert ISBNs to ISBN-13
+    ;- If <IsbnType> is "isbn10", when possible convert ISBns to ISBN-10
+    ;- If <IsbnType> is "preserve", do not convert ISBNs.}
 
   Str:D :$isbn-sep = '-',
   #={The string to separate parts of an ISBN.

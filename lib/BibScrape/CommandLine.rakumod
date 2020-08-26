@@ -157,6 +157,15 @@ sub ARGS-TO-CAPTURE(Sub:D $main, @str-args is copy where { $_.all ~~ Str:D }--> 
           default { die "Could not parse argument to boolean flag: $value-str"; }
         }
       }
+      when Enumeration {
+        my Any:D %enums = $type.enums;
+        my Int:_ $enum =
+          %enums{$value-str}
+          // %enums.map({ $_.key.fc => $_.value }).Hash{$value-str.fc} # Case insensitive lookup
+          // Int;
+        if $enum.defined { $type($enum) }
+        else { die "Count not parse argument to {$type.^name} enumeration flag: $value-str" }
+      }
       when IO::Path { $value-str.IO } # IO::Path isn't callable for some reason
       default { $type($value-str) }
     }

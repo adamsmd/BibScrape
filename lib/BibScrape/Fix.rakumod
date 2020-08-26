@@ -12,7 +12,7 @@ use BibScrape::Month;
 use BibScrape::Names;
 use BibScrape::Unicode;
 
-enum MediaType <Print Online Both>;
+enum MediaType <print online both>;
 
 sub check(BibScrape::BibTeX::Entry:D $entry, Str:D $field, Str:D $msg, &check --> Any:U) {
   if ($entry.fields{$field}:exists) {
@@ -303,17 +303,19 @@ class Fix {
       if m/^$/ {
         $_ = Str
       } elsif m:i/^ (<[0..9x\-\ ]>+) " (Print) " (<[0..9x\-\ ]>+) " (Online)" $/ {
-        if $print_or_online eqv Print {
-          $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep);
-        }
-        if $print_or_online eqv Online {
-          $_ = &canonical($1.Str, $.isbn-type, $.isbn-sep);
-        }
-        if $print_or_online eqv Both {
-          $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep)
-            ~ ' (Print) '
-            ~ &canonical($1.Str, $.isbn-type, $.isbn-sep)
-            ~ ' (Online)';
+        given $print_or_online {
+          when print {
+            $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep);
+          }
+          when online {
+            $_ = &canonical($1.Str, $.isbn-type, $.isbn-sep);
+          }
+          when both {
+            $_ = &canonical($0.Str, $.isbn-type, $.isbn-sep)
+              ~ ' (Print) '
+              ~ &canonical($1.Str, $.isbn-type, $.isbn-sep)
+              ~ ' (Online)';
+          }
         }
       } else {
         $_ = &canonical($_, $.isbn-type, $.isbn-sep);

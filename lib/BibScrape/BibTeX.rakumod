@@ -7,11 +7,11 @@ use variables :D;
 
 use ArrayHash;
 
-enum Quotation <Bare Braces Quotes>;
+enum Quotation <bare braces quotes>;
 class Piece {
   has Str:D $.piece is required;
   has Quotation:D $.quotation is required;
-  multi method new(Str:D $piece, Quotation:D $quotation = Braces --> Piece:D) {
+  multi method new(Str:D $piece, Quotation:D $quotation = braces --> Piece:D) {
     self.bless(:$piece, :$quotation);
   }
   multi method new(Piece:D $piece --> Piece:D) {
@@ -22,9 +22,9 @@ class Piece {
   }
   method Str(--> Str:D) {
     given $.quotation {
-      when Bare { $.piece }
-      when Braces { "\{$.piece\}" }
-      when Quotes { "\"$.piece\"" }
+      when bare { $.piece }
+      when braces { "\{$.piece\}" }
+      when quotes { "\"$.piece\"" }
     }
   }
 }
@@ -166,9 +166,9 @@ class Actions {
 
   method value($/) { make Value.new(Array[Piece].new($<piece>».made)); }
   method piece($/) { make ($<bare> // $<braces> // $<quotes>).made; }
-  method bare($/) { make Piece.new(piece => $/.Str, quotation => Bare); }
-  method braces($/) { make Piece.new(piece => $/[0].Str, quotation => Braces); }
-  method quotes($/) { make Piece.new(piece => $/[0].Str, quotation => Quotes); }
+  method bare($/) { make Piece.new(piece => $/.Str, quotation => bare); }
+  method braces($/) { make Piece.new(piece => $/[0].Str, quotation => braces); }
+  method quotes($/) { make Piece.new(piece => $/[0].Str, quotation => quotes); }
 }
 
 sub bibtex-parse(Str:D $str --> Database:D) is export {

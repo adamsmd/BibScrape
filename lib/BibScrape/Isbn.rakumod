@@ -8,7 +8,7 @@ use variables :D;
 
 use XML;
 
-enum IsbnType <Isbn13 Isbn10 Preserve>;
+enum IsbnType <isbn13 isbn10 preserve>;
 
 class Rule {
   has Str:D $.start is required;
@@ -117,8 +117,8 @@ sub canonical-isbn(Str:D $isbn, IsbnType:D $type, Str:D $sep --> Str:D) is expor
   # By this point we know it is a valid ISBN-13 w/o dashes but with a possibly wrong check digit
   $i = hyphenate($i);
 
-  if ($type eqv Isbn13
-      or $type eqv Preserve and $was-isbn13
+  if ($type eqv isbn13
+      or $type eqv preserve and $was-isbn13
       or $i !~~ s/^ '978-' //) {
     my Str:D $check = check-digit13($i);
     $i ~~ s/ . $/$check/;
@@ -132,19 +132,19 @@ sub canonical-isbn(Str:D $isbn, IsbnType:D $type, Str:D $sep --> Str:D) is expor
   return $i;
 }
 
-#print canonical-isbn('0-201-53082-1', Preserve, ''), "\n";
-#print canonical-isbn('0-201-53082-1', Preserve, '-'), "\n";
-#print canonical-isbn('0-201-53082-1', Isbn13, ''), "\n";
-#print canonical-isbn('0-201-53082-1', Isbn13, '-'), "\n";
+#print canonical-isbn('0-201-53082-1', preserve, ''), "\n";
+#print canonical-isbn('0-201-53082-1', preserve, '-'), "\n";
+#print canonical-isbn('0-201-53082-1', isbn13, ''), "\n";
+#print canonical-isbn('0-201-53082-1', isbn13, '-'), "\n";
 #
-#print canonical-isbn('978-1-56619-909-4', Preserve, ''), "\n";
-#print canonical-isbn('978-1-56619-909-4', Preserve, '-'), "\n";
-#print canonical-isbn('978-1-56619-909-4', Isbn13, ''), "\n";
-#print canonical-isbn('978-1-56619-909-4', Isbn13, '-'), "\n";
+#print canonical-isbn('978-1-56619-909-4', preserve, ''), "\n";
+#print canonical-isbn('978-1-56619-909-4', preserve, '-'), "\n";
+#print canonical-isbn('978-1-56619-909-4', isbn13, ''), "\n";
+#print canonical-isbn('978-1-56619-909-4', isbn13, '-'), "\n";
 #
-#print canonical-isbn('979-10-00-12222-9', Preserve, ''), "\n";
-#print canonical-isbn('979-10-00-12222-9', Preserve, '-'), "\n";
-#print canonical-isbn('979-10-00-12222-9', Preserve, ' '), "\n";
-#print canonical-isbn('979-10-00-12222-9', Isbn13, ''), "\n";
-#print canonical-isbn('979-10-00-12222-9', Isbn13, '-'), "\n";
-#print canonical-isbn('979-10-00-12222-9', Isbn13, ' '), "\n";
+#print canonical-isbn('979-10-00-12222-9', preserve, ''), "\n";
+#print canonical-isbn('979-10-00-12222-9', preserve, '-'), "\n";
+#print canonical-isbn('979-10-00-12222-9', preserve, ' '), "\n";
+#print canonical-isbn('979-10-00-12222-9', isbn13, ''), "\n";
+#print canonical-isbn('979-10-00-12222-9', isbn13, '-'), "\n";
+#print canonical-isbn('979-10-00-12222-9', isbn13, ' '), "\n";
