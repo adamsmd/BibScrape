@@ -66,9 +66,16 @@ See `bibscrape --help` or `HELP.txt`
 
 - Checks that the `number` field is sane.
 
-- TODO: ISSN
+- Converts the `isbn` field to ISBN-13 or ISBN-10 depending on the
+  `--isbn-type` flag.
 
-- TODO: ISBN
+- Checks that the `isbn` field has a proper checksum.
+
+- Selects the print or online `isbn` depending on the `--isbn-media` flag.
+
+- Checks that the `issn` field has a proper checksum.
+
+- Selects the print or online `issn` depending on the `--issn-media` flag.
 
 - Expands language codes (e.g., `en`) in the `language` field into their full
   name (e.g., `English`).
