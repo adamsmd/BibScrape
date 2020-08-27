@@ -2,7 +2,8 @@
 
 ## Command line interface
 
-See `bibscrape --help` or `HELP.txt`
+For details on any of the following options see `bibscrape --help` or
+`HELP.txt`.
 
 - Takes multiple URLs or filenames as input.
 
@@ -10,7 +11,7 @@ See `bibscrape --help` or `HELP.txt`
 
   - Files are read for BibTeX entries to update.
 
-  - On the filename `-`, reads BibTeX entries from standard input.
+  - When the filename is `-`, reads BibTeX entries from standard input.
 
 - Explicit keys to use in the output can be specified with the `--key` flag.
 
@@ -36,24 +37,20 @@ See `bibscrape --help` or `HELP.txt`
 
 - Has a configurable ISBN separator.  See `--isbn-sep`.
 
-- The list of known fields and their order can be modified with the `--field`
-  flag.
+- The order of fields can be controlled.  See `--field`.
 
-- The list of fields to not LaTeX encode can be modified with the `--no-encode`
-  flag.
+- Fields can be excluded from LaTeX encoding.  See `--no-encode`.
 
-- The list of fields to omit from the output can be modified with the `--omit`
-  flag.
+- Fields can be explicitly omitted.  See `--omit`.
 
-- The list of fields to omit from the output when those fields are empty can be
-  modified with the `--omit-empty` flag.
+- Fields can be omitted if they are empty.  See `--omit-empty` flag.
 
 ## BibTeX Fixes
 
 - Removes `http://doi.org`, `doi:` and similar from the front of the `doi`
   field.
 
-- Removed `p.` and `pp.` from the front of the `pages` field.
+- Removes `p.` and `pp.` from the front of the `pages` field.
 
 - Renames the `issue` and `keyword` fields (which are used by Springer and ACM)
   to `number` and `keywords` respectively.
@@ -69,11 +66,11 @@ See `bibscrape --help` or `HELP.txt`
 - Converts the `isbn` field to ISBN-13 or ISBN-10 depending on the
   `--isbn-type` flag.
 
-- Checks that the `isbn` field has a proper checksum.
+- Checks that the `isbn` field has a correct checksum.
 
 - Selects the print or online `isbn` depending on the `--isbn-media` flag.
 
-- Checks that the `issn` field has a proper checksum.
+- Checks that the `issn` field has a correct checksum.
 
 - Selects the print or online `issn` depending on the `--issn-media` flag.
 
@@ -93,16 +90,18 @@ See `bibscrape --help` or `HELP.txt`
 
 - Puts the `series` field in a canonical form (e.g., `PEPM~'97`).
 
-- Collapses multiple spaces or newlines into a single character for all fields
+- Collapses multiple spaces or newlines into a single space for all fields
   except the ones listed in `--no-collapse`.
 
-- In the `title` field, wraps acronyms (i.e., two or more uppercase characters
+- In the `title` field, wraps acronyms (e.g., two or more uppercase characters
   in a row) with braces so BibTeX doesn't lowercase them.  Can be disabled with
   `--/escape-acronyms`.
 
 - TODO: nouns
 
-- Makes the `month` field use the BibTeX month macros (e.g., `jun` without
+- TODO: names
+
+- Makes the `month` field use the BibTeX month macros (e.g., `feb` without
   braces or quotes around it).
 
 - Removes any fields listed in `--omit`.
@@ -119,6 +118,8 @@ See `bibscrape --help` or `HELP.txt`
 - Warns about unknown field types.
 
 - Warns about duplicated fields.
+
+## BibTeX Scraping
 
 - Collects information from the HTML of a page in addition to the BibTeX export
   offered by a page.  For example, getting a title with correct formatting.
