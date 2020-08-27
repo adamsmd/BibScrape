@@ -18,9 +18,9 @@ See https://github.com/adamsmd/BibScrape/README.md for more details.
 ;}
 sub MAIN(
 #={
- ----------------
+ ------------------------
 ;BOOLEAN FLAGS
-;----------------
+;------------------------
 ;
 ;Use --flag, --flag=true, --flag=yes, --flag=y, --flag=on or --flag=1
 ;to set a boolean flag to True.
@@ -30,9 +30,9 @@ sub MAIN(
 ;
 ;Arguments to boolean flags (e.g., 'true', 'yes', etc.) are case insensitive.
 ;
-;----------------
+;------------------------
 ;LIST FLAGS
-;----------------
+;------------------------
 ;
 ;Use --flag=<value> to add a value to a list flag.
 ;
@@ -42,9 +42,9 @@ sub MAIN(
 ;
 ;Use --/flag= to set a list flag to its default list.
 ;
-;----------------
+;------------------------
 ;NAMES
-;----------------
+;------------------------
 ;;
 BibScrape warns the user about author and editor names that publishers often get
 wrong.  For example, some publisher assume the last name of Simon Peyton Jones
@@ -90,13 +90,13 @@ This collection of name formats was chosen based the list of all authors in
 DBLP and tries to strike a ballance between names that publishers are unlikely
 to get wrong and prompting the user about too many names.
 ;
-;----------------
+;------------------------
 ;NAMES FILES
-;----------------
+;------------------------
 ;;
-A names file specifies the correct form for author names.
+Names files specify the correct form for author names.
 ;;
-A names file is plain text in Unicode format.
+Names files are plain text in Unicode format.
 Anything after # (hash) is a comment.
 Blank or whitespace-only lines separate blocks, and
 blocks consist of one or more lines.
@@ -105,28 +105,29 @@ Lines other than the first one are aliases that should be converted to the
 canonical form.
 ;;
 When searching for a name, case distinctions and divisions of the name into
-parts (e.g., first vs last name) are ignored as publishers often get these
+parts (e.g., first versus last name) are ignored as publishers often get these
 wrong (e.g., "Van Noort" will match "van Noort" and "Jones, Simon Peyton" will
 match "Peyton Jones, Simon").
 ;;
-The default name file provides several examples with comments and recommended
+The default names file provides several examples with comments and recommended
 practices.
 ;
-;----------------
+;------------------------
 ;NOUNS FILES
-;----------------
+;------------------------
 ;;
-A nouns file specifies words that should be protected from lower-casing by
-inserting curly braces into the output BibTeX.
+Nouns files specify words in titles that should be wrapped in curly braces so
+that BibTeX does not convert them to lowercase.
 ;;
-A nouns file is plain text in Unicode format.
+Nouns files are plain text in Unicode format.
 Anything after # (hash) is a comment.
 Blank or whitespace-only lines separate blocks, and
 blocks consist of one or more lines.
 The first line in a block is the canonical/correct form for a noun.
-Typically, this first line includes curly braches,
-which tell BibTeX to not change the captalization of a particular part of a text.
+Typically, this first line includes curly braces,
+which tell BibTeX to not change the capitalization the text wrapped by the curly braces.
 Lines other than the first one are aliases that should be converted to the canonical form.
+;;
 Lines (including the first line) match both with and without the curly braces in them.
 Matching is case sensitive.
 ;;
@@ -135,104 +136,107 @@ practices.
 }
 
   #|{
-   ----------------
+   ------------------------
   ;INPUTS
-  ;----------------
+  ;------------------------
   ;}
 
-  Str:D @url,
-  #={The publisher's page to be scraped or the filename of a BibTeX
-    file to be read to find BibTeX entries to rescrape or fix.
+  Str:D @arg,
+  #={The publisher's pages to be scraped or a BibTeX files to be read and
+    re-scraped or fixed.
     ;
-    ;- If it starts with 'http:' or 'https:', it is interpreted as a URL.
-    ;- If it starts with 'doi:', it is interpreted as a DOI.
-    ;- If it is '-', BibTeX entries are read from standard input.
-    ;- Otherwise, it is a filename from which BibTeX entries are read.}
+    ;- If an <arg> starts with 'http:' or 'https:', it is interpreted as a URL.
+    ;- If an <arg> starts with 'doi:', it is interpreted as a DOI.
+    ;- If an <arg> is '-', BibTeX entries are read from standard input.
+    ;- Otherwise, an <arg> is a filename from which BibTeX entries are read.}
 
   Str:D :k(:@key) = Array[Str:D](< >) but Sep[','],
-  #={Specify the keys to use in the output BibTeX.
+  #={Keys to use in the output BibTeX.
     ;;
-    Successive keys are used for succesive BibTeX entries.
+    Successive keys are used for successive BibTeX entries.
     ;;
-    If omitted or an empty string, the key will be automatically generated or
-    copied from the existing BibTeX entry.}
+    If omitted or an empty string, the key will be copied from the existing
+    BibTeX entry or automatically generated if there is no existing BibTeX
+    entry.}
 
   IO::Path:D :@names = Array[IO::Path:D](<.>.IO) but Sep[';'],
-  #={Add to the list of names files.
-    See the NAMES FILES section for details.
+  #={The names files to use.
+    See the NAMES FILES and LIST FLAGS sections for details.
     The file name "." means "names.cfg" in the user-configuration directory.}
 
   Str:D :@name = Array[Str:D].new(),
-  #={Add to the list of names as if <Str> were the content of a names file.
+  #={Treat <Str> as if it were the content of a names file.
     See the NAMES FILES section for details about names files.
-    Semicolons are interpreted as newlines.}
+    Semicolons in <Str> are interpreted as newlines.}
 
   IO::Path:D :@nouns = Array[IO::Path:D](<.>.IO) but Sep[';'],
-  #={Add to the list of nouns files.
-    See the NOUNS FILES section for details.
+  #={The nouns files to use.
+    See the NOUNS FILES and LIST FLAGS sections for details.
     The file name "." means "nouns.cfg" in the user-configuration directory.}
 
   Str:D :@noun = Array[Str:D].new(),
-  #={Add to the list of nouns as if <Str> were the content of a nouns file.
+  #={Treat <Str> as if it were the content of a nouns file.
     See the NOUNS FILES section for details about nouns files.
-    Semicolons are interpreted as newlines.}
+    Semicolons in <Str> are interpreted as newlines.}
 
   #|{
-   ----------------
+   ------------------------
   ;OPERATING MODES
-  ;----------------
+  ;------------------------
   ;}
 
   Bool:D :$init = False,
-  #={Create the default names and nouns files.}
+  #={Create default names and nouns files in the user-configuration directory.}
 
   Bool:D :$config-dir = False,
   #={Print the location of the user-configuration directory.}
 
   Bool:D :S(:$scrape) = True,
-  #={Scrape the BibTeX entry from the publisher's page}
+  #={Scrape BibTeX entries from publisher's pages.}
 
   Bool:D :F(:$fix) = True,
-  #={Fix common BibTeX mistakes}
+  #={Fix mistakes found in BibTeX entries.}
 
   #|{
-   ----------------
+   ------------------------
   ;GENERAL OPTIONS
-  ;----------------
+  ;------------------------
   ;}
 
   Bool:D :w(:$window) = False,
-  #={Show the browser window while scraping.  (This is usefull for debugging or
-    if BibScrape unexpectedly hangs.)}
+  #={Show the browser window while scraping.  This is useful for debugging or
+    determining why BibScrape hangs on a particular publisher's page.}
 
   Num:D :t(:$timeout) = 60.Num,
-  #={Browser timeout in seconds for individual page loads}
+  #={Browser timeout in seconds for individual page loads.}
 
   Bool:D :$escape-acronyms = True,
-  #={In titles, enclose sequences of two or more uppercase letters (i.e.,
-    an acronym) in braces so that BibTeX preserves their case.}
+  #={In BibTeX titles, enclose detected acronyms (e.g., sequences of two or more
+  uppercase letters) in braces so that BibTeX preserves their case.}
 
   BibScrape::Fix::MediaType:D :$issn-media = BibScrape::Fix::both,
-  #={When both a print and an online ISSN are available:
+  #={Whether to use print or online ISSNs.
     ;
-    ;- if <MediaType> is "print", use only the print ISSN,
-    ;- if <MediaType> is "online", use only the online ISSN,
-    ;- if <MediaType> is "both", use both the print and the online ISSN
+    ;- If <MediaType> is "print", use only the print ISSN.
+    ;- If <MediaType> is "online", use only the online ISSN.
+    ;- If <MediaType> is "both", use both the print and online ISSNs.
     ;;
-    If only one ISSN is available, this option is ignored.}
+    If only one type of ISSN is available, this option is ignored.}
 
   BibScrape::Fix::MediaType:D :$isbn-media = BibScrape::Fix::both,
-  #={When both a print and an online ISBN are available:
-
-    ;- if <MediaType> is "print", use only the print ISBN,
-    ;- if <MediaType> is "online", use only the online ISBN,
-    ;- if <MediaType> is "both", use both the print and the online ISBN
+  #={Whether to use print or online ISBNs.
+    ;
+    ;- If <MediaType> is "print", use only the print ISBN.
+    ;- If <MediaType> is "online", use only the online ISBN.
+    ;- If <MediaType> is "both", use both the print and online ISBNs.
     ;;
-    If only one ISBN is available, this option is ignored.}
+    If only one type of ISBN is available, this option is ignored.}
 
   BibScrape::Isbn::IsbnType:D :$isbn-type = BibScrape::Isbn::preserve,
-  #={- If <IsbnType> is "isbn13", always convert ISBNs to ISBN-13
-    ;- If <IsbnType> is "isbn10", when possible convert ISBns to ISBN-10
+  #={Whether to convert ISBNs to ISBN-13 or ISBN-10.
+    ;
+    ;- If <IsbnType> is "isbn13", always convert ISBNs to ISBN-13.
+    ;- If <IsbnType> is "isbn10", convert ISBNs to ISBN-10 but only if possible.
     ;- If <IsbnType> is "preserve", do not convert ISBNs.}
 
   Str:D :$isbn-sep = '-',
@@ -242,18 +246,18 @@ practices.
 
   # Haven't found any use for this yes, but leaving it here in case we ever do
   #  Bool:D :v(:$verbose) = False,
-  ##={Print verbose output}
+  ##={Print verbose output.}
 
   Bool:D :V(:$version) = False,
-  #={Print version information}
+  #={Print version information.}
 
   Bool:D :h(:$help) = False,
-  #={Print this usage message}
+  #={Print this usage message.}
 
   #|{
-   ----------------
-  ;FIELD OPTIONS
-  ;----------------
+   ------------------------
+  ;BIBTEX FIELD OPTIONS
+  ;------------------------
   ;}
 
   Str:D :f(:@field) = Array[Str:D](<
@@ -266,19 +270,20 @@ practices.
     language isbn issn doi url eprint bib_scrape_url
     note annote keywords abstract>)
     but Sep[','],
-  #={Known BibTeX fields in the order that they should appear in the output}
+  #={The order that fields should placed in the output.}
 
   Str:D :@no-encode = Array[Str:D](<doi url eprint bib_scrape_url>) but Sep[','],
-  #={Fields that should not be LaTeX encoded}
+  #={Fields that should not be LaTeX encoded.}
 
   Str:D :@no-collapse = Array[Str:D](< >) but Sep[','],
-  #={Fields that should not have their whitespace collapsed}
+  #={Fields that should not have multiple successive whitespaces collapsed into a
+  single whitespace.}
 
   Str:D :o(:@omit) = Array[Str:D](< >) but Sep[','],
-  #={Fields that should be omitted from the output}
+  #={Fields that should be omitted from the output.}
 
   Str:D :@omit-empty = Array[Str:D](<abstract issn doi keywords>) but Sep[','],
-  #={Fields that should be omitted from the output if they are empty}
+  #={Fields that should be omitted from the output if they are empty.}
 
 --> Any:U
 ) is export {
@@ -363,7 +368,7 @@ practices.
     :@omit-empty,
   );
 
-  for @url -> Str:D $arg {
+  for @arg -> Str:D $arg {
     sub scr(Str:D $url --> BibScrape::BibTeX::Entry:D) {
       scrape($url, :$window, :$timeout);
     }

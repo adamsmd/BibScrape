@@ -75,11 +75,44 @@ Nil
 
 Inline::Python Crash
 
+unit sub MAIN(
+  Str   $file where *.IO.f = 'file.dat',
+  Int  :$length = 24,
+  Bool :$verbose,
+);
+
+test with enum flag
+
+perl 6 strict keyword args
+
+In Spell, factor out proc generation
+
+MainNounGen: stage1
+
+t/ folder
+
+Check list of omit if empty
+
 ### Other
 
 XPath
 
 ### Names and Nouns
+
+k{b}
+{K}{b}
+k{B}
+{K}{B}
+
+GHz
+
+{B} for all except A?
+
+"SourceForge": detect caps after first
+
+Double check these name formats
+- d'Xxxx
+- deXxxx
 
 Author names database
 

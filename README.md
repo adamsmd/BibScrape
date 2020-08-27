@@ -22,9 +22,9 @@ In addition, this scraper fixes common problems with the BibTeX entries that
 these publishers produce.  For example, it fixes:
 
 - the handling of Unicode and other formatting (e.g., subscripts) in titles;
-- the incorrect use of the 'issue' field instead of the 'number' field;
-- the format of the 'doi' and 'pages' fields;
-- the use of macros for the 'month' field; and
+- the incorrect use of the `issue` field instead of the `number` field;
+- the format of the `doi` and `pages` fields;
+- the use of macros for the `month` field; and
 - *numerous* miscellaneous problems with specific publishers.
 
 For a complete list of features and fixes see [`FEATURES.md`](FEATURES.md).
@@ -65,7 +65,7 @@ For example:
 
 You could also run the following to get the same result:
 
-    $ bibscrape 'doi:10.1145/1614431.1614435'
+    bibscrape 'doi:10.1145/1614431.1614435'
 
 See the files in [`tests/`](tests) for more examples and what their outputs look
 like.  (The first three lines of those files are metadata.  Outputs start on the
@@ -97,16 +97,16 @@ accidentally DoS the publisher.
   loaded, and publisher pages can be slow.  As a result, BibScrape takes around
   10-30 seconds per BibTeX entry.
 
-- Always double check the "title", "author" and "abstract" fields in the output
-  BibTeX.  Other fields will generally be right, but publishers sometimes do
-  strange things with LaTeX, Unicode or unusually formatted names.  Though
+- Always manually check the `title`, `author` and `abstract` fields in the
+  output BibTeX.  Other fields will generally be right, but publishers sometimes
+  do strange things with LaTeX, Unicode or uncommon name formats.  Though
   BibScrape has heuristics that try to resolve these, sometimes something goes
   wrong.
 
 ## Tips
 
 - Make a habit of putting single quotes around URLs (as seen in the usage
-  examples above) in case they contain things like '&' or '?'.
+  examples above) in case they contain things like `&` or `?`.
 
 - BibScrape's version number indicates the approximate date on which the
   software was last updated.  For example, version 20.08.01 corresponds to
@@ -114,12 +114,12 @@ accidentally DoS the publisher.
   BibScrape may no longer work correctly.
 
 - Sometimes publisher pages don't load properly and an error results.  Often
-  re-running BibScrape fixes the problem.
+  times, re-running BibScrape fixes the problem.
 
 - Sometimes publisher pages stall and don't finish loading, which causes
   BibScrape to hang.  If BibScrape takes longer than 60 seconds for one BibTeX
-  entry, the publisher page has probably stalled.  Often, re-running BibScrape
-  fixes the problem.
+  entry, the publisher page has probably stalled.  Often times, re-running
+  BibScrape fixes the problem.
 
 - If a publisher page consistently hangs or errors, use `--window` to show the
   browser window and see what is going on.
@@ -131,7 +131,7 @@ accidentally DoS the publisher.
   casing, add an entry to your nouns file.  See the "NOUNS FILES" section of
   `bibscrape --help`.
 
-- By default the `url` and `doi` fields are not LaTeX escaped.  Using BibTeX
+- By default, the `url` and `doi` fields are not LaTeX escaped.  Using BibTeX
   entries with these field may thus require that your LaTeX document use the
   Latex `url` package.
 
@@ -146,13 +146,13 @@ for your platform.
 
 Run the following to install both Perl 6 and Zef.
 
-    $ sudo apt install perl6
+    sudo apt install perl6
 
 Alternatively, install [`rakubrew`](https://rakubrew.org/) (including running
 `rakubrew init` if needed) and then run the following:
 
-    $ rakubrew build
-    $ rakubrew build-zef
+    rakubrew build
+    rakubrew build-zef
 
 Whichever you do, make sure the language version is at least `6.d`, as in the
 following.
@@ -163,15 +163,15 @@ following.
 
 #### Python 3 and the Development Tools for Python 3
 
-    $ sudo apt install python3 python3-dev
+    sudo apt install python3 python3-dev
 
 #### Selenium for Python 3
 
-    $ pip3 install selenium
+    pip3 install selenium
 
 #### Firefox and `geckodriver`
 
-    $ sudo apt install firefox firefox-geckodriver
+    sudo apt install firefox firefox-geckodriver
 
 #### `Inline::Python` for Python 3
 
@@ -190,19 +190,19 @@ using the following commands:
 If you want to run BibScrape without installing it, run the following from the
 directory in which the BibScrape source resides:
 
-    $ zef install --deps-only .
+    zef install --deps-only .
 
 Then you can run BibScrape with the following where `<DIR>` is the directory in
 which the BibScrape source resides.
 
-    $ <DIR>/bin/bibscrape ...
+    <DIR>/bin/bibscrape ...
 
 ### Installed Mode
 
 If you want to install BibScrape, run the following from the directory in which
 the BibScrape source resides:
 
-    $ zef install .
+    zef install .
 
 Then you can run the `bibscrape` command from anywhere.
 
@@ -211,7 +211,7 @@ Then you can run the `bibscrape` command from anywhere.
 Every user that uses BibScrape, must run the following to creates the default
 names and nouns files.
 
-    $ bibscrape --init
+    bibscrape --init
 
 Run `bibscrape --config-dir` to find out where those files are created.
 
@@ -221,7 +221,7 @@ The [`tests/`](tests) folder contains tests for each publisher.  You can run
 them using [`test.sh`](test.sh).  For example to run all the ACM tests, run the
 following command:
 
-    $ ./test.sh tests/acm-*.t
+    ./test.sh tests/acm-*.t
 
 Note that publisher pages aren't the most reliable, so if a test fails, you
 should re-run that test to make sure it isn't a transient issue.
@@ -267,19 +267,17 @@ Please include the following information in any issues you file:
 
 ## License
 
-```
-Copyright (C) 2011-2020  Michael D. Adams <https://michaeldadams.org/>
+    Copyright (C) 2011-2020  Michael D. Adams <https://michaeldadams.org/>
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
 
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-```
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.

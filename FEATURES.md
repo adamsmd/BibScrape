@@ -58,7 +58,7 @@ See `bibscrape --help` or `HELP.txt`
 - Renames the `issue` and `keyword` fields (which are used by Springer and ACM)
   to `number` and `keywords` respectively.
 
-- Makes ranges (e.g., `pages` or `volumes` ) use `--` instead of `-`.
+- Makes ranges (e.g., `pages` or `volumes`) use `--` instead of `-`.
 
 - Checks that the `pages` field is sane.
 
@@ -96,8 +96,8 @@ See `bibscrape --help` or `HELP.txt`
 - Collapses multiple spaces or newlines into a single character for all fields
   except the ones listed in `--no-collapse`.
 
-- In the `title` field, wraps acronyms (i.e., two or more uppercase caracters in
-  a row) with braces so BibTeX doesn't lowercase them.  Can be disabled with
+- In the `title` field, wraps acronyms (i.e., two or more uppercase characters
+  in a row) with braces so BibTeX doesn't lowercase them.  Can be disabled with
   `--/escape-acronyms`.
 
 - TODO: nouns
@@ -140,10 +140,9 @@ See `bibscrape --help` or `HELP.txt`
 
 TODO:
 
-names (e.g. author, editor) should be formatted "von last, first, jr".
+Names (e.g. author, editor) should be formatted "von last, first, jr".
   This is the only unambiguous format for latex.
-  Note RIS uses "last, jr, first"
-
+  Note RIS uses "last, jr, first".
 
 Data from the publishers is often wrong.  In particular, formatting of author
 names is the biggest problem.  The data from the publishers is often
