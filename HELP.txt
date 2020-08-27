@@ -225,7 +225,7 @@ the user should double check them.
 
 The only names we do not consider possibly incorrect are those in the names
 files (see the NAMES FILE section) or those that consist of a first name,
-optional middle initial, and last name in any of the following formats:
+optional middle initial and last name in any of the following formats:
 
 First name:
 

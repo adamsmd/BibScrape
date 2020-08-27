@@ -83,6 +83,8 @@ unit sub MAIN(
 
 test with enum flag
 
+In Main, #update($item, 'title', { s:g/ <!after "\\" <-[\ {}]>+> '{' (<-[{}]>*) '}' /$0/ });
+
 perl 6 strict keyword args
 
 In Spell, factor out proc generation
@@ -92,6 +94,8 @@ MainNounGen: stage1
 t/ folder
 
 Check list of omit if empty
+
+Proofread FEATURES.md
 
 ### Other
 

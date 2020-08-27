@@ -3,7 +3,7 @@
 BibScrape is a BibTeX scraper for collecting BibTeX entries from the websites of
 computer-science academic publishers.  I use it personally to make preparing my
 BibTeX files easier, but more importantly it makes sure all entries are
-consistent. For example, it prevents having "ACM" as the publisher in one place
+consistent.  For example, it prevents having "ACM" as the publisher in one entry
 but "Association for Computing Machinery" in another.
 
 Currently, BibScrape supports the following publishers:
@@ -18,13 +18,13 @@ Currently, BibScrape supports the following publishers:
 - Science Direct / Elsevier (`sciencedirect.com` and `elsevier.com`)
 - Springer (`link.springer.com`)
 
-In addition, this scraper fixes common problems with the BibTeX entries that
-these publishers produce.  For example, it fixes:
+In addition, BibScrape fixes common problems with the BibTeX entries that these
+publishers produce.  For example, it fixes:
 
-- the handling of Unicode and other formatting (e.g., subscripts) in titles;
-- the incorrect use of the `issue` field instead of the `number` field;
-- the format of the `doi` and `pages` fields;
-- the use of macros for the `month` field; and
+- the handling of Unicode and other formatting (e.g., subscripts) in titles,
+- the incorrect use of the `issue` field instead of the `number` field,
+- the format of the `doi` and `pages` fields,
+- the use of macros for the `month` field and
 - *numerous* miscellaneous problems with specific publishers.
 
 For a complete list of features and fixes see [`FEATURES.md`](FEATURES.md).
@@ -33,11 +33,15 @@ For a complete list of features and fixes see [`FEATURES.md`](FEATURES.md).
 
 The basic usage is:
 
-    bibscrape <url> ...
+    bibscrape <arg> ...
 
-Each `<url>` is the URL of the publishers page of an article to scrape.
-Alternatively, if a `<url>` starts with `doi:`, it is interpreted as the DOI of
-an article to scrape.
+Each `<arg>` is either a publisher's pages to be scraped or a BibTeX file to be
+read and re-scraped or fixed.
+
+- If an `<arg>` starts with 'http:' or 'https:', it is interpreted as a URL.
+- If an `<arg>` starts with 'doi:', it is interpreted as a DOI.
+- If an `<arg>` is '-', BibTeX entries are read from standard input.
+- Otherwise, an `<arg>` is a filename from which BibTeX entries are read.
 
 For example:
 
@@ -67,9 +71,9 @@ You could also run the following to get the same result:
 
     bibscrape 'doi:10.1145/1614431.1614435'
 
-See the files in [`tests/`](tests) for more examples and what their outputs look
-like.  (The first three lines of those files are metadata.  Outputs start on the
-fourth line.)
+See the files in [`tests/`](tests/) for more examples and what their outputs
+look like.  (The first three lines of those files are metadata.  Outputs start
+on the fourth line.)
 
 For more details on usage and command-line flags run:
 
@@ -85,8 +89,8 @@ this software responsibly.  You are solely responsible for how you use it.
 BibScrape does not contain any bandwidth limiting code as most publisher pages
 respond slowly enough that it is usually not necessary.  However, I've only
 tested it for preparing small bibliographies with fewer than 100 entries.  If
-you try to scrape too many at a time, I make no guarantee that you won't
-accidentally DoS the publisher.
+you try to scrape too many at a time, I make no guarantee that you won't get IP
+banned or accidentally DoS the publisher.
 
 ## Limitations
 
@@ -97,11 +101,11 @@ accidentally DoS the publisher.
   loaded, and publisher pages can be slow.  As a result, BibScrape takes around
   10-30 seconds per BibTeX entry.
 
-- Always manually check the `title`, `author` and `abstract` fields in the
-  output BibTeX.  Other fields will generally be right, but publishers sometimes
-  do strange things with LaTeX, Unicode or uncommon name formats.  Though
-  BibScrape has heuristics that try to resolve these, sometimes something goes
-  wrong.
+- You should always manually check the `title`, `author` and `abstract` fields
+  in the output BibTeX.  Other fields will generally be right, but publishers
+  sometimes do strange things with LaTeX, Unicode or uncommon name formats.
+  Though BibScrape has heuristics that try to resolve these, sometimes something
+  goes wrong.
 
 ## Tips
 
@@ -124,8 +128,8 @@ accidentally DoS the publisher.
 - If a publisher page consistently hangs or errors, use `--window` to show the
   browser window and see what is going on.
 
-- If an author name is formatted wrong, add an entry to your names file. See the
-  "NAMES FILES" section of `bibscrape --help`.
+- If an author name is formatted wrong, add an entry to your names file.  See
+  the "NAMES FILES" section of `bibscrape --help`.
 
 - If a title contains a proper noun that needs to be protected from lower
   casing, add an entry to your nouns file.  See the "NOUNS FILES" section of
@@ -133,12 +137,12 @@ accidentally DoS the publisher.
 
 - By default, the `url` and `doi` fields are not LaTeX escaped.  Using BibTeX
   entries with these field may thus require that your LaTeX document use the
-  Latex `url` package.
+  `url` package.
 
 ## Setup
 
-The following setup instructions assume you are on Ubuntu. Modify them as needed
-for your platform.
+The following setup instructions assume you are on Ubuntu.  Modify them as
+needed for your platform.
 
 ### Dependencies
 
@@ -195,7 +199,7 @@ directory in which the BibScrape source resides:
 Then you can run BibScrape with the following where `<DIR>` is the directory in
 which the BibScrape source resides.
 
-    <DIR>/bin/bibscrape ...
+    <DIR>/bin/bibscrape <arg> ...
 
 ### Installed Mode
 
@@ -208,7 +212,7 @@ Then you can run the `bibscrape` command from anywhere.
 
 ### Per User Initialization
 
-Every user that uses BibScrape, must run the following to creates the default
+Every user that uses BibScrape, must run the following to create the default
 names and nouns files.
 
     bibscrape --init
@@ -217,21 +221,21 @@ Run `bibscrape --config-dir` to find out where those files are created.
 
 ### Testing
 
-The [`tests/`](tests) folder contains tests for each publisher.  You can run
+The [`tests/`](tests/) folder contains tests for each publisher.  You can run
 them using [`test.sh`](test.sh).  For example to run all the ACM tests, run the
 following command:
 
     ./test.sh tests/acm-*.t
 
 Note that publisher pages aren't the most reliable, so if a test fails, you
-should re-run that test to make sure it isn't a transient issue.
+should re-run that particular test to make sure it isn't a transient issue.
 
 ## Feedback
 
 If you have any problems or suggestions, feel free to create a GitHub issue
 about it.  I am particularly interested in any publications for which BibScrape
 breaks or that it formats incorrectly as well as any BibTeX fixes that you think
-should be included.
+should be added to BibScrape.
 
 I am also interested in collecting publisher pages that test things like
 articles that have Unicode in their titles and so forth.
@@ -241,7 +245,8 @@ have to limit what publishers to support.  If you find a computer-science
 publisher that I forgot, let me know and I'll add it.  I'm more hesitant to add
 publishers from other fields.  Also, as a matter of policy, I prefer to scrape
 from publisher pages instead of from aggregators (e.g., BibSonomy, DBLP, etc.)
-as aggregators are much less predictable in the sorts of errors they introduce.
+as aggregators are much less predictable in the sorts of BibTeX mistakes they
+introduce.
 
 ### How to file issues
 
