@@ -36,7 +36,8 @@
     "nouns.cfg"
   ],
   "tags": [
-    "BibTeX"
+    "BibTeX",
+    "LaTeX"
   ],
   "source-url" : "git://github.com/adamsmd/BibScrape.git"
 }
