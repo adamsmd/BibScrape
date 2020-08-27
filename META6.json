@@ -12,11 +12,13 @@
     "BibScrape::Fix":         "lib/BibScrape/Fix.rakumod",
     "BibScrape::HtmlMeta":    "lib/BibScrape/HtmlMeta.rakumod",
     "BibScrape::Isbn":        "lib/BibScrape/Isbn.rakumod",
+    "BibScrape::MainNounGen": "lib/BibScrape/MainNounGen.rakumod",
     "BibScrape::Main":        "lib/BibScrape/Main.rakumod",
     "BibScrape::Month":       "lib/BibScrape/Month.rakumod",
     "BibScrape::Names":       "lib/BibScrape/Names.rakumod",
     "BibScrape::Ris":         "lib/BibScrape/Ris.rakumod",
     "BibScrape::Scrape":      "lib/BibScrape/Scrape.rakumod",
+    "BibScrape::Spell":       "lib/BibScrape/Spell.rakumod",
     "BibScrape::Unicode":     "lib/BibScrape/Unicode.rakumod",
     "BibScrape::WebDriver":   "lib/BibScrape/WebDriver.rakumod"
   },
