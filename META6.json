@@ -25,7 +25,7 @@
   "depends" : [
     "ArrayHash",
     "HTML::Entity",
-    "Inline::Python",
+    "Inline::Python:ver<0.5+>",
     "Locale::Codes",
     "Temp::Path",
     "XML"

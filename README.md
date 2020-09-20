@@ -153,9 +153,13 @@ Run the following to install both Perl 6 and Zef.
     sudo apt install perl6
 
 Alternatively, install [`rakubrew`](https://rakubrew.org/) (including running
-`rakubrew init` if needed) and then run the following:
+`rakubrew init` if needed) and then run the following where `<version>` is the
+Raku version installed (e.g., `moar-2020.08.2`) as reported in the last line of
+the output of `rakubrew build` (e.g., `Rakudo has been built and installed.
+Done, moar-2020.08.2 built`):
 
     rakubrew build
+    rakubrew switch <version>
     rakubrew build-zef
 
 Whichever you do, make sure the language version is at least `6.d`, as in the
@@ -177,24 +181,12 @@ following.
 
     sudo apt install firefox firefox-geckodriver
 
-#### `Inline::Python` for Python 3
-
-BibScrape depends on the `python3` branch of `Inline::Python`.  Until that is
-released upstream, you have to install the GitHub version of `Inline::Python`
-using the following commands:
-
-    git clone https://github.com/niner/Inline-Python.git
-    cd Inline-Python
-    git checkout python3
-    zef nuke Inline::Python
-    zef install . --exclude=python3
-
 ### Non-Installed Mode
 
 If you want to run BibScrape without installing it, run the following from the
 directory in which the BibScrape source resides:
 
-    zef install --deps-only .
+    zef install --deps-only --exclude=python3 .
 
 Then you can run BibScrape with the following where `<DIR>` is the directory in
 which the BibScrape source resides.
@@ -206,7 +198,7 @@ which the BibScrape source resides.
 If you want to install BibScrape, run the following from the directory in which
 the BibScrape source resides:
 
-    zef install .
+    zef install --exclude=python3 .
 
 Then you can run the `bibscrape` command from anywhere.
 
