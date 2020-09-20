@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# This script is a test driver for bib-scrape.
+# This script is a test driver for bibscrape.
 # To run it do:
 #
 #     $ ./test.sh <flag> ... <filename> ...
 #
-# where <flag> is a flag to pass to bib-scrape and <filename> is the name of a
+# where <flag> is a flag to pass to bibscrape and <filename> is the name of a
 # test file. The flags end at the first argument to not start with `-` or after
 # a `--` argument.
 #
