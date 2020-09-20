@@ -173,7 +173,12 @@ sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {
   my BibScrape::BibTeX::Entry:D $entry = bibtex-parse($web-driver.read-downloads()).items.head;
 
   ## HTML Meta
-  html-meta-bibtex($entry, $meta, :title, :!abstract);
+  html-meta-bibtex($entry, $meta, :!abstract);
+
+  ## Title
+  my Str:D $title =
+    await({ $web-driver.find_element_by_class_name( 'article-title' ) }).get_property( 'innerHTML' );
+  $entry.fields<title> = BibScrape::BibTeX::Value.new($title);
 
   ## Abstract
   my #`(Inline::Python::PythonObject:D) @abstract = $web-driver.find_elements_by_class_name( 'abstract' );
