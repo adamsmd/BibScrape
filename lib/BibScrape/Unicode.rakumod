@@ -4,15 +4,16 @@ use variables :D;
 
 my Int:D %CCC; # from Int:D
 my Str:D %CODES; # from Int:D
+my Str:D %MATH; # from Int:D
 
-sub unicode2tex(Str:D $str, Regex:D :$ignore = / False / --> Str:D) is export {
+sub unicode2tex(Str:D $str, Bool:D :$math = False, Regex:D :$ignore = / False / --> Str:D) is export {
   my Str:D @out;
   for $str.ords -> Int:D $ord {
     if $ord.chr ~~ $ignore {
       push @out, $ord.chr;
-    } elsif %CODES{$ord}:exists {
+    } elsif %CODES{$ord}:exists or $math and %MATH{$ord}:exists {
       if not %CCC{$ord}:exists {
-        push @out, "\{%CODES{$ord}\}";
+        push @out, "\{{$math and %MATH{$ord} or %CODES{$ord}}\}";
       } else {
         my Str:D $old = pop @out;
         if not $old.defined {
@@ -32,7 +33,9 @@ sub unicode2tex(Str:D $str, Regex:D :$ignore = / False / --> Str:D) is export {
     }
   }
 
-  @out.join;
+  my Str:D $out = @out.join;
+  $out ~~ s:g/ ' '+ '{~}' /\{~\}/; # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
+  $out;
 }
 
 # This function doesn't work very well.  It is just good enough for most author names.
@@ -90,6 +93,60 @@ CHECK {
     0x20db => 230,
     0x20dc => 230,
     );
+
+  # Based on table 131 in the Comprehensive Latex Symbol List
+  %MATH = (
+    0x0391 => 'A',
+    0x0392 => 'B',
+    0x0393 => '\Gamma',
+    0x0394 => '\Delta',
+    0x0395 => 'E',
+    0x0396 => 'Z',
+    0x0397 => 'H',
+    0x0398 => '\Theta',
+    0x0399 => 'I',
+    0x039a => 'K',
+    0x039b => '\Lambda',
+    0x039c => 'M',
+    0x039d => 'N',
+    0x039e => '\Xi',
+    0x039f => 'O',
+    0x03a0 => '\Pi',
+    0x03a1 => 'P',
+    0x03a2 => '_',
+    0x03a3 => '\Sigma',
+    0x03a4 => 'T',
+    0x03a5 => '\Upsilon',
+    0x03a6 => '\Phi',
+    0x03a7 => 'X',
+    0x03a8 => '\Psi',
+    0x03a9 => '\Omega',
+
+    0x03b1 => '\alpha',
+    0x03b2 => '\beta',
+    0x03b3 => '\gamma',
+    0x03b4 => '\delta',
+    0x03b5 => '\varepsilon',
+    0x03b6 => '\zeta',
+    0x03b7 => '\eta',
+    0x03b8 => '\theta',
+    0x03b9 => '\iota',
+    0x03ba => '\kappa',
+    0x03bb => '\mu',
+    0x03bc => '\nu',
+    0x03bd => '\xi',
+    0x03be => 'o',
+    0x03bf => '\pi',
+    0x03c0 => '\rho',
+    0x03c1 => '\varsigma',
+    0x03c2 => '\sigma',
+    0x03c3 => '\tau',
+    0x03c4 => '\upsilon',
+    0x03c5 => '\varphi',
+    0x03c6 => '\xi',
+    0x03c7 => '\psi',
+    0x03c8 => '\omega',
+  );
 
   %CODES = (
     0x0022 => '\\textquotedbl',
