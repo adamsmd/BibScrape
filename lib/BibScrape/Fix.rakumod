@@ -188,32 +188,6 @@ class Fix {
         | 'http' 's'? '://www.jstor.org/stable/'
         | 'http' 's'? '://www.sciencedirect.com/science/article/' ]/; });
 
-    # Keep proper nouns capitalized
-    update($entry, 'title', {
-      for @.noun-groups -> Str:D @noun-group {
-        for @noun-group -> Str:D $noun {
-          my Str:D $noun-no-brace = $noun.subst(rx/ <[{}]> /, '', :g);
-          s:g/ « [$noun | $noun-no-brace] » /{@noun-group.head}/;
-        }
-      }
-
-      for @.noun-groups -> Str:D @noun-group {
-        for @noun-group -> Str:D $noun {
-          my Str:D $noun-no-brace = $noun.subst(rx/ <[{}]> /, '', :g);
-          for m:i:g/ « [$noun | $noun-no-brace] » / {
-            if $/ ne @noun-group.head {
-              say "WARNING: Possibly incorrectly capitalized noun '$/' in title";
-            }
-          }
-        }
-      }
-    });
-
-    # Keep acronyms capitalized.
-    # We intentionally do not use <upper> as Unicode encoding will catch those.
-    update($entry, 'title', { s:g/ (\d* [<[A..Z]> \d*] ** 2..*) /\{$0\}/; })
-      if $.escape-acronyms;
-
     # Year
     check($entry, 'year', 'Possibly incorrect year', { /^ \d\d\d\d $/ });
 
@@ -221,9 +195,9 @@ class Fix {
     for $entry.fields.keys -> Str:D $field {
       unless $field ∈ @.no-encode {
         update($entry, $field, {
-          $_ = rec(from-xml("<root>{$_}</root>").root.nodes);
-          s:g/" "* \xA0/\xA0/; # Trim spaces before NBSP (otherwise they have no effect in LaTeX)
-          $_ = unicode2tex($_, :ignore(rx/<[_^{}\\\$]>/)); # NOTE: Ignores LaTeX introduced by translation from XML
+          $_ = self.rec($field eq 'title', from-xml("<root>{$_}</root>").root.nodes);
+          # Repeated to handle nested results
+          while s:g/ '{{' (<-[{}]>*) '}}' /\{$0\}/ {};
         });
       }
     }
@@ -249,6 +223,12 @@ class Fix {
         });
       }
     }
+
+    # Warn about capitalization of non-initial "A".
+    # After collapsing spaces and newline because we are about initial "A".
+    say "WARNING: 'A' may need to be wrapped in curly braces if it needs to stay capitalized"
+      if $.escape-acronyms
+        and $entry.fields<title>.simple-str ~~ / ' A ' /;
 
     # Use bibtex month macros.  After Unicode encoding because it uses macros.
     update($entry, 'month', {
@@ -371,109 +351,143 @@ class Fix {
     BibScrape::BibTeX::Value.new(@new-names.join( ' and ' ));
   }
 
-}
-
-sub greek(Str:D $str is copy --> Str:D) {
-  # Based on table 131 in the Comprehensive Latex Symbol List
-  my Str:D @mapping = <
-_ A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi O
-\Pi P _ \Sigma T \Upsilon \Phi X \Psi \Omega _ _ _ _ _ _
-_ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu \xi o
-\pi \rho \varsigma \sigma \tau \upsilon \varphi \xi \psi \omega _ _ _ _ _ _>;
-  $str ~~ s:g/ (<[\x[0390]..\x[03cf]]>) /{ @mapping[ord($0)-0x0390] ne '_' ?? @mapping[ord($0)-0x0390] !! $0}/;
-  return $str;
-}
-
-sub math(@nodes where { $_.all ~~ XML::Node:D } --> Str:D) { @nodes.map({math-node($_)}).join }
-
-sub math-node(XML::Node:D $node --> Str:D) {
-  given $node {
-    when XML::CDATA { $node.data }
-    when XML::Comment { '' } # Remove HTML Comments
-    when XML::Document { math($node.root) }
-    when XML::PI { '' }
-    when XML::Text { greek(decode-entities($node.text)) }
-    when XML::Element {
-      given $node.name {
-        when 'mtext' { math($node.nodes) }
-        when 'mi' {
-          ($node.attribs<mathvariant> // '') eq 'normal'
-            ?? '\mathrm{' ~ math($node.nodes) ~ '}'
-            !! math($node.nodes)
+  method text(Bool:D $is-title, Str:D $str is copy, Bool:D :$math --> Str:D) {
+    if $is-title {
+    # Keep proper nouns capitalized
+    # After eliminating Unicode in case a tag or attribute looks like a proper noun
+      for @.noun-groups -> Str:D @noun-group {
+        for @noun-group -> Str:D $noun {
+          my Str:D $noun-no-brace = $noun.subst(rx/ <[{}]> /, '', :g);
+          $str ~~ s:g/ « [$noun | $noun-no-brace] » /{@noun-group.head}/;
         }
-        when 'mo' { math($node.nodes) }
-        when 'mn' { math($node.nodes) }
-        when 'msqrt' { '\sqrt{' ~ math($node.nodes) ~ '}' }
-        when 'mrow' { '{' ~ math($node.nodes) ~ '}' }
-        when 'mspace' { '\hspace{' ~ $node.attribs<width> ~ '}' }
-        when 'msubsup' { '{' ~ math-node($node.nodes[0]) ~ '}_{' ~ math-node($node.nodes[1]) ~ '}^{' ~ math-node($node.nodes[2]) ~ '}' }
-        when 'msub' { '{' ~ math-node($node.nodes[0]) ~ '}_{' ~ math-node($node.nodes[1]) ~ '}' }
-        when 'msup' { '{' ~ math-node($node.nodes[0]) ~ '}^{' ~ math-node($node.nodes[1]) ~ '}' }
-        default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
       }
-    }
 
-    default { die "Unknown XML node type '{$node.^name}': $node" }
-  }
-}
-
-sub rec(@nodes where { $_.all ~~ XML::Node:D } --> Str:D) { @nodes.map({rec-node($_)}).join }
-
-sub rec-node(XML::Node:D $node --> Str:D) {
-  given $node {
-    when XML::CDATA { $node.data }
-    when XML::Comment { '' } # Remove HTML Comments
-    when XML::Document { rec($node.root) }
-    when XML::PI { '' }
-    when XML::Text { decode-entities($node.text) }
-
-    when XML::Element {
-      sub wrap(Str:D $tag --> Str:D) {
-        my Str:D $str = rec($node.nodes);
-        $str eq '' ?? '' !! "\\$tag\{" ~ $str ~ "\}"
-      }
-      given $node.name {
-        when 'a' and $node.attribs<class>:exists and $node.attribs<class> ~~ / « 'xref-fn' » / { '' } # Omit footnotes added by Oxford when on-campus
-        when 'a' { rec($node.nodes) } # Remove <a> links
-        when 'p' | 'par' { rec($node.nodes) ~ "\n\n" } # Replace <p> with \n\n
-        when 'i' | 'italic' { wrap( 'textit' ) } # Replace <i> and <italic> with \textit
-        when 'em' { wrap( 'emph' ) } # Replace <em> with \emph
-        when 'b' | 'strong' { wrap( 'textbf' ) } # Replace <b> and <strong> with \textbf
-        when 'tt' | 'code' { wrap( 'texttt' ) } # Replace <tt> and <code> with \texttt
-        when 'sup' | 'supscrpt' { wrap( 'textsuperscript' ) } # Superscripts
-        when 'sub' { wrap( 'textsubscript' ) } # Subscripts
-        when 'svg' { '' }
-        when 'script' { '' }
-        when 'math' { $node.nodes ?? '\ensuremath{' ~ math($node.nodes) ~ '}' !! '' }
-        #when 'img' { '\{' ~ rec($node.nodes) ~ '}' }
-          # $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
-        #when 'email' { '\{' ~ rec($node.nodes) ~ '}' }
-          # $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
-        when 'span' {
-          if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
-            wrap( 'texttt' )
-          } elsif $node.attribs<aria-hidden>:exists {
-            ''
-          } elsif $node.attribs<class>:exists {
-            given $node.attribs<class> {
-              when / 'monospace' / { wrap( 'texttt' ) }
-              when / 'italic' / { wrap( 'textit' ) }
-              when / 'bold' / { wrap( 'textbf' ) }
-              when / 'sup' / { wrap( 'textsuperscript' ) }
-              when / 'sub' / { wrap( 'textsubscript' ) }
-              when / 'sc' | [ 'type' ? 'small' '-'? 'caps' ] | 'EmphasisTypeSmallCaps' / {
-                wrap( 'textsc' )
-              }
-              default { rec($node.nodes) }
+      for @.noun-groups -> Str:D @noun-group {
+        for @noun-group -> Str:D $noun {
+          my Str:D $noun-no-brace = $noun.subst(rx/ <[{}]> /, '', :g);
+          for $str ~~ m:i:g/ « [$noun | $noun-no-brace] » / {
+            if $/ ne @noun-group.head {
+              say "WARNING: Possibly incorrectly capitalized noun '$/' in title";
             }
-          } else {
-            rec($node.nodes)
           }
         }
-        default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ rec($node.nodes) ~ "[/{$node.name}]" }
       }
+
+    # Keep acronyms capitalized
+    # Note that non-initial "A" are warned after collapsing spaces and newlines.
+    # Anything other than "Aaaa" or "aaaa" triggers an acronym.
+    # After eliminating Unicode in case a tag or attribute looks like an acronym
+    $str ~~ s:g/ <!after '{'> ([<!before '_'> <alnum>]+ <upper> [<!before '_'> <alnum>]*) /\{$0\}/
+      if $.escape-acronyms;
+    $str ~~ s:g/ <wb> <!after '{'> ( <!after ' '> 'A' <!before ' '> | <!before 'A'> <upper>) <!before "'"> <wb> /\{$0\}/
+      if $.escape-acronyms;
     }
 
-    default { die "Unknown XML node type '{$node.^name}': $node" }
+    $str = unicode2tex($str, :$math, :ignore(rx/<[_^{}\\\$]>/)); # NOTE: Ignores LaTeX introduced by translation from XML
+
+    $str;
+  }
+
+  method math(Bool:D $is-title, @nodes where { $_.all ~~ XML::Node:D } --> Str:D) {
+    @nodes.map({self.math-node($is-title,$_)}).join
+  }
+
+  method math-node(Bool:D $is-title, XML::Node:D $node --> Str:D) {
+    given $node {
+      when XML::CDATA { self.text($is-title, :math, $node.data) }
+      when XML::Comment { '' } # Remove HTML Comments
+      when XML::Document { self.math($is-title, $node.root) }
+      when XML::PI { '' }
+      when XML::Text { self.text($is-title, :math, decode-entities($node.text)) }
+      when XML::Element {
+        given $node.name {
+          when 'mtext' { self.math($is-title, $node.nodes) }
+          when 'mi' {
+            ($node.attribs<mathvariant> // '') eq 'normal'
+              ?? '\mathrm{' ~ self.math($is-title, $node.nodes) ~ '}'
+              !! self.math($is-title, $node.nodes)
+          }
+          when 'mo' { self.math($is-title, $node.nodes) }
+          when 'mn' { self.math($is-title, $node.nodes) }
+          when 'msqrt' { '\sqrt{' ~ self.math($is-title, $node.nodes) ~ '}' }
+          when 'mrow' { '{' ~ self.math($is-title, $node.nodes) ~ '}' }
+          when 'mspace' { '\hspace{' ~ $node.attribs<width> ~ '}' }
+          when 'msubsup' {
+            '{' ~ self.math-node($is-title, $node.nodes[0])
+            ~ '}_{' ~ self.math-node($is-title, $node.nodes[1])
+            ~ '}^{' ~ self.math-node($is-title, $node.nodes[2])
+            ~ '}'
+          }
+          when 'msub' { '{' ~ self.math-node($is-title, $node.nodes[0]) ~ '}_{' ~ self.math-node($is-title, $node.nodes[1]) ~ '}' }
+          when 'msup' { '{' ~ self.math-node($is-title, $node.nodes[0]) ~ '}^{' ~ self.math-node($is-title, $node.nodes[1]) ~ '}' }
+          default { say "WARNING: Unknown MathML tag: {$node.name}"; "[{$node.name}]" ~ self.math($is-title, $node.nodes) ~ "[/{$node.name}]" }
+        }
+      }
+
+      default { die "Unknown XML node type '{$node.^name}': $node" }
+    }
+  }
+
+  method rec(Bool:D $is-title, @nodes where { $_.all ~~ XML::Node:D } --> Str:D) {
+    @nodes.map({self.rec-node($is-title, $_)}).join
+  }
+
+  method rec-node(Bool:D $is-title, XML::Node:D $node --> Str:D) {
+    given $node {
+      when XML::CDATA { self.text($is-title, :!math, $node.data) }
+      when XML::Comment { '' } # Remove HTML Comments
+      when XML::Document { self.rec($is-title, $node.root) }
+      when XML::PI { '' }
+      when XML::Text { self.text($is-title, :!math, decode-entities($node.text)) }
+
+      when XML::Element {
+        sub wrap(Str:D $tag --> Str:D) {
+          my Str:D $str = self.rec($is-title, $node.nodes);
+          $str eq '' ?? '' !! "\\$tag\{" ~ $str ~ "\}"
+        }
+        given $node.name {
+          when 'a' and $node.attribs<class>:exists and $node.attribs<class> ~~ / « 'xref-fn' » / { '' } # Omit footnotes added by Oxford when on-campus
+          when 'a' { self.rec($is-title, $node.nodes) } # Remove <a> links
+          when 'p' | 'par' { self.rec($is-title, $node.nodes) ~ "\n\n" } # Replace <p> with \n\n
+          when 'i' | 'italic' { wrap( 'textit' ) } # Replace <i> and <italic> with \textit
+          when 'em' { wrap( 'emph' ) } # Replace <em> with \emph
+          when 'b' | 'strong' { wrap( 'textbf' ) } # Replace <b> and <strong> with \textbf
+          when 'tt' | 'code' { wrap( 'texttt' ) } # Replace <tt> and <code> with \texttt
+          when 'sup' | 'supscrpt' { wrap( 'textsuperscript' ) } # Superscripts
+          when 'sub' { wrap( 'textsubscript' ) } # Subscripts
+          when 'svg' { '' }
+          when 'script' { '' }
+          when 'math' { $node.nodes ?? '\ensuremath{' ~ self.math($is-title, $node.nodes) ~ '}' !! '' }
+          #when 'img' { '\{' ~ self.rec($is-title, $node.nodes) ~ '}' }
+            # $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
+          #when 'email' { '\{' ~ self.rec($is-title, $node.nodes) ~ '}' }
+            # $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
+          when 'span' {
+            if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
+              wrap( 'texttt' )
+            } elsif $node.attribs<aria-hidden>:exists {
+              ''
+            } elsif $node.attribs<class>:exists {
+              given $node.attribs<class> {
+                when / 'monospace' / { wrap( 'texttt' ) }
+                when / 'italic' / { wrap( 'textit' ) }
+                when / 'bold' / { wrap( 'textbf' ) }
+                when / 'sup' / { wrap( 'textsuperscript' ) }
+                when / 'sub' / { wrap( 'textsubscript' ) }
+                when / 'sc' | [ 'type' ? 'small' '-'? 'caps' ] | 'EmphasisTypeSmallCaps' / {
+                  wrap( 'textsc' )
+                }
+                default { self.rec($is-title, $node.nodes) }
+              }
+            } else {
+              self.rec($is-title, $node.nodes)
+            }
+          }
+          default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ self.rec($is-title, $node.nodes) ~ "[/{$node.name}]" }
+        }
+      }
+
+      default { die "Unknown XML node type '{$node.^name}': $node" }
+    }
   }
 }
