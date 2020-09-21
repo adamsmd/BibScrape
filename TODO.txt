@@ -73,6 +73,11 @@ In CommandLine (twice):
 &foo
 Nil
 
+.flat => |@x
+.Array => @x
+
+IsbnRules.rakumod
+
 Inline::Python Crash
 
 unit sub MAIN(
@@ -108,11 +113,9 @@ k{b}
 k{B}
 {K}{B}
 
+i -> I
+
 GHz
-
-{B} for all except A?
-
-"SourceForge": detect caps after first
 
 Double check these name formats
 - d'Xxxx
@@ -129,6 +132,8 @@ IoT (acronym if two upper letters even with lower letters?)
 
 Use ispell?
   spell checkers as a list option (so can run multiple checkers)
+
+Fix {{P}}
 
 ## Unsorted
 
