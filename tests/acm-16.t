@@ -3,7 +3,7 @@ DOI:10.1145/1159803.1159807
 Subtitle.  DOI and specified key.
 @inproceedings{improving-flow-analysis,
   author = {Might, Matthew and Shivers, Olin},
-  title = {Improving flow analyses via {\textgreek{G}}{CFA}: abstract garbage collection and counting},
+  title = {Improving flow analyses via {{\textgreek{G}}CFA}: abstract garbage collection and counting},
   booktitle = {Proceedings of the Eleventh ACM SIGPLAN International Conference on Functional Programming},
   series = {ICFP~'06},
   location = {Portland, Oregon, USA},

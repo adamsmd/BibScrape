@@ -3,7 +3,7 @@ https://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=190306&abstractAccess=n
 Strange page numbering
 @inproceedings{Rawlings:1990,
   author = {Rawlings, Christopher J. and Clark, Dominic A. and Barton, Geoffrey J. and Archer, Iain and Saldanha, Jos{\'e} W.},
-  affiliation = {Biomed. Comput. Unit., Imperial Cancer Res. Fund, London, UK and Biomed. Comput. Unit., Imperial Cancer Res. Fund, London, UK},
+  affiliation = {Biomedical Computing Unit, Imperial Cancer Research Fund Laboratories, London, UK and Biomedical Computing Unit, Imperial Cancer Research Fund Laboratories, London, UK and Laboratory of Molecular Biophysics, University of Oxford, Oxford, UK and Imperial Cancer Research Fund, Biomedical Computing Unit, London, UK and MRC Collaborative Centre, London, UK},
   title = {Large knowledge based applications in molecular biology and genetics},
   booktitle = {IEE Colloquium on Very Large Knowledge-Based Systems},
   location = {London, UK},

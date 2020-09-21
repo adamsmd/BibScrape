@@ -4,7 +4,7 @@ Book review and italic in title
 @article{Chitil:2009:10.1017/S0956796809007357,
   author = {Chitil, Olaf},
   affiliation = {University of Kent},
-  title = {\textit{Essentials of Programming Languages (third edition)} by Daniel P. Friedman and Mitchell Wand, {MIT} Press, {ISBN} 978-0-262-06279-4, 2008.},
+  title = {\textit{Essentials of Programming Languages (third edition)} by Daniel {P}. Friedman and Mitchell Wand, {MIT} Press, {ISBN} 978-0-262-06279-4, 2008.},
   journal = {Journal of Functional Programming},
   volume = {19},
   number = {6},

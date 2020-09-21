@@ -3,8 +3,8 @@ https://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4779914
 Strange page numbers and very strange author names
 @inproceedings{Singh:2008:10.1109/IGARSS.2008.4779914,
   author = {Singh, Gulab and Venkataraman, G. and kumar (\emph{sic}), V. and Rao, Y. S. and Snehmani},
-  affiliation = {Centre of Studies in Resources Engineering, Indian Institute of Technology Bombay, Mumbai (India) and Centre of Studies in Resources Engineering, Indian Institute of Technology Bombay, Mumbai (India) and Centre of Studies in Resources Engineering, Indian Institute of Technology Bombay, Mumbai (India) and Centre of Studies in Resources Engineering, Indian Institute of Technology Bombay, Mumbai (India) and Snow and Avalanche Study Establishment, Chandigarh, India. Email-ID: gskaliar@iitb.ac.in ; Phone.No.91-22-25767686},
-  title = {The H/A/Alpha Polarimetric Decomposition Theorem and Complex Wishart Distribution for Snow Cover Monitoring},
+  affiliation = {Centre of Studies in Resources Engineering, Indian Institute of Technology Bombay, Mumbai, India and Centre of Studies in Resources Engineering, Indian Institute of Technology Bombay, Mumbai, India and Centre of Studies in Resources Engineering, Indian Institute of Technology Bombay, Mumbai, India and Centre of Studies in Resources Engineering, Indian Institute of Technology Bombay, Mumbai, India and Snow and Avalanche Study Establishment, Chandigarh, India. Email-ID: gskaliar@iitb.ac.in ; Phone.No.91-22-25767686},
+  title = {The {H}/{A}/Alpha Polarimetric Decomposition Theorem and Complex Wishart Distribution for Snow Cover Monitoring},
   booktitle = {IGARSS 2008 - 2008 IEEE International Geoscience and Remote Sensing Symposium},
   volume = {4},
   location = {Boston, MA, USA},

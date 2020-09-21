@@ -12,7 +12,7 @@ WARNING: Possibly incorrect name: Debré, P.
 WARNING: Possibly incorrect name: Leibowitch, J.
 @article{Autran:1997:10.2307/2893230,
   author = {Autran, B. and Carcelain, G. and Li, T. S. and Blanc, C. and Mathez, D. and Tubiana, R. and Katlama, C. and Debr{\'e}, P. and Leibowitch, J.},
-  title = {Positive Effects of Combined Antiretroviral Therapy on {CD4}$^+$ T Cell Homeostasis and Function in Advanced {HIV} Disease},
+  title = {Positive Effects of Combined Antiretroviral Therapy on {CD4}$^+$ {T} Cell Homeostasis and Function in Advanced {HIV} Disease},
   journal = {Science},
   volume = {277},
   number = {5322},

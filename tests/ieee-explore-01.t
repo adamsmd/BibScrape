@@ -3,7 +3,7 @@ https://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=1386650
 Acronym in title, Non-abriviated author names
 @article{Frigo:2005:10.1109/JPROC.2004.840301,
   author = {Frigo, Matteo and Johnson, Steven G.},
-  affiliation = {IBM Austin Res. Lab., TX, USA},
+  affiliation = {IBM Austin Research Laboratory, Austin, TX, USA and Massachusetts Institute of Technology, Cambridge, MA, USA},
   title = {The Design and Implementation of {FFTW3}},
   journal = {Proceedings of the IEEE},
   volume = {93},

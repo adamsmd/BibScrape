@@ -5,7 +5,7 @@ WARNING: Oxford imposes rate limiting.  BibScrape might hang if you try multiple
 @article{Shih:2010:10.1093/comjnl/bxp081,
   author = {Shih, Yu-Ying and Chao, Daniel},
   affiliation = {Department of Information Management, National Taipei College of Business, Taipei, ROC and Department of Graduate Institute of Industrial and Business Management, National Taipei University of Technology, Taipei, ROC and Department of MIS, National Cheng Chi University, Taipei, ROC},
-  title = {Sequence of Control in S\textsuperscript{3}{PMR}},
+  title = {Sequence of Control in {S}\textsuperscript{3}{PMR}},
   journal = {The Computer Journal},
   volume = {53},
   number = {10},
