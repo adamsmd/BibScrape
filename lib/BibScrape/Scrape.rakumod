@@ -358,7 +358,7 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
   # Note that on-campus is different than off-campus
   my Str:D $title =
     ($web-driver.find_elements_by_class_name( 'item-title' )
-      || $web-driver.find_elements_by_class_name( 'title' )).head.get_property( 'innerHTML' );
+      || $web-driver.find_elements_by_class_name( 'title-font' )).head.get_property( 'innerHTML' );
   $entry.fields<title> = BibScrape::BibTeX::Value.new($title);
 
   ## DOI
@@ -369,13 +369,24 @@ sub scrape-jstor(--> BibScrape::BibTeX::Entry:D) {
   update($entry, 'issn', { s/^ (<[0..9Xx]>+) ', ' (<[0..9Xx]>+) $/$0 (Print) $1 (Online)/ });
 
   ## Month
-  my Str:D $month = $web-driver.find_element_by_class_name( 'src' ).get_property( 'innerHTML' );
+  my Str:D $month =
+    ($web-driver.find_elements_by_css_selector( '.turn-away-content__article-summary-journal a' )
+      || $web-driver.find_elements_by_class_name( 'src' )).head.get_property( 'innerHTML' );
   if $month ~~ / '(' (<alpha>+) / {
     $entry.fields<month> = BibScrape::BibTeX::Value.new($0.Str);
   }
 
   ## Publisher
-  my Str:D $publisher = $web-driver.find_element_by_class_name( 'publisher-link' ).get_property( 'innerHTML' );
+  # Note that on-campus is different than off-campus
+  my Str:D $publisher =
+    do if $web-driver.find_elements_by_class_name( 'turn-away-content__article-summary-journal' ) {
+      my Str:D $text =
+        $web-driver.find_element_by_class_name( 'turn-away-content__article-summary-journal' ).get_property( 'innerHTML' );
+      $text ~~ / 'Published By: ' (<-[<]>*) /;
+      $0.Str
+    } else {
+      $web-driver.find_element_by_class_name( 'publisher-link' ).get_property( 'innerHTML' )
+    };
   $entry.fields<publisher> = BibScrape::BibTeX::Value.new($publisher);
 
   $entry;
