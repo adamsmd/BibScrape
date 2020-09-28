@@ -2,6 +2,8 @@ unit module BibScrape::Scrape;
 
 use variables :D;
 
+use XML;
+
 use BibScrape::BibTeX;
 use BibScrape::HtmlMeta;
 use BibScrape::Month;
@@ -39,6 +41,7 @@ sub dispatch(Str:D $url is copy --> BibScrape::BibTeX::Entry:D) {
   my Str:D $domain = ($web-driver%<current_url> ~~ m[ ^ <-[/]>* "//" <( <-[/]>* )> "/"]).Str;
   return do given $domain {
     when m[ « 'acm.org'             $] { scrape-acm(); }
+    when m[ « 'arxiv.org'           $] { scrape-arxiv(); }
     when m[ « 'cambridge.org'       $] { scrape-cambridge(); }
     when m[ « 'computer.org'        $] { scrape-ieee-computer(); }
     when m[ « 'ieeexplore.ieee.org' $] { scrape-ieee-explore(); }
@@ -156,6 +159,116 @@ sub scrape-acm(--> BibScrape::BibTeX::Entry:D) {
   }
 
   $entry;
+}
+
+# format_bibtex_arxiv in https://github.com/mattbierbaum/arxiv-bib-overlay/blob/master/src/ui/CiteModal.tsx
+sub scrape-arxiv(--> BibScrape::BibTeX::Entry:D) {
+  # Ensure we are at the "abstract" page
+  $web-driver%<current_url> ~~ / '://arxiv.org/' (<-[/]>+) '/' (.*) $/;
+  if $0 ne 'abs' {
+    $web-driver.get("https://arxiv.org/abs/$1");
+  }
+
+  # Id
+  $web-driver%<current_url> ~~ / '://arxiv.org/' (<-[/]>+) '/' (.*) $/;
+  my Str:D $id = $1.Str;
+
+  # Use the arXiv API to download meta-data
+  #$web-driver.get("https://export.arxiv.org/api/query?id_list=$id"); # Causes a timeout
+  #$web-driver.execute_script( 'window.location.href = arguments[0]', "https://export.arxiv.org/api/query?id_list=$id");
+  $web-driver.execute_script( 'window.open(arguments[0], "_self")', "https://export.arxiv.org/api/query?id_list=$id");
+  my Str:D $xml-string = $web-driver.read-downloads();
+  my XML::Document:D $xml = from-xml($xml-string);
+
+  my XML::Element:D @doi = $xml.getElementsByTagName('arxiv:doi');
+  if @doi and Backtrace.new.map({$_.subname}).grep({$_ eq 'scrape-arxiv'}) <= 1 {
+    # Use publisher page if it exists
+    dispatch('doi:' ~ @doi.head.contents».text.join(''));
+  } else {
+    my XML::Element:D $xml-entry = $xml.getElementsByTagName('entry').head;
+
+    sub text(XML::Element:D $element, Str:D $str --> Str:D) {
+      my XML::Element:D @elements = $element.getElementsByTagName($str);
+      if @elements {
+        @elements.head.contents».text.join('');
+      } else {
+        '';
+      }
+    }
+
+    # BibTeX object
+    my BibScrape::BibTeX::Entry:D $entry = BibScrape::BibTeX::Entry.new(:type('misc'), :key("arxiv.$id"));
+
+    # Title
+    my Str:D $title = text($xml-entry, 'title');
+    $entry.fields<title> = BibScrape::BibTeX::Value.new($title);
+
+    # Author
+    my XML::Element:D @authors = $xml-entry.getElementsByTagName('author');
+    my Str:D $author = @authors.map({text($_, 'name')}).join( ' and ' );
+      # author=<author><name> 	One for each author. Has child element <name> containing the author name.
+    $entry.fields<author> = BibScrape::BibTeX::Value.new($author);
+
+    # Affiliation
+    my Str:D $affiliation = @authors.map({text($_, 'arxiv:affiliation')}).grep({$_ ne ''}).join( ' and ' );
+      # affiliation=<author><arxiv:affiliation> 	The author's affiliation included as a subelement of <author> if present.
+    $entry.fields<affiliation> = BibScrape::BibTeX::Value.new($affiliation)
+      if $affiliation ne '';
+
+    # How published
+    $entry.fields<howpublished> = BibScrape::BibTeX::Value.new('arXiv.org'); # TODO
+
+    # Year, month and day
+    my Str:D $published = text($xml-entry, 'published');
+    $published ~~ /^ (\d ** 4) '-' (\d ** 2) '-' (\d ** 2) 'T'/;
+    my (Str:D $year, Str:D $month, Str:D $day) = ($0.Str, $1.Str, $2.Str);
+      # year, month, day = <published> 	The date that version 1 of the article was submitted.
+      # <updated> 	The date that the retrieved version of the article was submitted. Same as <published> if the retrieved version is version 1.
+    $entry.fields<year> = BibScrape::BibTeX::Value.new($year);
+    $entry.fields<month> = BibScrape::BibTeX::Value.new($month);
+    $entry.fields<day> = BibScrape::BibTeX::Value.new($day);
+
+    my Str:D $doi = $xml-entry.elements(:TAG<link>, :title<doi>).map({$_.attribs<href>}).join(';');
+    $entry.fields<doi> = BibScrape::BibTeX::Value.new($doi)
+      if $doi ne '';
+
+    # Eprint
+    my Str:D $eprint = $id;
+    $entry.fields<eprint> = BibScrape::BibTeX::Value.new($eprint);
+
+    # Archive prefix
+    $entry.fields<archiveprefix> = BibScrape::BibTeX::Value.new('arXiv');
+
+    # Primary class
+    my Str:D $primaryClass = $xml-entry.getElementsByTagName('arxiv:primary_category').head.attribs<term>;
+    $entry.fields<primaryclass> = BibScrape::BibTeX::Value.new($primaryClass);
+
+    # Abstract
+    my Str:D $abstract = text($xml-entry, 'summary');
+    $entry.fields<abstract> = BibScrape::BibTeX::Value.new($abstract);
+
+    # --<link> 	Can be up to 3 given url's associated with this article.
+    # --<category> 	The arXiv or ACM or MSC category for an article if present.
+    # --<arxiv:comment> 	The authors comment if present.
+    # --<arxiv:journal_ref> 	A journal reference if present.
+    # --<arxiv:doi> 	A url for the resolved DOI to an external resource if present.
+
+    $entry
+  }
+
+# https://arxiv.org/abs/2003.00003
+# https://arxiv.org/abs/2003.00368 v2 url-in-abs uni-in-auth
+# https://arxiv.org/abs/2008.02483 doi but only to arxiv, affiliation
+# -https://arxiv.org/pdf/2009.10272.pdf
+
+# -https://arxiv.org/abs/1708.06459v1 affiliation
+# -https://arxiv.org/abs/1708.06461v1
+
+# +https://arxiv.org/abs/2009.10929v2 v2 uni-in-title uni-in-abs
+# +https://arxiv.org/pdf/1708.06226.pdf uni-in-auth++
+# +https://arxiv.org/abs/1708.06460 uni-in-affil
+# +https://arxiv.org/abs/hep-ex/0307015 doi-to-other
+
 }
 
 sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {

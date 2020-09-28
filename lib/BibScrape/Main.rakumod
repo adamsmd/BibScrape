@@ -267,7 +267,8 @@ practices.
     chapter pages articleno numpages
     edition day month year issue_date
     organization publisher address
-    language isbn issn doi url eprint bib_scrape_url
+    language isbn issn doi url eprint archiveprefix primaryclass
+    bib_scrape_url
     note annote keywords abstract>)
     but Sep[','],
   #={The order that fields should placed in the output.}
