@@ -195,7 +195,7 @@ class Fix {
     for $entry.fields.keys -> Str:D $field {
       unless $field ∈ @.no-encode {
         update($entry, $field, {
-          $_ = self.rec($field eq 'title', from-xml("<root>{$_}</root>").root.nodes);
+          $_ = self.html($field eq 'title', from-xml("<root>{$_}</root>").root.nodes);
           # Repeated to handle nested results
           while s:g/ '{{' (<-[{}]>*) '}}' /\{$0\}/ {};
         });
@@ -428,7 +428,7 @@ class Fix {
     }
   }
 
-  method rec(Bool:D $is-title, @nodes where { $_.all ~~ XML::Node:D } --> Str:D) {
+  method html(Bool:D $is-title, @nodes where { $_.all ~~ XML::Node:D } --> Str:D) {
     @nodes.map({self.rec-node($is-title, $_)}).join
   }
 
@@ -436,19 +436,19 @@ class Fix {
     given $node {
       when XML::CDATA { self.text($is-title, :!math, $node.data) }
       when XML::Comment { '' } # Remove HTML Comments
-      when XML::Document { self.rec($is-title, $node.root) }
+      when XML::Document { self.html($is-title, $node.root) }
       when XML::PI { '' }
       when XML::Text { self.text($is-title, :!math, decode-entities($node.text)) }
 
       when XML::Element {
         sub wrap(Str:D $tag --> Str:D) {
-          my Str:D $str = self.rec($is-title, $node.nodes);
+          my Str:D $str = self.html($is-title, $node.nodes);
           $str eq '' ?? '' !! "\\$tag\{" ~ $str ~ "\}"
         }
         given $node.name {
           when 'a' and $node.attribs<class>:exists and $node.attribs<class> ~~ / « 'xref-fn' » / { '' } # Omit footnotes added by Oxford when on-campus
-          when 'a' { self.rec($is-title, $node.nodes) } # Remove <a> links
-          when 'p' | 'par' { self.rec($is-title, $node.nodes) ~ "\n\n" } # Replace <p> with \n\n
+          when 'a' { self.html($is-title, $node.nodes) } # Remove <a> links
+          when 'p' | 'par' { self.html($is-title, $node.nodes) ~ "\n\n" } # Replace <p> with \n\n
           when 'i' | 'italic' { wrap( 'textit' ) } # Replace <i> and <italic> with \textit
           when 'em' { wrap( 'emph' ) } # Replace <em> with \emph
           when 'b' | 'strong' { wrap( 'textbf' ) } # Replace <b> and <strong> with \textbf
@@ -458,9 +458,9 @@ class Fix {
           when 'svg' { '' }
           when 'script' { '' }
           when 'math' { $node.nodes ?? '\ensuremath{' ~ self.math($is-title, $node.nodes) ~ '}' !! '' }
-          #when 'img' { '\{' ~ self.rec($is-title, $node.nodes) ~ '}' }
+          #when 'img' { '\{' ~ self.html($is-title, $node.nodes) ~ '}' }
             # $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
-          #when 'email' { '\{' ~ self.rec($is-title, $node.nodes) ~ '}' }
+          #when 'email' { '\{' ~ self.html($is-title, $node.nodes) ~ '}' }
             # $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
           when 'span' {
             if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
@@ -477,13 +477,13 @@ class Fix {
                 when / 'sc' | [ 'type' ? 'small' '-'? 'caps' ] | 'EmphasisTypeSmallCaps' / {
                   wrap( 'textsc' )
                 }
-                default { self.rec($is-title, $node.nodes) }
+                default { self.html($is-title, $node.nodes) }
               }
             } else {
-              self.rec($is-title, $node.nodes)
+              self.html($is-title, $node.nodes)
             }
           }
-          default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ self.rec($is-title, $node.nodes) ~ "[/{$node.name}]" }
+          default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ self.html($is-title, $node.nodes) ~ "[/{$node.name}]" }
         }
       }
 
