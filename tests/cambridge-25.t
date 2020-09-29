@@ -1,7 +1,7 @@
 https://journals.cambridge.org/article_S0956796897002864
 
 Extra paragraph breaks
-@article{Huet:1997:10.1017/S0956796897002864,
+@article{Huet:1997:zipper:10.1017/S0956796897002864,
   author = {Huet, G{\'e}rard},
   affiliation = {INRIA Rocquencourt},
   title = {The Zipper},

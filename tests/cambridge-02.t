@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?aid=6171400
 
 Unicode in title, author and abstract
-@article{Arbiser:2009:10.1017/S0956796809007369,
+@article{Arbiser:2009:l-calculus:10.1017/S0956796809007369,
   author = {Arbiser, Ariel and Miquel, Alexandre and R{\'{\i}}os, Alejandro},
   affiliation = {Universidad de Buenos Aires and PPS {\&} Universit{\'e} Paris 7 {--} Case 7014 and Universidad de Buenos Aires},
   title = {The {\textgreek{l}}-calculus with constructors: Syntax, confluence and separation},

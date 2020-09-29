@@ -1,7 +1,7 @@
 https://portal.acm.org/citation.cfm?id=567756
 
 No abstract
-@inproceedings{Banning:1979:10.1145/567752.567756,
+@inproceedings{Banning:1979:efficient:10.1145/567752.567756,
   author = {Banning, John P.},
   title = {An efficient way to find the side effects of procedure calls and the aliases of variables},
   booktitle = {Proceedings of the 6th ACM SIGACT-SIGPLAN Symposium on Principles of Programming Languages},

@@ -1,7 +1,7 @@
 https://www.sciencedirect.com/science/article/pii/S0020019011001517
 
 Unicode in author
-@article{Gomez:2011:10.1016/j.ipl.2011.05.017,
+@article{Gomez:2011:linear:10.1016/j.ipl.2011.05.017,
   author = {G{\'o}mez, Domingo and Gutierrez, Jaime and Ibeas, {\'A}lvar},
   title = {On the linear complexity of the {N}aor{--}{R}eingold sequence},
   journal = {Information Processing Letters},

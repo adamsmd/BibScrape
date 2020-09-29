@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?aid=44197
 
 Subscript and unicode in abstract
-@article{Streicher:1998:10.1017/S0956796898003141,
+@article{Streicher:1998:classical:10.1017/S0956796898003141,
   author = {Streicher, Th[omas] and Reus, B[ernhard]},
   affiliation = {Fachbereich 4 Mathematik, TU Darmstadt and Institut f{\"u}r Informatik, Ludwig-Maximilians-Universit{\"a}t},
   title = {Classical logic, continuation semantics and abstract machines},

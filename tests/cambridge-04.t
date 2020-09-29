@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?aid=6046168
 
 Superscript in title
-@article{Sperber:2009:10.1017/S0956796809990074,
+@article{Sperber:2009:revised6:10.1017/S0956796809990074,
   author = {Sperber, Michael and Dybvig, R. Kent and Flatt, Matthew and van Straaten, Anton and Findler, Robby and Matthews, Jacob},
   affiliation = {DeinProgramm and Indiana University and University of Utah and AppSolutions and Northwestern University and University of Chicago},
   title = {Revised\textsuperscript{6} Report on the Algorithmic Language {S}cheme},

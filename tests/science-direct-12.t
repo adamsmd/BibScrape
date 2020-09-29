@@ -1,7 +1,7 @@
 https://www.sciencedirect.com/science/article/pii/0020019083901060
 
 Broken abstract
-@article{Myers:1983:10.1016/0020-0190(83)90106-0,
+@article{Myers:1983:applicative:10.1016/0020-0190(83)90106-0,
   author = {Myers, Eugene W.},
   title = {An applicative random-access stack},
   journal = {Information Processing Letters},

@@ -1,7 +1,7 @@
 https://www.sciencedirect.com/science/article/pii/S0020019011001207
 
 More complex math in abstract
-@article{Afrati:2011:10.1016/j.ipl.2011.04.014,
+@article{Afrati:2011:complexity:10.1016/j.ipl.2011.04.014,
   author = {Afrati, Foto N. and Cohen, Sara and Kuper, Gabriel},
   title = {On the complexity of tree pattern containment with arithmetic comparisons},
   journal = {Information Processing Letters},

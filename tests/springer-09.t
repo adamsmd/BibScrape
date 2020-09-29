@@ -1,7 +1,7 @@
 doi:10.1007/BFb0032732
 
 Author should be "R. Kent Dybvig" instead of "R. Dybvig"
-@inproceedings{Waddell:1997:10.1007/BFb0032732,
+@inproceedings{Waddell:1997:fast:10.1007/BFb0032732,
   author = {Waddell, Oscar and Dybvig, R. Kent},
   editor = {Van Hentenryck, Pascal},
   affiliation = {Indiana University Computer Science Department and Indiana University Computer Science Department},

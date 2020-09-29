@@ -1,7 +1,7 @@
 https://www.sciencedirect.com/science/article/pii/S0020019011001268
 
 Unicode in title
-@article{Wu:2011:10.1016/j.ipl.2011.05.006,
+@article{Wu:2011:delta1-total-colorability:10.1016/j.ipl.2011.05.006,
   author = {Wu, Qian and Lu, Qiuli and Wang, Yingqian},
   title = {\ensuremath{({\Delta}+1)}-total-colorability of plane graphs of maximum degree \ensuremath{{\Delta}{\ensuremath{\geqslant}}6} with neither chordal 5-cycle nor chordal 6-cycle},
   journal = {Information Processing Letters},

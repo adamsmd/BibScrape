@@ -1,7 +1,7 @@
 https://www.sciencedirect.com/science/article/pii/S0020019011001281
 
 Complex math in abstract
-@article{Cygan:2011:10.1016/j.ipl.2011.05.008,
+@article{Cygan:2011:channel:10.1016/j.ipl.2011.05.008,
   author = {Cygan, Marek and Kowalik, {\L}ukasz},
   title = {Channel assignment via fast zeta transform},
   journal = {Information Processing Letters},

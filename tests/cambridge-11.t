@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692
 
 Unicode in author, "Mc" name
-@article{McBride:1995:10.1017/S0959269500002970,
+@article{McBride:1995:francois:10.1017/S0959269500002970,
   author = {McBride, Nicole},
   affiliation = {University of North London},
   title = {Fran{\c{c}}ois Rastier, Marc Cavazza and Anne Abeill{\'e}, \textit{S{\'e}mantique pour I'Analyse. De la Linguistique {\`a} l'Informatique}. Paris: Masson, 1994, 240 pp. 2 225 845357 9},

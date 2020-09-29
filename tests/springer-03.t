@@ -1,7 +1,7 @@
 doi:10.1007/978-1-84628-609-4_20
 
 Test ISBN and warning about possibly incorrect names
-@inbook{Duchowski:2007:10.1007/978-1-84628-609-4_20,
+@inbook{Duchowski:2007:computer:10.1007/978-1-84628-609-4_20,
   author = {Duchowski, Andrew},
   affiliation = {Clemson University},
   title = {Computer Science},

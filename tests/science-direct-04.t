@@ -1,7 +1,7 @@
 https://www.sciencedirect.com/science/article/pii/S0020019011001153
 
 Subscript and italic in title and abstract
-@article{Tu:2011:10.1016/j.ipl.2011.04.009,
+@article{Tu:2011:factor:10.1016/j.ipl.2011.04.009,
   author = {Tu, Jianhua and Zhou, Wenli},
   title = {A factor 2 approximation algorithm for the vertex cover \ensuremath{{P}_{3}} problem},
   journal = {Information Processing Letters},

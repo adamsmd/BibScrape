@@ -17,7 +17,7 @@ WARNING: Possibly incorrect name: Brooks, G.
 WARNING: Possibly incorrect name: Hanson, C.
 WARNING: Possibly incorrect name: Pitman, K.M.
 WARNING: Possibly incorrect name: Wand, M.
-@article{Abelson:1998:10.1023/A:1010051815785,
+@article{Abelson:1998:revised:10.1023/A:1010051815785,
   author = {Abelson, H. and Dybvig, R.K. and Haynes, C.T. and Rozas, G.J. and IV, N.I. Adams and Friedman, D.P. and Kohlbecker, E. and Jr., G.L. Steele and Bartley, D.H. and Halstead, R. and Oxley, D. and Sussman, G.J. and Brooks, G. and Hanson, C. and Pitman, K.M. and Wand, M.},
   title = {Revised 5 Report on the Algorithmic Language {S}cheme},
   journal = {Higher-Order and Symbolic Computation},

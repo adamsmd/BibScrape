@@ -1,7 +1,7 @@
 https://www.sciencedirect.com/science/article/pii/S0304397500000499
 
 <ce:title> from 'note' moved to series.  Need to canonicalize PEPM'97.
-@article{Melski:2000:10.1016/S0304-3975(00)00049-9,
+@article{Melski:2000:interconvertibility:10.1016/S0304-3975(00)00049-9,
   author = {Melski, David and Reps, Thomas},
   title = {Interconvertibility of a class of set constraints and context-free-language reachability},
   journal = {Theoretical Computer Science},

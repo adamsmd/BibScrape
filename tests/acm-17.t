@@ -1,7 +1,7 @@
 https://portal.acm.org/citation.cfm?id=242324
 
 Issue is "4es"
-@article{Blakeley:1996:10.1145/242224.242324,
+@article{Blakeley:1996:thoughts:10.1145/242224.242324,
   author = {Blakeley, Jos{\'e}},
   title = {Thoughts on directions in database research},
   journal = {ACM Computing Surveys (CSUR)},

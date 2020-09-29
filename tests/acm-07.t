@@ -1,7 +1,7 @@
 https://portal.acm.org/citation.cfm?id=1614435
 
 Subscript in title
-@article{Benedikt:2009:10.1145/1614431.1614435,
+@article{Benedikt:2009:regular:10.1145/1614431.1614435,
   author = {Benedikt, Michael and Segoufin, Luc},
   title = {Regular tree languages definable in {FO} and in {FO}\textsubscript{\textit{mod}}},
   journal = {ACM Transactions on Computational Logic (TOCL)},

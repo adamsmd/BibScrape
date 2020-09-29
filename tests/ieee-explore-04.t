@@ -1,7 +1,7 @@
 https://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4567935&abstractAccess=no&userType=
 
 Multi range month
-@inproceedings{Maier:1977:10.1109/SFCS.1977.4,
+@inproceedings{Maier:1977:space:10.1109/SFCS.1977.4,
   author = {Maier, David},
   affiliation = {Princeton University, Princeton, NJ, USA},
   title = {A space efficient method for the lowest common ancestor problem and an application to finding negative cycles},

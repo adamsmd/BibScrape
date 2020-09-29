@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8368550
 
 Front matter
-@article{Tolmach:2011:10.1017/S0956796811000190,
+@article{Tolmach:2011:special:10.1017/S0956796811000190,
   author = {Tolmach, Andrew and Leroy, Xavier},
   affiliation = {Portland State University and INRIA Paris-Rocquencourt},
   title = {Special Issue Dedicated to {ICFP} 2009 Editorial},

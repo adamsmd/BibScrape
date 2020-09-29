@@ -1,7 +1,7 @@
 https://portal.acm.org/citation.cfm?id=258960
 
 Fix Blu -> Blume.  (Bug in ACM BibTeX.)  Entity encoding in abstract.
-@inproceedings{Blume:1997:10.1145/258948.258960,
+@inproceedings{Blume:1997:lambda-splitting:10.1145/258948.258960,
   author = {Blume, Matthias and Appel, Andrew W.},
   title = {Lambda-splitting: a higher-order approach to cross-module optimizations},
   booktitle = {Proceedings of the Second ACM SIGPLAN International Conference on Functional Programming},

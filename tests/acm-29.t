@@ -2,7 +2,7 @@ https://dl.acm.org/citation.cfm?id=2175516
 
 Wrong publisher: Springer article via ACM
 WARNING: 'A' may need to be wrapped in curly braces if it needs to stay capitalized
-@inproceedings{Vardoulakis:2010:10.1007/978-3-642-11957-6_30,
+@inproceedings{Vardoulakis:2010:cfa2:10.1007/978-3-642-11957-6_30,
   author = {Vardoulakis, Dimitrios and Shivers, Olin},
   editor = {Gordon, Andrew D.},
   affiliation = {Northeastern University and Northeastern University},

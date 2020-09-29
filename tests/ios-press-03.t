@@ -1,7 +1,7 @@
 https://content.iospress.com/articles/fundamenta-informaticae/fi65-1-2-04
 
 Unicode in author
-@article{Blanqui:2005,
+@article{Blanqui:2005:inductive,
   author = {Blanqui, Fr{\'e}d{\'e}ric},
   title = {Inductive types in the Calculus of Algebraic Constructions},
   journal = {Fundamenta Informaticae},

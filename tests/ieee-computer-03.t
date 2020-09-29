@@ -1,7 +1,7 @@
 https://doi.ieeecomputersociety.org/10.1109/LICS.2010.8
 
 Unicode in title and abstract
-@inproceedings{Endrullis:2010:10.1109/LICS.2010.8,
+@inproceedings{Endrullis:2010:modular:10.1109/LICS.2010.8,
   author = {Endrullis, J{\"o}rg and Hendriks, Dimitri and Klop, Jan Willem},
   title = {Modular Construction of Fixed Point Combinators and Clocked B{\"o}hm Trees},
   booktitle = {Logic in Computer Science, Symposium on},

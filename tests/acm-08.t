@@ -1,7 +1,7 @@
 https://portal.acm.org/citation.cfm?id=1614431.1614436
 
 Unicode in title
-@article{Guidi:2009:10.1145/1614431.1614436,
+@article{Guidi:2009:formal:10.1145/1614431.1614436,
   author = {Guidi, Ferruccio},
   title = {The formal system {\textgreek{l}}{\textgreek{d}}},
   journal = {ACM Transactions on Computational Logic (TOCL)},

@@ -1,7 +1,7 @@
 https://www.jstor.org/stable/2975544
 
 A simple test
-@article{Leron:1983:10.2307/2975544,
+@article{Leron:1983:structuring:10.2307/2975544,
   author = {Leron, Uri},
   title = {Structuring Mathematical Proofs},
   journal = {The American Mathematical Monthly},

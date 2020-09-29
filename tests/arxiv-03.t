@@ -1,7 +1,7 @@
 https://arxiv.org/pdf/2009.10929.pdf
 
 PDF link.  Affiliation.  Unicode in affiliation.
-@misc{Barenbaum:2020:arXiv.2009.10929,
+@misc{Barenbaum:2020:semantics:arXiv.2009.10929,
   author = {Barenbaum, Pablo and Lochbaum, Federico and Milicich, Mariana},
   title = {Semantics of a Relational {\textgreek{l}}-Calculus (Extended Version)},
   howpublished = {arXiv.org},

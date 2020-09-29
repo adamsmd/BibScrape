@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=114969
 
 "Mc" name
-@article{McBride:2002:10.1017/S0956796802004355,
+@article{McBride:2002:faking:10.1017/S0956796802004355,
   author = {McBride, Conor},
   affiliation = {University of Durham},
   title = {Faking it Simulating dependent types in {H}askell},

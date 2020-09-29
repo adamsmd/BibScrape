@@ -2,7 +2,7 @@ https://comjnl.oxfordjournals.org/content/53/5/592.abstract
 
 Italics in title and abstract.  Has subtitle.
 WARNING: Oxford imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
-@article{Baccelli:2010:10.1093/comjnl/bxp049,
+@article{Baccelli:2010:time--space:10.1093/comjnl/bxp049,
   author = {Baccelli, Fran{\c{c}}ois and B{\l}aszczyszyn, Bart{\l}omiej and M{\"u}hlethaler, Paul},
   affiliation = {INRIA/ENS, 45 rue d{\textquoteright}Ulm, 75005 Paris, France and INRIA/ENS and Mathematical InstituteUniversity of Wroc{\l}aw, 45 rue d{\textquoteright}Ulm, 75005 Paris, France and INRIA, Le Chesnay, France},
   title = {Time{--}Space Opportunistic Routing in Wireless \emph{Ad hoc} Networks: Algorithms and Performance Optimization by Stochastic Geometry},

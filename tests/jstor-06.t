@@ -1,7 +1,7 @@
 https://www.jstor.org/stable/10.2307/3001616
 
 Superscript and Unicode in title
-@article{Cochran:1954:10.2307/3001616,
+@article{Cochran:1954:methods:10.2307/3001616,
   author = {Cochran, William G.},
   title = {Some Methods for Strengthening the Common {\textgreek{q}}\textsuperscript{2} Tests},
   journal = {Biometrics},

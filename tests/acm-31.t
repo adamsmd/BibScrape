@@ -1,7 +1,7 @@
 https://dl.acm.org/doi/10.1145/1149982.1149987
 
 Use of SIGPLAN Notices even though we normally avoid it
-@article{Adams:2006:10.1145/1149982.1149987,
+@article{Adams:2006:fast:10.1145/1149982.1149987,
   author = {Adams, Michael D. and Wise, David S.},
   title = {Fast additions on masked integers},
   journal = {ACM SIGPLAN Notices},

@@ -1,7 +1,7 @@
 https://arxiv.org/abs/1708.06226
 
 DOI.  Unicode in authors.
-@misc{CsuhajVarju:2017:arXiv.1708.06226,
+@misc{CsuhajVarju:2017:proceedings:arXiv.1708.06226,
   author = {Csuhaj-Varj{\'u}, Erzs{\'e}bet and D{\"o}m{\"o}si, P{\'a}l and Vaszil, Gy{\"o}rgy},
   title = {Proceedings 15th International Conference on Automata and Formal Languages},
   howpublished = {arXiv.org},

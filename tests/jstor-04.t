@@ -1,7 +1,7 @@
 https://www.jstor.org/stable/10.2307/3703997
 
 Unicode in author name
-@article{Robins:2000:10.2307/3703997,
+@article{Robins:2000:marginal:10.2307/3703997,
   author = {Robins, James M. and Hern{\'a}n, Miguel {\'A}ngel and Brumback, Babette},
   title = {Marginal Structural Models and Causal Inference in Epidemiology},
   journal = {Epidemiology},

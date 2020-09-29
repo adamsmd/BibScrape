@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=185139
 
 "Mc" name
-@article{McBride:2003:10.1017/S0956796803004957,
+@article{McBride:2003:first-order:10.1017/S0956796803004957,
   author = {McBride, Conor},
   affiliation = {University of Durham},
   title = {First-order unification by structural recursion},

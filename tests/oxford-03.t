@@ -2,7 +2,7 @@ https://comjnl.oxfordjournals.org/content/53/10/1691.abstract
 
 Superscript in title and abstract
 WARNING: Oxford imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
-@article{Shih:2010:10.1093/comjnl/bxp081,
+@article{Shih:2010:sequence:10.1093/comjnl/bxp081,
   author = {Shih, Yu-Ying and Chao, Daniel},
   affiliation = {Department of Information Management, National Taipei College of Business, Taipei, ROC and Department of Graduate Institute of Industrial and Business Management, National Taipei University of Technology, Taipei, ROC and Department of MIS, National Cheng Chi University, Taipei, ROC},
   title = {Sequence of Control in {S}\textsuperscript{3}{PMR}},

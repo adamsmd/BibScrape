@@ -1,7 +1,7 @@
 https://content.iospress.com/articles/fundamenta-informaticae/fi104-1-2-04
 
 Unicode in title
-@article{Geffert:2010:10.3233/FI-2010-335,
+@article{Geffert:2010:pebble:10.3233/FI-2010-335,
   author = {Geffert, Viliam and Pighizzini, Giovanni and Mereghetti, Carlo},
   title = {One Pebble Versus {\ensuremath{\epsilon}} {\textperiodcentered} log n Bits},
   journal = {Fundamenta Informaticae},

@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8440159
 
 Chinese name, unusual subtitle placement
-@article{Kameyama:2011:10.1017/S0956796811000256,
+@article{Kameyama:2011:shifting:10.1017/S0956796811000256,
   author = {Kameyama, Yukiyoshi and Kiselyov, Oleg and Shan, Chung-chieh},
   affiliation = {University of Tsukuba and Cornell University},
   title = {Shifting the stage: Staging with delimited control},

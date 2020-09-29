@@ -1,7 +1,7 @@
 https://content.iospress.com/articles/intelligent-data-analysis/ida00335
 
 Subtitle, subscript in title and abstract
-@article{Wickramaratna:2008:10.3233/IDA-2008-12405,
+@article{Wickramaratna:2008:discovering:10.3233/IDA-2008-12405,
   author = {Wickramaratna, Kasun and Kubat, Miroslav and Minnett, Peter},
   title = {Discovering numeric laws, a case study: {CO}\textsubscript{2} fugacity in the ocean},
   journal = {Intelligent Data Analysis},

@@ -1,7 +1,7 @@
 https://doi.org/10.1007/BF01975012
 
 Test starting from the export tab
-@article{Kramer:1955:10.1007/BF01975012,
+@article{Kramer:1955:ein:10.1007/BF01975012,
   author = {Kramer, Gustav},
   affiliation = {Abteilung Kramer, Aus dem Max-Planck-Institut f{\"u}r Meeresbiologie, Wilhelmshaven},
   title = {Ein weiterer Versuch, die Orientierung von Brieftauben durch jahreszeitliche {\"A}nderung der Sonnenh{\"o}he zu beeinflussen. Gleichzeitig eine Kritik der Theorie des Versuchs},

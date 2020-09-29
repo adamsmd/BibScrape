@@ -3,7 +3,7 @@ https://comjnl.oxfordjournals.org/content/52/7/824.abstract
 Unicode in title and abstract.  Underscore in title and abstract.
 WARNING: Oxford imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
 WARNING: 'A' may need to be wrapped in curly braces if it needs to stay capitalized
-@article{Alhadidi:2009:10.1093/comjnl/bxn065,
+@article{Alhadidi:2009:lsaop:10.1093/comjnl/bxn065,
   author = {Alhadidi, D[ima] and Belblidia, N[adia] and Debbabi, M[ourad] and Bhattacharya, P[rabir]},
   affiliation = {Computer Security Laboratory (CSL), Concordia Institute for Information Systems Engineering, Concordia University, Montreal, Quebec, CanadaH3G 1M8 and Computer Security Laboratory (CSL), Concordia Institute for Information Systems Engineering, Concordia University, Montreal, Quebec, CanadaH3G 1M8 and Computer Security Laboratory (CSL), Concordia Institute for Information Systems Engineering, Concordia University, Montreal, Quebec, CanadaH3G 1M8 and Computer Security Laboratory (CSL), Concordia Institute for Information Systems Engineering, Concordia University, Montreal, Quebec, CanadaH3G 1M8},
   title = {{\textgreek{l}}_{SAOP}: A Security {AOP} Calculus},

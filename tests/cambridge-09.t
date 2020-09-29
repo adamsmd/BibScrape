@@ -1,7 +1,7 @@
 https://journals.cambridge.org/action/displayAbstract?aid=7916651
 
 Subtitle
-@article{Oliveira:2010:10.1017/S0956796810000171,
+@article{Oliveira:2010:scala:10.1017/S0956796810000171,
   author = {Oliveira, Bruno C. d. S. and Gibbons, Jeremy},
   affiliation = {Seoul National University and Oxford University Computing Laboratory},
   title = {{S}cala for generic programmers: Comparing {H}askell and {S}cala support for generic programming},

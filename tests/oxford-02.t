@@ -2,7 +2,7 @@ https://comjnl.oxfordjournals.org/content/54/1/31.abstract
 
 Unicode in authors
 WARNING: Oxford imposes rate limiting.  BibScrape might hang if you try multiple papers in a row.
-@article{Cirstea:2011:10.1093/comjnl/bxp004,
+@article{Cirstea:2011:modal:10.1093/comjnl/bxp004,
   author = {C{\^{\i}}rstea, Corina and Kurz, Alexander and Pattinson, Dirk and Schr{\"o}der, Lutz and Venema, Yde},
   affiliation = {School of Electronics and Computer Science, University of Southampton, Highfield, Southampton SO17 1BJ, UK and Department of Computer Science, University of Leicester, University Road, Leicester, LE1 7RH, UK and Department of Computing, Imperial College London, 180 Queen's Gate, London SW7 2AZ, UK and DFKI Bremen and Department of Computer Science, Universit{\"a}t Bremen, Cartesium, Enrique-Schmidt-Str. 5, 28359 Bremen, Germany and Institute for Logic, Language and Computation, University of Amsterdam, Plantage Muidergracht 24, 1018 TV Amsterdam, The Netherlands},
   title = {Modal Logics are Coalgebraic},
