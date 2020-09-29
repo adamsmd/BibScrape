@@ -28,6 +28,7 @@ class Fix {
   ## INPUTS
   has Array:D[Str:D] @.name-groups is required;
   has Array:D[Str:D] @.noun-groups is required;
+  has Str:D @.stop-words-strs is required;
 
   ## OPERATING MODES
   has Bool:D $.scrape is required;
@@ -73,9 +74,10 @@ class Fix {
     }
     my Array:D[Str:D] @name-groups = blocks(<names>, <name>);
     my Array:D[Str:D] @noun-groups = blocks(<nouns>, <noun>);
+    my Str:D @stop-words-strs = blocks(<stop-words>, <stop-word>)[*;*]».fc;
 
     # Note: Coersion to a Map prevents odd double nesting on list arguments
-    self.bless(:@name-groups, :@noun-groups, |%args.Map);
+    self.bless(:@name-groups, :@noun-groups, :@stop-words-strs, |%args.Map);
   }
 
   method fix(BibScrape::BibTeX::Entry:D $entry is copy --> BibScrape::BibTeX::Entry:D) {
@@ -263,9 +265,23 @@ class Fix {
     my Str:D $name = $name-value.defined ?? last-name(split-names($name-value.simple-str).head) !! 'anon';
     $name ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
     $name ~~ s:g/ <-[A..Za..z0..9]> //; # Remove non-alphanum
-    my Str:D $year = $entry.fields<year>:exists ?? ":" ~ $entry.fields<year>.simple-str !! "";
-    my Str:D $doi = $entry.fields<doi>:exists ?? ":" ~ $entry.fields<doi>.simple-str !! "";
-    $entry.key = $name ~ $year ~ $doi;
+
+    my BibScrape::BibTeX::Value:_ $title-value = $entry.fields<title>;
+    my Str:D $title = $title-value.defined ?? $title-value.simple-str !! '';
+    $title ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
+    $title ~~ s:g/ <-[\ \-A..Za..z0..9]> //; # Remove non-alphanum, space or hyphen
+    $title = ($title.words.grep({$_.fc ∉ @.stop-words-strs}).head // '').fc;
+    $title = $title ne '' ?? ':' ~ $title !! '';
+
+    my Str:D $year = $entry.fields<year>:exists ?? ':' ~ $entry.fields<year>.simple-str !! '';
+
+    my Str:D $doi = $entry.fields<doi>:exists ?? ':' ~ $entry.fields<doi>.simple-str !! '';
+    if $entry.fields<archiveprefix>:exists
+        and $entry.fields<archiveprefix>.simple-str eq 'arXiv'
+        and $entry.fields<eprint>:exists {
+      $doi = ':arXiv.' ~ $entry.fields<eprint>.simple-str;
+    }
+    $entry.key = $name ~ $year ~ $title ~ $doi;
 
     # Put fields in a standard order (also cleans out any fields we deleted)
     my Int:D %fields = @.field.map(* => 0);

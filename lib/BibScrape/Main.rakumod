@@ -133,6 +133,12 @@ Matching is case sensitive.
 ;;
 The default nouns file provides several examples with comments and recommended
 practices.
+;
+;------------------------
+;STOP-WORDS FILES
+;------------------------
+;;
+TODO
 }
 
   #|{
@@ -177,6 +183,16 @@ practices.
   Str:D :@noun = Array[Str:D].new(),
   #={Treat <Str> as if it were the content of a nouns file.
     See the NOUNS FILES section for details about nouns files.
+    Semicolons in <Str> are interpreted as newlines.}
+
+  IO::Path:D :@stop-words = Array[IO::Path:D](<.>.IO) but Sep[';'],
+  #={The nouns files to use.
+    See the STOP-WORDS FILES and LIST FLAGS sections for details.
+    The file name "." means "stop-words.cfg" in the user-configuration directory.}
+
+  Str:D :@stop-word = Array[Str:D].new(),
+  #={Treat <Str> as if it were the content of a stop-words file.
+    See the STOP-WORDS FILES section for details about stop-words files.
     Semicolons in <Str> are interpreted as newlines.}
 
   #|{
@@ -313,8 +329,7 @@ practices.
       .add(<BibScrape>);
   my Str:D constant $names-filename = 'names.cfg';
   my Str:D constant $nouns-filename = 'nouns.cfg';
-  my IO::Path:D $default-names = $config-dir-path.add('names.cfg');
-  my IO::Path:D $default-nouns = $config-dir-path.add('nouns.cfg');
+  my Str:D constant $stop-words-filename = 'stop-words.cfg';
 
   if $config-dir {
     say "User-configuration directory: $config-dir-path";
@@ -322,7 +337,7 @@ practices.
 
   if $init {
     $config-dir-path.mkdir;
-    for ($names-filename, $nouns-filename) -> Str:D $src {
+    for ($names-filename, $nouns-filename, $stop-words-filename) -> Str:D $src {
       my IO::Path:D $dst = $config-dir-path.add($src);
       if $dst.e {
         say "Not copying default $src since $dst already exists";
@@ -348,12 +363,15 @@ practices.
   }
   @names = @names.map(default-file('Names', $names-filename));
   @nouns = @nouns.map(default-file('Nouns', $nouns-filename));
+  @stop-words = @stop-words.map(default-file('Stop-words', $stop-words-filename));
 
   my BibScrape::Fix::Fix:D $fixer = BibScrape::Fix::Fix.new(
     :@names,
     :@name,
     :@nouns,
     :@noun,
+    :@stop-words,
+    :@stop-word,
     :$scrape,
     :$fix,
     :$escape-acronyms,
