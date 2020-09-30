@@ -2,20 +2,29 @@
 
 ## How to make a release
 
-- Init
+- Check git stash
+
+  ```bash
+  git stash list
   ```
+
+- Init
+
+  ```bash
   bin/bibscrape --config-dir
   rm -r ~/.config/BibScrape
   bin/bibscrape --init
   ```
 
 - Check `tests/`
-  ```
+
+  ```bash
   ./test.sh tests/*.t
   ```
 
 - Check `tests/failing/`
-  ```
+
+  ```bash
   diff -ru tests tests/failing/|wdiff -dt
 
   diff -rqs tests tests/failing/ | grep ' are identical$'
@@ -27,7 +36,8 @@
   ```
 
 - Check and update help
-  ```
+
+  ```bash
   bin/bibscrape --help
   bin/bibscrape --help >HELP.txt
   ```
