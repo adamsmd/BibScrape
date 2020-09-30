@@ -601,21 +601,24 @@ sub scrape-springer(--> BibScrape::BibTeX::Entry:D) {
   ## HTML Meta
   my BibScrape::HtmlMeta::HtmlMeta:D $meta = html-meta-parse($web-driver);
   $entry.type = html-meta-type($meta);
-  html-meta-bibtex($entry, $meta, :author, :publisher);
+  html-meta-bibtex($entry, $meta, :publisher);
 
-  for 'author', 'editor' -> Str:D $key {
-    if $entry.fields{$key}:exists {
-      my Str:D $names = $entry.fields{$key}.simple-str;
-      $names ~~ s:g/ ' '* "\n" / /;
-      $entry.fields{$key} = BibScrape::BibTeX::Value.new($names);
-    }
+  if $entry.fields<editor>:exists {
+    my Str:D $names = $entry.fields<editor>.simple-str;
+    $names ~~ s:g/ ' '* "\n" / /;
+    $entry.fields<editor> = BibScrape::BibTeX::Value.new($names);
   }
 
   ## Author
-  my Str:D @authors =
-    ($web-driver.find_elements_by_class_name( 'authors-affiliations__name' ),
-      $web-driver.find_elements_by_class_name( 'c-article-authors-search__title' )
-    ).flat».get_property( 'innerHTML' );
+  my Any:D @authors =
+    $web-driver.find_elements_by_css_selector(
+      '.c-article-authors-search__title,
+        .c-article-author-institutional-author__name,
+        .authors-affiliations__name')
+    .map({
+      $_.get_attribute( 'class' ) ~~ / « 'c-article-author-institutional-author__name' » /
+        ?? '{' ~ $_.get_property( 'innerHTML' ) ~ '}'
+        !! $_.get_property( 'innerHTML' ) });
   @authors.map({ s:g/ '&nbsp;' / /; });
   $entry.fields<author> = BibScrape::BibTeX::Value.new(@authors.join( ' and ' ));
 
