@@ -59,6 +59,20 @@ INPUTS
     section for details about nouns files. Semicolons in <Str> are interpreted
     as newlines.
 
+ --stop-words=<File> ...    Default: '.'
+
+                            Separator: ';'
+
+    The nouns files to use. See the STOP-WORDS FILES and LIST FLAGS sections for
+    details. The file name "." means "stop-words.cfg" in the user-configuration
+    directory.
+
+ --stop-word=<Str> ...      Default:
+
+    Treat <Str> as if it were the content of a stop-words file. See the
+    STOP-WORDS FILES section for details about stop-words files. Semicolons in
+    <Str> are interpreted as newlines.
+
 ------------------------
 OPERATING MODES
 ------------------------
@@ -155,8 +169,9 @@ BIBTEX FIELD OPTIONS
                             'pages' 'articleno' 'numpages' 'edition' 'day'
                             'month' 'year' 'issue_date' 'organization'
                             'publisher' 'address' 'language' 'isbn' 'issn' 'doi'
-                            'url' 'eprint' 'bib_scrape_url' 'note' 'annote'
-                            'keywords' 'abstract'
+                            'url' 'eprint' 'archiveprefix' 'primaryclass'
+                            'bib_scrape_url' 'note' 'annote' 'keywords'
+                            'abstract'
 
                             Separator: ','
 
@@ -298,3 +313,15 @@ them. Matching is case sensitive.
 
 The default nouns file provides several examples with comments and recommended
 practices.
+
+------------------------
+STOP-WORDS FILES
+------------------------
+
+Stop-words files specify words in titles that should be skipped when generating
+BibTeX keys.
+
+Stop-words files are plain text in Unicode format. Anything after # (hash) is a
+comment. Blank or whitespace-only lines are ignored.
+
+Each line represents one word. Matching is case insensitive.
