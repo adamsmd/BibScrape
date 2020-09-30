@@ -269,7 +269,7 @@ class Fix {
     my BibScrape::BibTeX::Value:_ $title-value = $entry.fields<title>;
     my Str:D $title = $title-value.defined ?? $title-value.simple-str !! '';
     $title ~~ s:g/ '\\' <-[{}\\]>+ '{' /\{/; # Remove codes that add accents
-    $title ~~ s:g/ <-[\ \-A..Za..z0..9]> //; # Remove non-alphanum, space or hyphen
+    $title ~~ s:g/ <-[\ \-/A..Za..z0..9]> //; # Remove non-alphanum, space or hyphen
     $title = ($title.words.grep({$_.fc ∉ @.stop-words-strs}).head // '').fc;
     $title = $title ne '' ?? ':' ~ $title !! '';
 
