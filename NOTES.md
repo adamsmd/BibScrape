@@ -47,7 +47,7 @@
 - Update Version
   - Update `version` in `META6.json`
   - `bin/bibscrape --version`
-  - `zef install .; bibscrape --version; zef uninstall`
+  - `zef install .; bibscrape --version; zef uninstall BibScrape`
   - Commit the edit with message "Version 20.09.21"
   - `git tag v20.09.21`
 
