@@ -461,45 +461,49 @@ class Fix {
           my Str:D $str = self.html($is-title, $node.nodes);
           $str eq '' ?? '' !! "\\$tag\{" ~ $str ~ "\}"
         }
-        given $node.name {
-          when 'a' and $node.attribs<class>:exists and $node.attribs<class> ~~ / « 'xref-fn' » / { '' } # Omit footnotes added by Oxford when on-campus
-          when 'a' { self.html($is-title, $node.nodes) } # Remove <a> links
-          when 'p' | 'par' { self.html($is-title, $node.nodes) ~ "\n\n" } # Replace <p> with \n\n
-          when 'i' | 'italic' { wrap( 'textit' ) } # Replace <i> and <italic> with \textit
-          when 'em' { wrap( 'emph' ) } # Replace <em> with \emph
-          when 'b' | 'strong' { wrap( 'textbf' ) } # Replace <b> and <strong> with \textbf
-          when 'tt' | 'code' { wrap( 'texttt' ) } # Replace <tt> and <code> with \texttt
-          when 'sup' | 'supscrpt' { wrap( 'textsuperscript' ) } # Superscripts
-          when 'sub' { wrap( 'textsubscript' ) } # Subscripts
-          when 'svg' { '' }
-          when 'script' { '' }
-          when 'math' { $node.nodes ?? '\ensuremath{' ~ self.math($is-title, $node.nodes) ~ '}' !! '' }
-          #when 'img' { '\{' ~ self.html($is-title, $node.nodes) ~ '}' }
-            # $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
-          #when 'email' { '\{' ~ self.html($is-title, $node.nodes) ~ '}' }
-            # $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
-          when 'span' {
-            if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
-              wrap( 'texttt' )
-            } elsif $node.attribs<aria-hidden>:exists {
-              ''
-            } elsif $node.attribs<class>:exists {
-              given $node.attribs<class> {
-                when / 'monospace' / { wrap( 'texttt' ) }
-                when / 'italic' / { wrap( 'textit' ) }
-                when / 'bold' / { wrap( 'textbf' ) }
-                when / 'sup' / { wrap( 'textsuperscript' ) }
-                when / 'sub' / { wrap( 'textsubscript' ) }
-                when / 'sc' | [ 'type' ? 'small' '-'? 'caps' ] | 'EmphasisTypeSmallCaps' / {
-                  wrap( 'textsc' )
+        if ($node.attribs<aria-hidden> // '') eq 'true' {
+          ''
+        } else {
+          given $node.name {
+            when 'a' and $node.attribs<class>:exists and $node.attribs<class> ~~ / « 'xref-fn' » / { '' } # Omit footnotes added by Oxford when on-campus
+            when 'a' { self.html($is-title, $node.nodes) } # Remove <a> links
+            when 'p' | 'par' { self.html($is-title, $node.nodes) ~ "\n\n" } # Replace <p> with \n\n
+            when 'i' | 'italic' { wrap( 'textit' ) } # Replace <i> and <italic> with \textit
+            when 'em' { wrap( 'emph' ) } # Replace <em> with \emph
+            when 'b' | 'strong' { wrap( 'textbf' ) } # Replace <b> and <strong> with \textbf
+            when 'tt' | 'code' { wrap( 'texttt' ) } # Replace <tt> and <code> with \texttt
+            when 'sup' | 'supscrpt' { wrap( 'textsuperscript' ) } # Superscripts
+            when 'sub' { wrap( 'textsubscript' ) } # Subscripts
+            when 'svg' { '' }
+            when 'script' { '' }
+            when 'math' { $node.nodes ?? '\ensuremath{' ~ self.math($is-title, $node.nodes) ~ '}' !! '' }
+            #when 'img' { '\{' ~ self.html($is-title, $node.nodes) ~ '}' }
+              # $str ~~ s:i:g/"<img src=\"/content/" <[A..Z0..9]>+ "/xxlarge" (\d+) ".gif\"" .*? ">"/{chr($0)}/; # Fix for Springer Link
+            #when 'email' { '\{' ~ self.html($is-title, $node.nodes) ~ '}' }
+              # $str ~~ s:i:g/"<email>" (.*?) "</email>"/$0/; # Fix for Cambridge
+            when 'span' {
+              if ($node.attribs<style> // '') ~~ / 'font-family:monospace' / {
+                wrap( 'texttt' )
+              } elsif $node.attribs<aria-hidden>:exists {
+                ''
+              } elsif $node.attribs<class>:exists {
+                given $node.attribs<class> {
+                  when / 'monospace' / { wrap( 'texttt' ) }
+                  when / 'italic' / { wrap( 'textit' ) }
+                  when / 'bold' / { wrap( 'textbf' ) }
+                  when / 'sup' / { wrap( 'textsuperscript' ) }
+                  when / 'sub' / { wrap( 'textsubscript' ) }
+                  when / 'sc' | [ 'type' ? 'small' '-'? 'caps' ] | 'EmphasisTypeSmallCaps' / {
+                    wrap( 'textsc' )
+                  }
+                  default { self.html($is-title, $node.nodes) }
                 }
-                default { self.html($is-title, $node.nodes) }
+              } else {
+                self.html($is-title, $node.nodes)
               }
-            } else {
-              self.html($is-title, $node.nodes)
             }
+            default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ self.html($is-title, $node.nodes) ~ "[/{$node.name}]" }
           }
-          default { say "WARNING: Unknown HTML tag: {$node.name}"; "[{$node.name}]" ~ self.html($is-title, $node.nodes) ~ "[/{$node.name}]" }
         }
       }
 
