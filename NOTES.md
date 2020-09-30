@@ -52,9 +52,8 @@
   - `git tag v20.09.21`
 
 - Release
-  - `git push origin master`
-  - `git push origin v20.09.21`
-    - ?? `git push origin master v20.09.21`
+  - `git push --all`
+  - `git push --tags`
 
 ## Words
 
