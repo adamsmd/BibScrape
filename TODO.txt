@@ -3,6 +3,12 @@
 ########
 ## Unsorted
 
+':' path-sensitive ==> WARNING: may need ':' {P}ath-sensitive
+
+When warning give flag to apply
+
+tests/failing/
+
 ########
 ## Wish list
 
