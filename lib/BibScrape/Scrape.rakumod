@@ -216,7 +216,7 @@ sub scrape-arxiv(--> BibScrape::BibTeX::Entry:D) {
       if $affiliation ne '';
 
     # How published
-    $entry.fields<howpublished> = BibScrape::BibTeX::Value.new('arXiv.org'); # TODO
+    $entry.fields<howpublished> = BibScrape::BibTeX::Value.new('arXiv.org');
 
     # Year, month and day
     my Str:D $published = text($xml-entry, 'published');
@@ -247,28 +247,15 @@ sub scrape-arxiv(--> BibScrape::BibTeX::Entry:D) {
     my Str:D $abstract = text($xml-entry, 'summary');
     $entry.fields<abstract> = BibScrape::BibTeX::Value.new($abstract);
 
-    # --<link> 	Can be up to 3 given url's associated with this article.
-    # --<category> 	The arXiv or ACM or MSC category for an article if present.
-    # --<arxiv:comment> 	The authors comment if present.
-    # --<arxiv:journal_ref> 	A journal reference if present.
-    # --<arxiv:doi> 	A url for the resolved DOI to an external resource if present.
+    # The following XML elements are ignored
+    # <link> 	Can be up to 3 given url's associated with this article.
+    # <category> 	The arXiv or ACM or MSC category for an article if present.
+    # <arxiv:comment> 	The authors comment if present.
+    # <arxiv:journal_ref> 	A journal reference if present.
+    # <arxiv:doi> 	A url for the resolved DOI to an external resource if present.
 
     $entry
   }
-
-# https://arxiv.org/abs/2003.00003
-# https://arxiv.org/abs/2003.00368 v2 url-in-abs uni-in-auth
-# https://arxiv.org/abs/2008.02483 doi but only to arxiv, affiliation
-# -https://arxiv.org/pdf/2009.10272.pdf
-
-# -https://arxiv.org/abs/1708.06459v1 affiliation
-# -https://arxiv.org/abs/1708.06461v1
-
-# +https://arxiv.org/abs/2009.10929v2 v2 uni-in-title uni-in-abs
-# +https://arxiv.org/pdf/1708.06226.pdf uni-in-auth++
-# +https://arxiv.org/abs/1708.06460 uni-in-affil
-# +https://arxiv.org/abs/hep-ex/0307015 doi-to-other
-
 }
 
 sub scrape-cambridge(--> BibScrape::BibTeX::Entry:D) {
