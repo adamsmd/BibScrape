@@ -3,6 +3,7 @@
 ## How to make a release
 
 - Run all tests
+- Run all modes (including `--init`)
 - `bin/bibscrape --help >HELP.txt`
 - Commit everything
 - Update `version` in `META6.json`
@@ -21,7 +22,7 @@ https://en.wikipedia.org/wiki/English_grammar#Phrases
 https://papyr.com/hypertextbooks/grammar/
 https://en.wikipedia.org/wiki/Part-of-speech_tagging
 
-### Function words
+### Stop words
 
 STOPWORDS in https://github.com/mattbierbaum/arxiv-bib-overlay/blob/master/src/ui/CiteModal.tsx
 
@@ -30,6 +31,24 @@ https://en.wikipedia.org/wiki/Function_word
 http://flesl.net/Grammar/Grammar_Glossary/closed_open_class.php
 
 https://github.com/Yoast/javascript/blob/develop/packages/yoastseo/src/researches/english/functionWords.js
+
+https://en.wikipedia.org/wiki/Stop_word
+
+https://xpo6.com/list-of-english-stop-words/
+
+https://dev.mysql.com/doc/refman/8.0/en/fulltext-stopwords.html
+
+https://www.textfixer.com/tutorials/common-english-words.txt
+
+https://e-padi.com/stop-words-indonesia-query-php-array.htm
+
+https://code.google.com/archive/p/stop-words/
+
+http://text-analytics101.rxnlp.com/2014/10/all-about-stop-words-for-text-mining.html
+
+https://bitbucket.org/kganes2/text-mining-resources/downloads/
+
+http://snowball.tartarus.org/algorithms/english/stop.txt
 
 ### Nouns
 
