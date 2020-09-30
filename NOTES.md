@@ -2,25 +2,40 @@
 
 ## How to make a release
 
-- Run all tests
-- Run all modes (including `--init`)
-- `bin/bibscrape --help >HELP.txt`
-- Commit everything
-- Update `version` in `META6.json`
-- Commit the edit with message "Version 20.09.21"
-- `git tag v20.09.21`
-- `git push origin master`
-- `git push origin v20.09.21`
-  - ?? `git push origin master v20.09.21`
+- Test
+  - `bin/bibscrape --config-dir`
+  - `rm -r ~/.config/BibScrape`
+  - `bin/bibscrape --init`
+  - `./test.sh tests/*.t`
+  - `bin/bibscrape --help`
+  - `bin/bibscrape --help >HELP.txt`
+  - Commit everything
+
+- Update Version
+  - Update `version` in `META6.json`
+  - `bin/bibscrape --version`
+  - `zef install .; bibscrape --version; zef uninstall`
+  - Commit the edit with message "Version 20.09.21"
+  - `git tag v20.09.21`
+
+- Release
+  - `git push origin master`
+  - `git push origin v20.09.21`
+    - ?? `git push origin master v20.09.21`
 
 ## Words
 
-https://en.wikipedia.org/wiki/English_grammar#Phrases
-  https://en.wikipedia.org/wiki/English_articles
-  https://en.wikipedia.org/wiki/Preposition_and_postposition
-  https://en.wikipedia.org/wiki/Determiner
-https://papyr.com/hypertextbooks/grammar/
-https://en.wikipedia.org/wiki/Part-of-speech_tagging
+- https://en.wikipedia.org/wiki/English_grammar#Phrases
+
+  - https://en.wikipedia.org/wiki/English_articles
+
+  - https://en.wikipedia.org/wiki/Preposition_and_postposition
+
+  - https://en.wikipedia.org/wiki/Determiner
+
+- https://papyr.com/hypertextbooks/grammar/
+
+- https://en.wikipedia.org/wiki/Part-of-speech_tagging
 
 ### Stop words
 
