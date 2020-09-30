@@ -138,7 +138,15 @@ practices.
 ;STOP-WORDS FILES
 ;------------------------
 ;;
-TODO
+Stop-words files specify words in titles that should be skipped when generating
+BibTeX keys.
+;;
+Stop-words files are plain text in Unicode format.
+Anything after # (hash) is a comment.
+Blank or whitespace-only lines are ignored.
+;;
+Each line represents one word.
+Matching is case insensitive.
 }
 
   #|{
