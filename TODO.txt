@@ -1,7 +1,9 @@
 # TODO Items
 
-################################
+########
+## Unsorted
 
+########
 ## Wish list
 
 `use variables :D` that applies to all types
@@ -11,16 +13,18 @@
 
 a test that has 'others' in author names
 
-################################
+########
+## Key generation:
 
-## Priority
-
-### Key generation:
-
-use first n (non-trivial) words
+--title-words-in-key
+--doi-in-key
+--works-in-key
+--key-title-words=<Int>
+--key-doi=<Bool>
   Format: author/editor1.last year title/journal.abbriv
 
-### WebDriver
+########
+## WebDriver
 
 Flag to geckodriver to terminate automatically
 
@@ -31,44 +35,38 @@ Improve performance
   opt.set_capability("pageLoadStrategy", 'eager')
   service_args=['--load-images=no']
 
-load browser as under-window
-
-### Publishers
+########
+## Publishers
 
 usenix
 
-arxiv:
- - normal
- - proceedings: https://arxiv.org/help/submit_index
-   - https://arxiv.org/abs/1708.06226
-   - https://arxiv.org/html/1708.06226
-     - https://arxiv.org/abs/1708.06459v1
-     - https://arxiv.org/abs/1708.06460v1
-     - https://arxiv.org/abs/1708.06461v1
-
-### Output
+########
+## Output
 
 follow jstor links to original publisher
 add abstract to jstor
 get PDF (eprint?)
 
-### Tests
+$entry.fields<howpublished> = BibScrape::BibTeX::Value.new('arXiv.org');
+
+########
+## Tests
 
 flag test suite
 
-### Documentation
+test with enum flag
+
+t/ folder
+
+########
+## Documentation
 
 FEATURES.md
 
-### Code
+########
+## Code
 
-Sort elements in scrape
-
-report multiple noun matches in a title
-Warn when names overlap
-
-In CommandLine (twice):
-  my List:D $list = params($main);
+Sort elements in scrape inside each function
 
 &foo
 Nil
@@ -76,17 +74,7 @@ Nil
 .flat => |@x
 .Array => @x
 
-IsbnRules.rakumod
-
 Inline::Python Crash
-
-unit sub MAIN(
-  Str   $file where *.IO.f = 'file.dat',
-  Int  :$length = 24,
-  Bool :$verbose,
-);
-
-test with enum flag
 
 In Main, #update($item, 'title', { s:g/ <!after "\\" <-[\ {}]>+> '{' (<-[{}]>*) '}' /$0/ });
 
@@ -96,17 +84,22 @@ In Spell, factor out proc generation
 
 MainNounGen: stage1
 
-t/ folder
-
 Check list of omit if empty
 
 Proofread FEATURES.md
 
-### Other
+Page load strategy https://www.selenium.dev/documentation/en/webdriver/page_loading_strategy/
 
 XPath
 
-### Names and Nouns
+########
+## Other
+
+########
+## Names and Nouns
+
+report multiple noun matches in a title
+Warn when names overlap
 
 k{b}
 {K}{b}
@@ -125,21 +118,13 @@ Author names database
 
 Nouns database
 
-IoT (acronym if two upper letters even with lower letters?)
-  (acronym if non-first char is upper case?)
-  (but then only brace non-lower characters
-  Tests: IoT AspectJ
-
 Use ispell?
   spell checkers as a list option (so can run multiple checkers)
 
-Fix {{P}}
-
-## Unsorted
-
-Page load strategy https://www.selenium.dev/documentation/en/webdriver/page_loading_strategy/
-
+########
 ## Test coverage
+
+mode that compares against DBLP
 
 Unicode in Title, Abstract, Author
 Formatted (e.g. superscript, italics) in Title, Abstract
@@ -174,10 +159,7 @@ iospress.metapress.com
 ieeexplore.ieee.org
  U(t,ab,au) S(t,ab) I(t,ab) x m
 
-mode that compares against DBLP
-
-
-
+########
 ## Links
 
 https://github.com/zotero/bib-web
