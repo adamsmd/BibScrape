@@ -2,7 +2,7 @@ https://portal.acm.org/citation.cfm?id=42011
 
 Page numbers with letters
 WARNING: Possibly incorrect name: Teskey, F. N.
-@inproceedings{Teskey:1987:10.1145/42005.42011,
+@inproceedings{Teskey:1987:enriched:10.1145/42005.42011,
   author = {Teskey, F. N.},
   title = {Enriched knowledge representation for information retrieval},
   booktitle = {Proceedings of the 10th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval},

@@ -1,7 +1,7 @@
 https://doi.ieeecomputersociety.org/10.1109/LICS.2010.17
 
 Subscript in title and abstract
-@inproceedings{Place:2010:10.1109/LICS.2010.17,
+@inproceedings{Place:2010:deciding:10.1109/LICS.2010.17,
   author = {Place, Thomas and Segoufin, Luc},
   title = {Deciding Definability in {FO}_2({\textless}_h, {\textless}_v) on Trees},
   booktitle = {2010 25th Annual IEEE Symposium on Logic in Computer Science},

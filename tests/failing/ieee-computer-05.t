@@ -1,9 +1,9 @@
 https://doi.ieeecomputersociety.org/10.1109/LICS.2010.50
 
 Unicode in title
-@inproceedings{Goubault Larrecq:2010:10.1109/LICS.2010.50,
+@inproceedings{GoubaultLarrecq:2010:omega-qrb-domains:10.1109/LICS.2010.50,
   author = {Goubault-Larrecq, Jean},
-  title = {\ensuremath{\omega}QRB-Domains and the Probabilistic Powerdomain},
+  title = {\ensuremath{\omega}-{QRB}-Domains and the Probabilistic Powerdomain},
   booktitle = {2010 25th Annual IEEE Symposium on Logic in Computer Science},
   series = {Logic in Computer Science, Symposium on},
   pages = {352--361},
@@ -11,7 +11,6 @@ Unicode in title
   year = {2010},
   publisher = {IEEE Computer Society},
   address = {Los Alamitos, CA, USA},
-  language = {English},
   isbn = {978-0-7695-4114-3},
   issn = {1043-6871},
   doi = {10.1109/LICS.2010.50},

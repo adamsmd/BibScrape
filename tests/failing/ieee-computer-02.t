@@ -1,7 +1,8 @@
 https://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html
 
 A simple test
-@inproceedings{Chen:2008:10.1109/SITIS.2008.31,
+WARNING: 'A' may need to be wrapped in curly braces if it needs to stay capitalized
+@inproceedings{Chen:2008:core:10.1109/SITIS.2008.31,
   author = {Chen, Yangjun and Chen, Yibin},
   title = {Core Labeling: A New Way to Compress Transitive Closure},
   booktitle = {2008 IEEE International Conference on Signal Image Technology and Internet Based Systems},
@@ -11,7 +12,6 @@ A simple test
   year = {2008},
   publisher = {IEEE Computer Society},
   address = {Los Alamitos, CA, USA},
-  language = {English},
   isbn = {978-0-7695-3493-0},
   doi = {10.1109/SITIS.2008.31},
   bib_scrape_url = {https://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html},
