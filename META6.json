@@ -2,7 +2,7 @@
   "perl" : "6.d",
   "name" : "BibScrape",
   "auth" : "github:adamsmd",
-  "version" : "20.09.21",
+  "version" : "20.09.30",
   "description" : "Collect BibTeX information from publisher pages",
   "authors" : [ "Michael D. Adams" ],
   "license" : "AGPL-3.0-or-later",
