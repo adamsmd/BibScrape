@@ -589,7 +589,7 @@ sub scrape-springer(--> BibScrape::BibTeX::Entry:D) {
   if $web-driver.find_elements_by_id( 'button-Dropdown-citations-dropdown' ) {
     await({
       # Close the cookie/GDPR overlay
-      try { $web-driver.find_element_by_class_name( 'optanon-alert-box-close' ).click; }
+      try { $web-driver.find_element_by_id( 'onetrust-accept-btn-handler' ).click; }
       # Scroll to the link.  (Otherwise WebDriver reports an error.)
       try { $web-driver.find_element_by_id( 'button-Dropdown-citations-dropdown' ).click; }
       # Click the actual link for BibTeX
