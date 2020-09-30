@@ -2,14 +2,37 @@
 
 ## How to make a release
 
-- Test
-  - `bin/bibscrape --config-dir`
-  - `rm -r ~/.config/BibScrape`
-  - `bin/bibscrape --init`
-  - `./test.sh tests/*.t`
-  - `bin/bibscrape --help`
-  - `bin/bibscrape --help >HELP.txt`
-  - Commit everything
+- Init
+  ```
+  bin/bibscrape --config-dir
+  rm -r ~/.config/BibScrape
+  bin/bibscrape --init
+  ```
+
+- Check `tests/`
+  ```
+  ./test.sh tests/*.t
+  ```
+
+- Check `tests/failing/`
+  ```
+  diff -ru tests tests/failing/|wdiff -dt
+
+  diff -rqs tests tests/failing/ | grep ' are identical$'
+  git rm -f ...IDENTICAL FILES...
+
+  diff -rqs tests/ tests/failing/ | grep '^Only in tests/failing'
+  cat ...ONLY IN FILES...
+  ./test.sh ...ONLY IN FILES...
+  ```
+
+- Check and update help
+  ```
+  bin/bibscrape --help
+  bin/bibscrape --help >HELP.txt
+  ```
+
+- Commit everything
 
 - Update Version
   - Update `version` in `META6.json`
@@ -115,4 +138,3 @@ https://docs.github.com/en?query=languages
 https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/about-repository-languages#markup-languages
 
 https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#list-repository-languages
-
